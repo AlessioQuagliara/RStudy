@@ -1,0 +1,170 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/pages.html">Pages</a></li>
+				<li><h1>Add Page</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<a href="/pages.html" class="btn btn-sm">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/x-mark.svg" class="size-4"></svg>
+			Cancel
+		</a>
+		<button class="btn btn-sm">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/document.svg" class="size-4"></svg>
+			Save draft
+		</button>
+		<button class="btn btn-sm btn-primary">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/rocket-launch.svg" class="size-4"></svg>
+			Publish
+		</button>
+	</div>
+</header>
+<!-- /header -->
+<!-- form -->
+<section class="col-span-12 grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+	<div class="grid gap-6">
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body gap-4">
+				<h2 class="card-title">
+					<svg
+						data-src="https://unpkg.com/heroicons/20/solid/pencil-square.svg"
+						class="size-5"></svg>
+					Page editor
+				</h2>
+				<fieldset class="fieldset">
+					<label class="label">Page title</label>
+					<input
+						type="text"
+						class="input w-full"
+						value="Enterprise onboarding"
+						aria-label="Enterprise onboarding" />
+				</fieldset>
+				<fieldset class="fieldset">
+					<label class="label">Slug</label>
+					<input
+						type="text"
+						class="input w-full"
+						value="enterprise-onboarding"
+						aria-label="enterprise-onboarding" />
+				</fieldset>
+				<div class="join w-full">
+					<button class="btn join-item btn-sm">
+						<svg data-src="https://unpkg.com/heroicons/20/solid/bold.svg" class="size-4"></svg>
+						Bold
+					</button>
+					<button class="btn join-item btn-sm">
+						<svg data-src="https://unpkg.com/heroicons/20/solid/italic.svg" class="size-4"></svg>
+						Italic
+					</button>
+					<button class="btn join-item btn-sm">
+						<svg
+							data-src="https://unpkg.com/heroicons/20/solid/list-bullet.svg"
+							class="size-4"></svg>
+						List
+					</button>
+					<button class="btn join-item btn-sm">
+						<svg data-src="https://unpkg.com/heroicons/20/solid/link.svg" class="size-4"></svg>
+						Link
+					</button>
+				</div>
+				<textarea class="textarea min-h-96 w-full" aria-label="Text area">
+Write the page content here with headings, media blocks, product links, and reusable content sections.</textarea>
+			</div>
+		</div>
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body gap-4">
+				<h2 class="card-title">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/photo.svg" class="size-5"></svg>
+					Featured media and excerpt
+				</h2>
+				<div class="grid gap-4 lg:grid-cols-[12rem_minmax(0,1fr)]">
+					<img
+						class="rounded-box aspect-square object-cover"
+						src="https://picsum.photos/320/320?702"
+						alt="Page featured media" />
+					<div class="grid gap-4">
+						<textarea class="textarea min-h-28 w-full" aria-label="Text area">
+Short excerpt used in listings, search results, and social previews.</textarea>
+						<button class="btn btn-dash">
+							<svg data-src="https://unpkg.com/heroicons/20/solid/photo.svg" class="size-4"></svg>
+							Replace featured image
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<aside class="grid content-start gap-6">
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body">
+				<h2 class="card-title">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/cog-6-tooth.svg" class="size-5"></svg>
+					Publish
+				</h2>
+				<fieldset class="fieldset">
+					<label class="label">Status</label>
+					<select class="select w-full" aria-label="Select option">
+						<option selected>Draft</option>
+						<option>Published</option>
+						<option>Scheduled</option>
+					</select>
+				</fieldset>
+				<fieldset class="fieldset">
+					<label class="label">Visibility</label>
+					<select class="select w-full" aria-label="Select option">
+						<option selected>Public</option>
+						<option>Private</option>
+						<option>Password protected</option>
+					</select>
+				</fieldset>
+				<label class="label cursor-pointer justify-between">
+					Allow comments
+					<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+				</label>
+			</div>
+		</div>
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body">
+				<h2 class="card-title">
+					<svg
+						data-src="https://unpkg.com/heroicons/20/solid/adjustments-vertical.svg"
+						class="size-5"></svg>
+					Settings
+				</h2>
+				<fieldset class="fieldset">
+					<label class="label">Template</label>
+					<select class="select w-full" aria-label="Select option">
+						<option selected>Default page</option>
+						<option>Landing page</option>
+						<option>Docs page</option>
+					</select>
+				</fieldset>
+				<fieldset class="fieldset">
+					<label class="label">Parent page</label>
+					<select class="select w-full" aria-label="Select option">
+						<option selected>No parent</option>
+						<option>Resources</option>
+						<option>Company</option>
+					</select>
+				</fieldset>
+				<fieldset class="fieldset">
+					<label class="label">SEO title</label>
+					<input
+						type="text"
+						class="input w-full"
+						value="Page SEO title"
+						aria-label="Page SEO title" />
+				</fieldset>
+				<textarea class="textarea min-h-24 w-full" aria-label="Text area">
+Meta description for search and social sharing.</textarea>
+			</div>
+		</div>
+	</aside>
+</section>
+<!-- /form -->
+{{> foot }}

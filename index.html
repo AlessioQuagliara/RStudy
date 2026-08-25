@@ -3,72 +3,298 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>UniNettuno Study Camp</title>
-<meta name="description" content="Dashboard di studio realistica per esami tecnici: pianifica, studia attivamente, recupera, passa l'esame.">
+<title>StudyForge — dashboard di studio locale-first per macOS</title>
+<meta name="description" content="StudyForge è un'app desktop Electron locale-first per organizzare corsi, lezioni e materiali universitari, con appunti stile Notion, generazione AI (DeepSeek) e ricerca semantica sui tuoi contenuti.">
 <meta name="color-scheme" content="dark">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230b1220'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='%2338e1c6'%3E◆%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230b0f1a'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='%237c8cff'%3E◆%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0b0f1a; --bg-alt:#0f1526; --card:#121a2e; --border:#212c47;
+    --text:#e7ebf7; --muted:#98a2c0; --accent:#7c8cff; --accent-2:#38e1c6;
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;
+  }
+  a{color:inherit}
+  .wrap{max-width:1100px; margin:0 auto; padding:0 24px}
+  header.nav{
+    position:sticky; top:0; z-index:10; backdrop-filter:blur(10px);
+    background:rgba(11,15,26,0.75); border-bottom:1px solid var(--border);
+  }
+  .nav-inner{display:flex; align-items:center; justify-content:space-between; padding:16px 24px; max-width:1100px; margin:0 auto}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.02em}
+  .brand-mark{
+    display:grid; place-items:center; width:32px; height:32px; border-radius:9px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#0b0f1a; font-weight:800;
+  }
+  .nav-links{display:flex; gap:28px; font-size:14px; color:var(--muted)}
+  .nav-links a:hover{color:var(--text)}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; padding:11px 20px; border-radius:999px;
+    font-weight:600; font-size:14px; text-decoration:none; border:1px solid transparent; cursor:pointer;
+    transition:transform .15s ease, opacity .15s ease;
+  }
+  .btn:hover{transform:translateY(-1px)}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),#6a5cff); color:#0b0f1a}
+  .btn-ghost{border-color:var(--border); color:var(--text)}
+  .btn-ghost:hover{border-color:var(--accent)}
+  .pill{
+    display:inline-flex; align-items:center; gap:8px; padding:6px 14px; border-radius:999px;
+    border:1px solid var(--border); background:var(--bg-alt); color:var(--muted); font-size:13px;
+  }
+  .hero{padding:96px 0 64px; text-align:center}
+  .hero h1{font-size:clamp(2.2rem,5vw,3.6rem); line-height:1.08; margin:26px 0 18px; letter-spacing:-.02em}
+  .hero h1 .accent{background:linear-gradient(135deg,var(--accent),var(--accent-2)); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .hero p.lead{max-width:640px; margin:0 auto 34px; color:var(--muted); font-size:1.08rem}
+  .hero-actions{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-bottom:20px}
+  .hero-note{color:var(--muted); font-size:13px}
+  .hero-note code{background:var(--bg-alt); border:1px solid var(--border); padding:2px 7px; border-radius:6px; font-size:12px}
+
+  .mock{
+    margin:56px auto 0; max-width:920px; border-radius:20px; border:1px solid var(--border);
+    background:linear-gradient(180deg,var(--card),var(--bg-alt)); box-shadow:0 40px 80px -30px rgba(0,0,0,.6);
+    overflow:hidden;
+  }
+  .mock-bar{display:flex; gap:7px; padding:14px 18px; border-bottom:1px solid var(--border)}
+  .mock-dot{width:11px; height:11px; border-radius:50%; background:#374363}
+  .mock-body{display:grid; grid-template-columns:170px 1fr; min-height:280px}
+  .mock-side{border-right:1px solid var(--border); padding:18px 14px; display:flex; flex-direction:column; gap:8px}
+  .mock-side .item{font-size:12.5px; color:var(--muted); padding:8px 10px; border-radius:8px}
+  .mock-side .item.active{background:rgba(124,140,255,.12); color:var(--text)}
+  .mock-main{padding:22px 26px; text-align:left}
+  .mock-main h4{margin:0 0 6px; font-size:15px}
+  .mock-main p{color:var(--muted); font-size:13px; margin:0 0 16px}
+  .mock-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+  .mock-card{border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--bg-alt)}
+  .mock-card b{display:block; font-size:12.5px; margin-bottom:4px}
+  .mock-card span{color:var(--muted); font-size:11.5px}
+
+  section{padding:70px 0}
+  .section-head{text-align:center; max-width:620px; margin:0 auto 44px}
+  .section-head .pill{margin-bottom:16px}
+  .section-head h2{font-size:clamp(1.6rem,3vw,2.2rem); margin:0 0 12px; letter-spacing:-.01em}
+  .section-head p{color:var(--muted); margin:0}
+
+  .grid{display:grid; gap:18px; grid-template-columns:repeat(3,1fr)}
+  @media (max-width:860px){ .grid{grid-template-columns:repeat(2,1fr)} .mock-body{grid-template-columns:1fr} .mock-side{display:none} }
+  @media (max-width:560px){ .grid{grid-template-columns:1fr} .nav-links{display:none} }
+
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:24px; text-align:left;
+  }
+  .card .icon{
+    width:38px; height:38px; border-radius:10px; display:grid; place-items:center;
+    background:rgba(124,140,255,.12); color:var(--accent); margin-bottom:16px; font-size:18px;
+  }
+  .card h3{margin:0 0 8px; font-size:16px}
+  .card p{margin:0; color:var(--muted); font-size:13.5px}
+
+  .flow{display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
+  @media (max-width:860px){ .flow{grid-template-columns:repeat(2,1fr)} }
+  .flow .step{border:1px solid var(--border); border-radius:14px; padding:18px; background:var(--bg-alt)}
+  .flow .step .num{color:var(--accent); font-weight:800; font-size:13px; margin-bottom:8px}
+  .flow .step h4{margin:0 0 6px; font-size:14.5px}
+  .flow .step p{margin:0; color:var(--muted); font-size:12.5px}
+
+  .stack{display:flex; flex-wrap:wrap; gap:10px; justify-content:center}
+  .stack span{
+    border:1px solid var(--border); background:var(--bg-alt); color:var(--muted);
+    padding:7px 14px; border-radius:999px; font-size:12.5px;
+  }
+
+  .privacy{
+    border:1px solid var(--border); border-radius:var(--radius); background:var(--card);
+    padding:32px; display:grid; grid-template-columns:1fr 1fr; gap:24px;
+  }
+  @media (max-width:760px){ .privacy{grid-template-columns:1fr} }
+  .privacy h3{margin-top:0; font-size:16px}
+  .privacy ul{margin:0; padding-left:18px; color:var(--muted); font-size:13.5px; display:flex; flex-direction:column; gap:8px}
+
+  .cta{
+    text-align:center; border:1px solid var(--border); border-radius:20px;
+    padding:56px 32px; background:radial-gradient(60% 100% at 50% 0%, rgba(124,140,255,.12), transparent);
+  }
+  .cta h2{margin:0 0 12px; font-size:clamp(1.5rem,3vw,2rem)}
+  .cta p{color:var(--muted); margin:0 0 26px}
+
+  footer{border-top:1px solid var(--border); padding:32px 0; color:var(--muted); font-size:13px}
+  .footer-inner{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px}
+  .footer-links{display:flex; gap:20px}
+  .footer-links a:hover{color:var(--text)}
+</style>
 </head>
 <body>
-<a class="skip-link" href="#view-root">Vai al contenuto principale</a>
 
-<div id="app-shell">
-  <header class="topbar">
-    <div class="topbar-brand">
-      <span class="brand-mark" aria-hidden="true">◆</span>
-      <div>
-        <p class="brand-title">UNINETTUNO STUDY CAMP</p>
-        <p class="brand-sub">Pianifica. Studia attivamente. Recupera. Passa l'esame.</p>
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand"><span class="brand-mark">◆</span> StudyForge</div>
+    <nav class="nav-links">
+      <a href="#funzionalita">Funzionalità</a>
+      <a href="#come-funziona">Come funziona</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#inizia">Installazione</a>
+    </nav>
+    <a class="btn btn-primary" href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/tree/main/studyforge">Scarica il codice</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero wrap">
+    <span class="pill">✦ App desktop Electron per macOS Apple Silicon</span>
+    <h1>Trasforma corsi e lezioni in <span class="accent">studio attivo</span>, con l'AI che lavora sui tuoi appunti</h1>
+    <p class="lead">
+      StudyForge è una dashboard di studio universitario locale-first: organizza corsi e CFU, prendi appunti con un
+      editor stile Notion, importa materiali e lascia che DeepSeek generi riepiloghi, flashcard e diagrammi — tutto
+      resta sul tuo Mac, tranne le chiamate AI che richiedi tu.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp">Vai al repository GitHub</a>
+      <a class="btn btn-ghost" href="#inizia">Come si installa</a>
+    </div>
+    <p class="hero-note">Open source · Electron + React + TypeScript · database SQLite locale</p>
+
+    <div class="mock" aria-hidden="true">
+      <div class="mock-bar"><span class="mock-dot"></span><span class="mock-dot"></span><span class="mock-dot"></span></div>
+      <div class="mock-body">
+        <div class="mock-side">
+          <div class="item active">▣ Dashboard</div>
+          <div class="item">🎓 Corsi</div>
+          <div class="item">📚 Materiali</div>
+          <div class="item">🗂 Flashcard</div>
+          <div class="item">⚙ Impostazioni</div>
+        </div>
+        <div class="mock-main">
+          <h4>Algoritmi e Strutture Dati</h4>
+          <p>9 CFU · 2/12 lezioni completate · prossimo obiettivo: liste e alberi</p>
+          <div class="mock-grid">
+            <div class="mock-card"><b>Riepilogo AI</b><span>Generato dagli appunti</span></div>
+            <div class="mock-card"><b>Flashcard SRS</b><span>5 da ripassare oggi</span></div>
+            <div class="mock-card"><b>Diagramma</b><span>Mermaid dal contenuto</span></div>
+          </div>
+        </div>
       </div>
     </div>
-  </header>
+  </section>
 
-  <nav class="sidebar" aria-label="Navigazione principale">
-    <a href="#/dashboard" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">▣</span>Dashboard</a>
-    <a href="#/esami" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">🎓</span>Esami</a>
-    <a href="#/sessione" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">▶</span>Sessione studio</a>
-    <a href="#/ripassi" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">🔁</span>Ripassi</a>
-    <a href="#/errori" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">⚠</span>Error log</a>
-    <a href="#/simulazioni" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">🎯</span>Simulazioni</a>
-    <a href="#/materiali" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">📚</span>Materiali</a>
-    <a href="#/statistiche" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">📈</span>Statistiche</a>
-    <a href="#/impostazioni" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">⚙</span>Impostazioni</a>
-  </nav>
+  <section id="funzionalita" class="wrap">
+    <div class="section-head">
+      <span class="pill">Funzionalità</span>
+      <h2>Tutto quello che serve per uno studio organizzato</h2>
+      <p>Dalla pianificazione dei corsi alla verifica finale, in un'unica app locale.</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="icon">🎓</div>
+        <h3>Corsi ed esami</h3>
+        <p>CFU, data d'esame opzionale, introduzione e obiettivi, progresso lezioni e stato del corso a colpo d'occhio.</p>
+      </div>
+      <div class="card">
+        <div class="icon">✎</div>
+        <h3>Editor appunti stile Notion</h3>
+        <p>Titoli, liste, checklist, callout, citazioni, codice, tabelle e link con autosalvataggio durante la lezione.</p>
+      </div>
+      <div class="card">
+        <div class="icon">✦</div>
+        <h3>Studio AI con DeepSeek</h3>
+        <p>Dopo il salvataggio: riepilogo strutturato, punti salienti, schema di studio, diagramma Mermaid e domande di autoverifica.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🗂</div>
+        <h3>Flashcard con ripasso spaziato</h3>
+        <p>Generate dall'AI o create a mano, con modalità studio a flip e scheduling SRS (facile/media/difficile).</p>
+      </div>
+      <div class="card">
+        <div class="icon">🔎</div>
+        <h3>Ricerca semantica RAG</h3>
+        <p>Chiedi al materiale del corso: risposte con fonti citate, mai inventate, con priorità alla lezione attiva.</p>
+      </div>
+      <div class="card">
+        <div class="icon">📎</div>
+        <h3>Materiali per corso e lezione</h3>
+        <p>PDF, DOCX, TXT e Markdown con drag&drop, estrazione testo e indicizzazione automatica per la ricerca.</p>
+      </div>
+    </div>
+  </section>
 
-  <main id="view-root" tabindex="-1" aria-live="polite"></main>
+  <section id="come-funziona" class="wrap">
+    <div class="section-head">
+      <span class="pill">Come funziona</span>
+      <h2>Dagli appunti allo studio pronto, in quattro passaggi</h2>
+    </div>
+    <div class="flow">
+      <div class="step"><div class="num">01</div><h4>Crea il corso</h4><p>CFU, data d'esame, obiettivi e numero di lezioni previste.</p></div>
+      <div class="step"><div class="num">02</div><h4>Scrivi la lezione</h4><p>Appunti nell'editor ricco, con autosalvataggio in locale.</p></div>
+      <div class="step"><div class="num">03</div><h4>Genera lo studio AI</h4><p>Riepilogo, flashcard, schema e diagramma dal contenuto reale.</p></div>
+      <div class="step"><div class="num">04</div><h4>Ripassa e verifica</h4><p>Flashcard SRS, domande di autoverifica e riassunto finale del corso.</p></div>
+    </div>
+  </section>
 
-  <nav class="bottom-nav" aria-label="Navigazione mobile">
-    <a href="#/dashboard" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">▣</span>Dashboard</a>
-    <a href="#/esami" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">🎓</span>Esami</a>
-    <a href="#/sessione" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">▶</span>Sessione</a>
-    <a href="#/ripassi" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">🔁</span>Ripassi</a>
-    <a href="#/errori" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">⚠</span>Errori</a>
-    <a href="#/simulazioni" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">🎯</span>Simulazioni</a>
-    <a href="#/materiali" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">📚</span>Materiali</a>
-    <a href="#/statistiche" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">📈</span>Statistiche</a>
-    <a href="#/impostazioni" data-nav-link class="nav-item"><span class="nav-icon" aria-hidden="true">⚙</span>Impostazioni</a>
-  </nav>
-</div>
+  <section class="wrap">
+    <div class="section-head">
+      <span class="pill">Stack tecnico</span>
+      <h2>Costruita per restare locale, veloce e sicura</h2>
+    </div>
+    <div class="stack">
+      <span>Electron</span><span>React + Vite</span><span>TypeScript strict</span>
+      <span>Tailwind + DaisyUI</span><span>SQLite + Drizzle ORM</span><span>Tiptap</span>
+      <span>Mermaid</span><span>Zod</span><span>TanStack Query</span><span>Zustand</span>
+      <span>Keychain macOS (keytar)</span>
+    </div>
+  </section>
 
-<div id="toast-root" aria-live="polite" aria-atomic="true"></div>
-<div id="modal-root" role="presentation"></div>
+  <section id="privacy" class="wrap">
+    <div class="privacy">
+      <div>
+        <h3>🔒 Privacy by design</h3>
+        <ul>
+          <li>Database SQLite e file importati restano sempre sul tuo Mac.</li>
+          <li>La API key DeepSeek vive solo nel Keychain macOS, mai nel database, mai nei log.</li>
+          <li>Nessuna telemetria: l'app funziona offline tranne le chiamate AI/RAG che richiedi tu.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🛡️ Electron sicuro</h3>
+        <ul>
+          <li><code style="background:var(--bg-alt);border:1px solid var(--border);padding:2px 6px;border-radius:6px">contextIsolation</code> e <code style="background:var(--bg-alt);border:1px solid var(--border);padding:2px 6px;border-radius:6px">sandbox</code> attivi, nessun accesso diretto a Node dal renderer.</li>
+          <li>API IPC granulare e tipizzata, con validazione Zod di ogni payload nel processo main.</li>
+          <li>Backup JSON esportabile in ogni momento, senza mai includere la API key.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
 
-<script src="assets/js/utils.js"></script>
-<script src="assets/js/store.js"></script>
-<script src="assets/js/ui.js"></script>
-<script src="assets/js/planner.js"></script>
-<script src="assets/js/charts.js"></script>
-<script src="assets/js/parser.js"></script>
-<script src="assets/js/router.js"></script>
-<script src="assets/js/views/dashboard.js"></script>
-<script src="assets/js/views/exams.js"></script>
-<script src="assets/js/views/session.js"></script>
-<script src="assets/js/views/reviews.js"></script>
-<script src="assets/js/views/errors.js"></script>
-<script src="assets/js/views/simulations.js"></script>
-<script src="assets/js/views/materials.js"></script>
-<script src="assets/js/views/stats.js"></script>
-<script src="assets/js/views/settings.js"></script>
-<script src="assets/js/app.js"></script>
+  <section id="inizia" class="wrap">
+    <div class="cta">
+      <h2>Scarica il codice e avvialo in locale</h2>
+      <p>Progetto open source. Clona il repository, installa le dipendenze con pnpm e avvia l'app in modalità sviluppo.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp">Apri su GitHub</a>
+        <a class="btn btn-ghost" href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/tree/main/studyforge#readme">Leggi il README di StudyForge</a>
+      </div>
+      <p class="hero-note" style="margin-top:22px">
+        <code>git clone https://github.com/AlessioQuagliara/alessioquagliara-study-camp.git</code><br>
+        <code>cd alessioquagliara-study-camp/studyforge && pnpm install && pnpm dev</code>
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <div class="footer-inner">
+    <span>StudyForge — sviluppato da Alessio Quagliara</span>
+    <div class="footer-links">
+      <a href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp">Repository</a>
+      <a href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/tree/main/studyforge">Codice app</a>
+      <a href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/issues">Issue</a>
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>

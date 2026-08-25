@@ -1,0 +1,233 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/blog/posts.html">Blog</a></li>
+				<li><h1>Comments</h1></li>
+			</ul>
+		</div>
+	</div>
+</header>
+<!-- /header -->
+
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body gap-4">
+		<div class="flex flex-col gap-3 xl:flex-row">
+			<label class="input input-sm w-full">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input
+					type="search"
+					placeholder="Search comments, author, post"
+					aria-label="Search comments, author, post" />
+			</label>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All status</option>
+				<option>Pending</option>
+				<option>Approved</option>
+				<option>Spam</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All posts</option>
+				<option>Launch checklist</option>
+				<option>Failed payments</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Sort: Newest</option>
+				<option>Status</option>
+			</select>
+			<button
+				class="btn btn-sm xl:ml-auto"
+				popovertarget="comments-bulk-actions-dropdown"
+				style="anchor-name: --comments-bulk-actions-dropdown-anchor">
+				<svg data-src="https://unpkg.com/heroicons/20/solid/queue-list.svg" class="size-4"></svg>
+				Bulk actions
+			</button>
+			<ul
+				class="menu dropdown dropdown-end bg-base-200 rounded-box z-1 mt-2 w-52 p-2 shadow"
+				popover
+				id="comments-bulk-actions-dropdown"
+				style="position-anchor: --comments-bulk-actions-dropdown-anchor">
+				<li><a>Export selected</a></li>
+				<li><a>Change status</a></li>
+				<li><a>Assign tag</a></li>
+				<li><a class="text-error">Delete selected</a></li>
+			</ul>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<th>Author</th>
+						<th>Comment</th>
+						<th>Post</th>
+						<th>Status</th>
+						<th>Date</th>
+						<th>Moderation</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Mina Park</td>
+						<td>This helped our team tighten the launch checklist.</td>
+						<td>Launch checklist for recurring revenue teams</td>
+						<td><span class="badge badge-warning badge-sm">Pending</span></td>
+						<td>Jun 10, 2026</td>
+						<td>Approve · Reply · Trash</td>
+						<td class="text-right">
+							<a href="/blog/posts/edit.html" class="btn btn-ghost btn-xs">Moderate</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Arman Bell</td>
+						<td>This helped our team tighten the launch checklist.</td>
+						<td>How to reduce failed payments</td>
+						<td><span class="badge badge-success badge-sm">Approved</span></td>
+						<td>Jun 11, 2026</td>
+						<td>Approve · Reply · Trash</td>
+						<td class="text-right">
+							<a href="/blog/posts/edit.html" class="btn btn-ghost btn-xs">Moderate</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Nora Quinn</td>
+						<td>This helped our team tighten the launch checklist.</td>
+						<td>What changed in support SLAs</td>
+						<td><span class="badge badge-success badge-sm">Approved</span></td>
+						<td>Jun 12, 2026</td>
+						<td>Approve · Reply · Trash</td>
+						<td class="text-right">
+							<a href="/blog/posts/edit.html" class="btn btn-ghost btn-xs">Moderate</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Mina Park</td>
+						<td>This helped our team tighten the launch checklist.</td>
+						<td>Media library workflow</td>
+						<td><span class="badge badge-warning badge-sm">Pending</span></td>
+						<td>Jun 13, 2026</td>
+						<td>Approve · Reply · Trash</td>
+						<td class="text-right">
+							<a href="/blog/posts/edit.html" class="btn btn-ghost btn-xs">Moderate</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Arman Bell</td>
+						<td>This helped our team tighten the launch checklist.</td>
+						<td>Customer segments that convert</td>
+						<td><span class="badge badge-success badge-sm">Approved</span></td>
+						<td>Jun 14, 2026</td>
+						<td>Approve · Reply · Trash</td>
+						<td class="text-right">
+							<a href="/blog/posts/edit.html" class="btn btn-ghost btn-xs">Moderate</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Nora Quinn</td>
+						<td>This helped our team tighten the launch checklist.</td>
+						<td>Order fulfillment metrics</td>
+						<td><span class="badge badge-success badge-sm">Approved</span></td>
+						<td>Jun 15, 2026</td>
+						<td>Approve · Reply · Trash</td>
+						<td class="text-right">
+							<a href="/blog/posts/edit.html" class="btn btn-ghost btn-xs">Moderate</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Mina Park</td>
+						<td>This helped our team tighten the launch checklist.</td>
+						<td>Refund policy examples</td>
+						<td><span class="badge badge-warning badge-sm">Pending</span></td>
+						<td>Jun 16, 2026</td>
+						<td>Approve · Reply · Trash</td>
+						<td class="text-right">
+							<a href="/blog/posts/edit.html" class="btn btn-ghost btn-xs">Moderate</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Arman Bell</td>
+						<td>This helped our team tighten the launch checklist.</td>
+						<td>Editor blocks for static pages</td>
+						<td><span class="badge badge-success badge-sm">Approved</span></td>
+						<td>Jun 17, 2026</td>
+						<td>Approve · Reply · Trash</td>
+						<td class="text-right">
+							<a href="/blog/posts/edit.html" class="btn btn-ghost btn-xs">Moderate</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Nora Quinn</td>
+						<td>This helped our team tighten the launch checklist.</td>
+						<td>Product analytics guide</td>
+						<td><span class="badge badge-success badge-sm">Approved</span></td>
+						<td>Jun 18, 2026</td>
+						<td>Approve · Reply · Trash</td>
+						<td class="text-right">
+							<a href="/blog/posts/edit.html" class="btn btn-ghost btn-xs">Moderate</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Mina Park</td>
+						<td>This helped our team tighten the launch checklist.</td>
+						<td>Security review checklist</td>
+						<td><span class="badge badge-warning badge-sm">Pending</span></td>
+						<td>Jun 19, 2026</td>
+						<td>Approve · Reply · Trash</td>
+						<td class="text-right">
+							<a href="/blog/posts/edit.html" class="btn btn-ghost btn-xs">Moderate</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
+			<div class="text-sm opacity-60">Showing 1-10 of 284 records</div>
+			<div class="join sm:ml-auto">
+				<button class="btn join-item btn-sm">Previous</button>
+				<button class="btn join-item btn-sm btn-active">1</button>
+				<button class="btn join-item btn-sm">2</button>
+				<button class="btn join-item btn-sm">Next</button>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

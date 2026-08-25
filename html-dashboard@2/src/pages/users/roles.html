@@ -1,0 +1,188 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/users.html">Users</a></li>
+				<li>User Roles</li>
+			</ul>
+		</div>
+	</div>
+	<a href="/users/roles/new.html" class="btn btn-sm btn-primary">
+		<svg data-src="https://unpkg.com/heroicons/20/solid/plus.svg" class="size-4"></svg>
+		New role
+	</a>
+</header>
+<!-- /header -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body gap-4">
+		<div class="flex flex-col gap-3 lg:flex-row">
+			<label class="input input-sm w-full lg:max-w-sm">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input type="search" placeholder="Search roles" aria-label="Search roles" />
+			</label>
+			<select class="select select-sm w-full lg:w-44" aria-label="Select option">
+				<option selected>All status</option>
+				<option>Active</option>
+				<option>Locked</option>
+			</select>
+			<select class="select select-sm w-full lg:w-44" aria-label="Select option">
+				<option selected>Sort: Users</option>
+				<option>Name</option>
+				<option>Permissions</option>
+			</select>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Role</th>
+						<th>Users</th>
+						<th>Permissions</th>
+						<th>Status</th>
+						<th>Scope</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>
+							<div class="font-bold">Owner</div>
+							<div class="text-sm opacity-60">Full account control</div>
+						</td>
+						<td>4</td>
+						<td>96</td>
+						<td><span class="badge badge-neutral">Locked</span></td>
+						<td>Global</td>
+						<td class="text-right">
+							<a class="btn btn-ghost btn-xs" href="/users/roles/edit.html">Review</a>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div class="font-bold">Admin</div>
+							<div class="text-sm opacity-60">Operations and commerce</div>
+						</td>
+						<td>28</td>
+						<td>74</td>
+						<td><span class="badge badge-success">Active</span></td>
+						<td>Global</td>
+						<td class="text-right">
+							<a class="btn btn-ghost btn-xs" href="/users/roles/edit.html">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div class="font-bold">Support agent</div>
+							<div class="text-sm opacity-60">Conversations and customer notes</div>
+						</td>
+						<td>14</td>
+						<td>31</td>
+						<td><span class="badge badge-success">Active</span></td>
+						<td>Support</td>
+						<td class="text-right">
+							<a class="btn btn-ghost btn-xs" href="/users/roles/edit.html">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div class="font-bold">Customer</div>
+							<div class="text-sm opacity-60">Self-service account access</div>
+						</td>
+						<td>48,120</td>
+						<td>12</td>
+						<td><span class="badge badge-success">Active</span></td>
+						<td>Portal</td>
+						<td class="text-right">
+							<a class="btn btn-ghost btn-xs" href="/users/roles/edit.html">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div class="font-bold">Catalog manager</div>
+							<div class="text-sm opacity-60">Products, categories, and inventory</div>
+						</td>
+						<td>9</td>
+						<td>42</td>
+						<td><span class="badge badge-success">Active</span></td>
+						<td>Commerce</td>
+						<td class="text-right">
+							<a class="btn btn-ghost btn-xs" href="/users/roles/edit.html">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div class="font-bold">Finance manager</div>
+							<div class="text-sm opacity-60">Transactions, refunds, and exports</div>
+						</td>
+						<td>6</td>
+						<td>38</td>
+						<td><span class="badge badge-success">Active</span></td>
+						<td>Billing</td>
+						<td class="text-right">
+							<a class="btn btn-ghost btn-xs" href="/users/roles/edit.html">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div class="font-bold">Content editor</div>
+							<div class="text-sm opacity-60">Pages, blog posts, and media</div>
+						</td>
+						<td>11</td>
+						<td>29</td>
+						<td><span class="badge badge-success">Active</span></td>
+						<td>Content</td>
+						<td class="text-right">
+							<a class="btn btn-ghost btn-xs" href="/users/roles/edit.html">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div class="font-bold">Analyst</div>
+							<div class="text-sm opacity-60">Reports and analytics only</div>
+						</td>
+						<td>7</td>
+						<td>18</td>
+						<td><span class="badge badge-success">Active</span></td>
+						<td>Analytics</td>
+						<td class="text-right">
+							<a class="btn btn-ghost btn-xs" href="/users/roles/edit.html">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div class="font-bold">Marketing manager</div>
+							<div class="text-sm opacity-60">Campaigns, audiences, and discounts</div>
+						</td>
+						<td>5</td>
+						<td>34</td>
+						<td><span class="badge badge-success">Active</span></td>
+						<td>Marketing</td>
+						<td class="text-right">
+							<a class="btn btn-ghost btn-xs" href="/users/roles/edit.html">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<div class="font-bold">Read-only auditor</div>
+							<div class="text-sm opacity-60">Audit logs and read-only reports</div>
+						</td>
+						<td>3</td>
+						<td>16</td>
+						<td><span class="badge badge-neutral">Locked</span></td>
+						<td>Compliance</td>
+						<td class="text-right">
+							<a class="btn btn-ghost btn-xs" href="/users/roles/edit.html">Review</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

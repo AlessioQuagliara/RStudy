@@ -1,0 +1,312 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/plugins.html">Plugins</a></li>
+				<li><h1>Plugin Settings</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<a href="/plugins/add.html" class="btn btn-sm btn-primary">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/plus.svg" class="size-4"></svg>
+			Add plugin
+		</a>
+		<button class="btn btn-sm">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/arrow-path.svg" class="size-4"></svg>
+			Check updates
+		</button>
+	</div>
+</header>
+<!-- /header -->
+<!-- stats -->
+<section class="stats stats-vertical bg-base-200 xl:stats-horizontal col-span-12 shadow-xs">
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/puzzle-piece.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Installed</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">28</div>
+		<div class="stat-desc">22 active</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/arrow-path.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Updates</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">6</div>
+		<div class="stat-desc">2 security related</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/cpu-chip.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Avg overhead</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">84ms</div>
+		<div class="stat-desc">Frontend impact</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/key.svg" class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Licenses</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">24/28</div>
+		<div class="stat-desc">4 need attention</div>
+	</div>
+</section>
+<!-- /stats -->
+<!-- form -->
+<section class="col-span-12 grid gap-6 xl:grid-cols-2">
+	<div class="card bg-base-200 shadow-xs">
+		<div class="card-body">
+			<h2 class="card-title">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/adjustments-horizontal.svg"
+					class="size-5"></svg>
+				Plugin controls
+			</h2>
+			<div class="grid gap-4">
+				<label class="label cursor-pointer justify-between">
+					<span>Auto updates</span>
+					<input type="checkbox" class="toggle toggle-sm" aria-label="Toggle option" />
+				</label>
+				<label class="label cursor-pointer justify-between">
+					<span>Dependency checks</span>
+					<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+				</label>
+				<label class="label cursor-pointer justify-between">
+					<span>Rollback protection</span>
+					<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+				</label>
+				<label class="label cursor-pointer justify-between">
+					<span>License reminders</span>
+					<input type="checkbox" class="toggle toggle-sm" aria-label="Toggle option" />
+				</label>
+				<label class="label cursor-pointer justify-between">
+					<span>Telemetry sharing</span>
+					<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+				</label>
+				<label class="label cursor-pointer justify-between">
+					<span>Sandbox new plugins</span>
+					<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+				</label>
+				<fieldset class="fieldset">
+					<label class="label">Default mode</label>
+					<div class="flex flex-wrap gap-4">
+						<label class="label gap-2">
+							<input
+								type="radio"
+								name="Plugin-controls"
+								class="radio radio-sm"
+								checked
+								aria-label="Select option" />
+							Standard
+						</label>
+						<label class="label gap-2">
+							<input
+								type="radio"
+								name="Plugin-controls"
+								class="radio radio-sm"
+								aria-label="Select option" />
+							Strict
+						</label>
+					</div>
+				</fieldset>
+			</div>
+		</div>
+	</div>
+	<div class="card bg-base-200 shadow-xs">
+		<div class="card-body">
+			<h2 class="card-title">
+				<svg data-src="https://unpkg.com/heroicons/20/solid/list-bullet.svg" class="size-5"></svg>
+				Defaults
+			</h2>
+			<div class="grid gap-4">
+				<fieldset class="fieldset">
+					<label class="label">Name</label>
+					<input class="input w-full" value="Plugin controls" aria-label="Plugin controls" />
+				</fieldset>
+				<fieldset class="fieldset">
+					<label class="label">Owner</label>
+					<select class="select w-full" aria-label="Select option">
+						<option>Operations</option>
+						<option>Commerce</option>
+						<option>Marketing</option>
+					</select>
+				</fieldset>
+				<fieldset class="fieldset">
+					<label class="label">Notes</label>
+					<textarea class="textarea w-full" aria-label="Text area">
+Configuration notes for plugin controls.</textarea>
+				</fieldset>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /form -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body gap-4">
+		<h2 class="card-title">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/adjustments-horizontal.svg"
+				class="size-5"></svg>
+			Plugin Settings
+		</h2>
+		<div class="flex flex-col gap-3 xl:flex-row">
+			<label class="input input-sm w-full">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input
+					type="search"
+					placeholder="Search plugin settings"
+					aria-label="Search plugin settings" />
+			</label>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All status</option>
+				<option>Active</option>
+				<option>Draft</option>
+				<option>Paused</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Category</option>
+				<option>Active</option>
+				<option>Draft</option>
+				<option>Paused</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Update state</option>
+				<option>Active</option>
+				<option>Draft</option>
+				<option>Paused</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Sort: Impact</option>
+				<option>Active</option>
+				<option>Draft</option>
+				<option>Paused</option>
+			</select>
+			<button class="btn btn-sm xl:ml-auto">
+				<svg data-src="https://unpkg.com/heroicons/20/solid/queue-list.svg" class="size-4"></svg>
+				Bulk actions
+			</button>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Plugin</th>
+						<th>Status</th>
+						<th>Category</th>
+						<th>Version</th>
+						<th>Overhead</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Commerce Sync</td>
+						<td><span class="badge badge-warning badge-sm">Update</span></td>
+						<td>Commerce</td>
+						<td>v2.4.0</td>
+						<td>8 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>SEO Toolkit</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Content</td>
+						<td>v3.4.1</td>
+						<td>16 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>Fraud Shield</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Security</td>
+						<td>v4.4.2</td>
+						<td>24 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>Email Bridge</td>
+						<td><span class="badge badge-info badge-sm">Paused</span></td>
+						<td>Marketing</td>
+						<td>v5.4.3</td>
+						<td>32 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>Media Optimizer</td>
+						<td><span class="badge badge-warning badge-sm">Update</span></td>
+						<td>Commerce</td>
+						<td>v6.4.4</td>
+						<td>40 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>Analytics Pro</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Content</td>
+						<td>v7.4.5</td>
+						<td>48 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>Backup Vault</td>
+						<td><span class="badge badge-info badge-sm">Paused</span></td>
+						<td>Security</td>
+						<td>v8.4.6</td>
+						<td>56 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>Support Desk</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Marketing</td>
+						<td>v9.4.7</td>
+						<td>64 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>Tax Engine</td>
+						<td><span class="badge badge-warning badge-sm">Update</span></td>
+						<td>Commerce</td>
+						<td>v10.4.8</td>
+						<td>72 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>Loyalty Core</td>
+						<td><span class="badge badge-info badge-sm">Paused</span></td>
+						<td>Content</td>
+						<td>v11.4.9</td>
+						<td>80 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="flex flex-col gap-3 pt-2 md:flex-row md:items-center">
+			<p class="grow text-sm opacity-60">Showing 10 of 248 items</p>
+			<div class="join">
+				<button class="btn btn-sm join-item">Previous</button>
+				<button class="btn btn-sm join-item btn-active">1</button>
+				<button class="btn btn-sm join-item">2</button>
+				<button class="btn btn-sm join-item">3</button>
+				<button class="btn btn-sm join-item">Next</button>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

@@ -1,0 +1,261 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/pages.html">Pages</a></li>
+				<li><h1>All Pages</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<a href="/pages/edit.html" class="btn btn-sm btn-primary">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/plus.svg" class="size-4"></svg>
+			New page
+		</a>
+		<button
+			class="btn btn-sm"
+			popovertarget="pages-export-dropdown"
+			style="anchor-name: --pages-export-dropdown-anchor">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/arrow-down-tray.svg" class="size-4"></svg>
+			Export
+		</button>
+		<ul
+			class="menu dropdown dropdown-end bg-base-200 rounded-box z-1 mt-2 w-52 p-2 shadow"
+			popover
+			id="pages-export-dropdown"
+			style="position-anchor: --pages-export-dropdown-anchor">
+			<li><a>Pages CSV</a></li>
+			<li><a>SEO export</a></li>
+			<li><a>Revisions export</a></li>
+		</ul>
+	</div>
+</header>
+<!-- /header -->
+
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body gap-4">
+		<div class="flex flex-col gap-3 xl:flex-row">
+			<label class="input input-sm w-full">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input
+					type="search"
+					placeholder="Search pages, slug, author"
+					aria-label="Search pages, slug, author" />
+			</label>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All status</option>
+				<option>Published</option>
+				<option>Draft</option>
+				<option>Scheduled</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All authors</option>
+				<option>Ari Lane</option>
+				<option>Jules Kim</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All templates</option>
+				<option>Default</option>
+				<option>Landing</option>
+				<option>Legal</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Sort: Updated</option>
+				<option>Title</option>
+			</select>
+			<button
+				class="btn btn-sm xl:ml-auto"
+				popovertarget="pages-bulk-actions-dropdown"
+				style="anchor-name: --pages-bulk-actions-dropdown-anchor">
+				<svg data-src="https://unpkg.com/heroicons/20/solid/queue-list.svg" class="size-4"></svg>
+				Bulk actions
+			</button>
+			<ul
+				class="menu dropdown dropdown-end bg-base-200 rounded-box z-1 mt-2 w-52 p-2 shadow"
+				popover
+				id="pages-bulk-actions-dropdown"
+				style="position-anchor: --pages-bulk-actions-dropdown-anchor">
+				<li><a>Export selected</a></li>
+				<li><a>Change status</a></li>
+				<li><a>Assign tag</a></li>
+				<li><a class="text-error">Delete selected</a></li>
+			</ul>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<th>Title</th>
+						<th>Slug</th>
+						<th>Author</th>
+						<th>Status</th>
+						<th>Template</th>
+						<th>Updated</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Enterprise onboarding</td>
+						<td>enterprise-onboarding</td>
+						<td>Ari Lane</td>
+						<td><span class="badge badge-warning badge-sm">Draft</span></td>
+						<td>Default</td>
+						<td>Jun 14, 2026</td>
+						<td class="text-right">
+							<a href="/pages/edit.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Pricing</td>
+						<td>pricing</td>
+						<td>Jules Kim</td>
+						<td><span class="badge badge-success badge-sm">Published</span></td>
+						<td>Landing</td>
+						<td>Jun 15, 2026</td>
+						<td class="text-right">
+							<a href="/pages/edit.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>About</td>
+						<td>about</td>
+						<td>Ari Lane</td>
+						<td><span class="badge badge-success badge-sm">Published</span></td>
+						<td>Legal</td>
+						<td>Jun 16, 2026</td>
+						<td class="text-right">
+							<a href="/pages/edit.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Contact</td>
+						<td>contact</td>
+						<td>Jules Kim</td>
+						<td><span class="badge badge-success badge-sm">Published</span></td>
+						<td>Default</td>
+						<td>Jun 17, 2026</td>
+						<td class="text-right">
+							<a href="/pages/edit.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Terms</td>
+						<td>terms</td>
+						<td>Ari Lane</td>
+						<td><span class="badge badge-warning badge-sm">Draft</span></td>
+						<td>Landing</td>
+						<td>Jun 18, 2026</td>
+						<td class="text-right">
+							<a href="/pages/edit.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Privacy</td>
+						<td>privacy</td>
+						<td>Jules Kim</td>
+						<td><span class="badge badge-success badge-sm">Published</span></td>
+						<td>Legal</td>
+						<td>Jun 19, 2026</td>
+						<td class="text-right">
+							<a href="/pages/edit.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Resources</td>
+						<td>resources</td>
+						<td>Ari Lane</td>
+						<td><span class="badge badge-success badge-sm">Published</span></td>
+						<td>Default</td>
+						<td>Jun 20, 2026</td>
+						<td class="text-right">
+							<a href="/pages/edit.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Partners</td>
+						<td>partners</td>
+						<td>Jules Kim</td>
+						<td><span class="badge badge-success badge-sm">Published</span></td>
+						<td>Landing</td>
+						<td>Jun 21, 2026</td>
+						<td class="text-right">
+							<a href="/pages/edit.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Security</td>
+						<td>security</td>
+						<td>Ari Lane</td>
+						<td><span class="badge badge-warning badge-sm">Draft</span></td>
+						<td>Legal</td>
+						<td>Jun 22, 2026</td>
+						<td class="text-right">
+							<a href="/pages/edit.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Status</td>
+						<td>status</td>
+						<td>Jules Kim</td>
+						<td><span class="badge badge-success badge-sm">Published</span></td>
+						<td>Default</td>
+						<td>Jun 23, 2026</td>
+						<td class="text-right">
+							<a href="/pages/edit.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
+			<div class="text-sm opacity-60">Showing 1-10 of 284 records</div>
+			<div class="join sm:ml-auto">
+				<button class="btn join-item btn-sm">Previous</button>
+				<button class="btn join-item btn-sm btn-active">1</button>
+				<button class="btn join-item btn-sm">2</button>
+				<button class="btn join-item btn-sm">Next</button>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

@@ -1,0 +1,165 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/analytics.html">Analytics</a></li>
+				<li><h1>Support</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2"></div>
+</header>
+<!-- /header -->
+<!-- stats -->
+<section class="stats stats-vertical bg-base-200 xl:stats-horizontal col-span-12 shadow-xs">
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/chat-bubble-left-right.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Conversations</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">8,420</div>
+		<div class="stat-desc">+6%</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/clock.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">First reply</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">2m 14s</div>
+		<div class="stat-desc">-18 seconds</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/check-circle.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">SLA hit</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">94.2%</div>
+		<div class="stat-desc">+2 points</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/star.svg" class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">CSAT</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">4.7</div>
+		<div class="stat-desc">From 2,840 ratings</div>
+	</div>
+</section>
+<!-- /stats -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-7">
+	<div class="card-body pb-0">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/chart-bar.svg" class="size-5"></svg>
+			Support volume
+		</h2>
+		<p class="text-base-content/60">Incoming conversations by hour</p>
+	</div>
+	<tc-line
+		class="h-64 w-full [--area-opacity:.18] [--shape-color:var(--color-info)]"
+		values="[12,18,24,32,46,58,72,84,92,88,76,61,48,36]"
+		min="0"></tc-line>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-5">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/queue-list.svg" class="size-5"></svg>
+			Queue pressure
+		</h2>
+		<div class="grid gap-4">
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Billing</span>
+					<span>82%</span>
+				</div>
+				<progress class="progress progress-error" value="82" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Technical</span>
+					<span>66%</span>
+				</div>
+				<progress class="progress progress-warning" value="66" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Refunds</span>
+					<span>48%</span>
+				</div>
+				<progress class="progress progress-info" value="48" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Pre-sales</span>
+					<span>22%</span>
+				</div>
+				<progress class="progress progress-success" value="22" max="100"></progress>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-12">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/table-cells.svg" class="size-5"></svg>
+			Agent leaderboard
+		</h2>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Agent</th>
+						<th>Open</th>
+						<th>Resolved</th>
+						<th>SLA</th>
+						<th>CSAT</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Ari Lane</td>
+						<td>18</td>
+						<td>184</td>
+						<td>96%</td>
+						<td>4.8</td>
+					</tr>
+					<tr>
+						<td>Jules Kim</td>
+						<td>24</td>
+						<td>162</td>
+						<td>92%</td>
+						<td>4.6</td>
+					</tr>
+					<tr>
+						<td>Mina Park</td>
+						<td>12</td>
+						<td>148</td>
+						<td>98%</td>
+						<td>4.9</td>
+					</tr>
+					<tr>
+						<td>Owen Reed</td>
+						<td>31</td>
+						<td>128</td>
+						<td>88%</td>
+						<td>4.4</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

@@ -1,0 +1,187 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/marketing/campaigns.html">Marketing</a></li>
+				<li><h1>Automations</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<a href="#" class="btn btn-sm btn-primary">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/plus.svg" class="size-4"></svg>
+			New automation
+		</a>
+		<button class="btn btn-sm">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/document-text.svg" class="size-4"></svg>
+			View logs
+		</button>
+	</div>
+</header>
+<!-- /header -->
+<!-- stats -->
+<section class="stats stats-vertical bg-base-200 xl:stats-horizontal col-span-12 shadow-xs">
+	<div class="stat">
+		<div class="stat-figure">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/bolt.svg" class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Active flows</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">18</div>
+		<div class="stat-desc">6 revenue flows</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/arrow-path.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Events processed</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">2.4M</div>
+		<div class="stat-desc">Last 30 days</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/banknotes.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Flow revenue</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">$186K</div>
+		<div class="stat-desc">+16%</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/exclamation-triangle.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Failed steps</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">42</div>
+		<div class="stat-desc">Needs review</div>
+	</div>
+</section>
+<!-- /stats -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-7">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/bolt.svg" class="size-5"></svg>
+			Automation map
+		</h2>
+		<ul class="steps steps-vertical lg:steps-horizontal">
+			<li class="step step-primary">Trigger</li>
+			<li class="step step-primary">Segment</li>
+			<li class="step step-primary">Email</li>
+			<li class="step step-primary">Wait</li>
+			<li class="step step-warning">Branch</li>
+			<li class="step">Goal</li>
+		</ul>
+		<div class="mt-6 grid gap-3 md:grid-cols-3">
+			<div class="alert alert-info">Cart abandoned for 30 minutes</div>
+			<div class="alert alert-warning">VIP branch waits 4 hours</div>
+			<div class="alert alert-success">Goal: completed order</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-5">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/heart.svg" class="size-5"></svg>
+			Flow health
+		</h2>
+		<div class="grid gap-4">
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Cart recovery</span>
+					<span>94%</span>
+				</div>
+				<progress class="progress progress-success" value="94" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Welcome series</span>
+					<span>88%</span>
+				</div>
+				<progress class="progress progress-primary" value="88" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Winback</span>
+					<span>61%</span>
+				</div>
+				<progress class="progress progress-warning" value="61" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Renewal reminder</span>
+					<span>76%</span>
+				</div>
+				<progress class="progress progress-info" value="76" max="100"></progress>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-12">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/table-cells.svg" class="size-5"></svg>
+			Automation runs
+		</h2>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Flow</th>
+						<th>Trigger</th>
+						<th>Enrolled</th>
+						<th>Goal rate</th>
+						<th>Last failure</th>
+						<th>Status</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Cart recovery</td>
+						<td>Checkout abandoned</td>
+						<td>18,420</td>
+						<td>12.8%</td>
+						<td>Webhook timeout</td>
+						<td><span class="badge badge-warning badge-sm">Watch</span></td>
+					</tr>
+					<tr>
+						<td>Welcome series</td>
+						<td>User created</td>
+						<td>24,100</td>
+						<td>31.4%</td>
+						<td>None</td>
+						<td><span class="badge badge-success badge-sm">Healthy</span></td>
+					</tr>
+					<tr>
+						<td>Winback</td>
+						<td>Inactive 45 days</td>
+						<td>8,940</td>
+						<td>4.2%</td>
+						<td>Segment delay</td>
+						<td><span class="badge badge-info badge-sm">Testing</span></td>
+					</tr>
+					<tr>
+						<td>Renewal reminder</td>
+						<td>Subscription ending</td>
+						<td>2,480</td>
+						<td>18.1%</td>
+						<td>None</td>
+						<td><span class="badge badge-success badge-sm">Healthy</span></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

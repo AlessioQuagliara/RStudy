@@ -1,0 +1,224 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-3 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/products.html">Products</a></li>
+				<li><a href="/products/detail.html">Growth Suite</a></li>
+				<li>Edit Product</li>
+			</ul>
+		</div>
+	</div>
+	<a href="/products/detail.html" class="btn btn-sm">
+		<svg data-src="https://unpkg.com/heroicons/20/solid/x-mark.svg" class="size-4"></svg>
+		Cancel
+	</a>
+	<button class="btn btn-sm">
+		<svg data-src="https://unpkg.com/heroicons/20/solid/document.svg" class="size-4"></svg>
+		Save draft
+	</button>
+	<button class="btn btn-sm btn-primary">
+		<svg data-src="https://unpkg.com/heroicons/20/solid/check.svg" class="size-4"></svg>
+		Update product
+	</button>
+</header>
+<!-- /header -->
+
+<!-- form -->
+<section class="col-span-12 grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+	<div class="grid gap-6">
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body">
+				<h2 class="card-title">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/cube.svg" class="size-5"></svg>
+					Product details
+				</h2>
+				<div class="grid gap-4 lg:grid-cols-2">
+					<fieldset class="fieldset">
+						<label class="label">Product name</label>
+						<input class="input w-full" value="Growth Suite" aria-label="Growth Suite" />
+					</fieldset>
+					<fieldset class="fieldset">
+						<label class="label">Slug</label>
+						<input class="input w-full" value="growth-suite" aria-label="growth-suite" />
+					</fieldset>
+				</div>
+				<fieldset class="fieldset">
+					<label class="label">Description</label>
+					<textarea class="textarea min-h-32 w-full" aria-label="Text area">
+A subscription bundle for growth teams that combines commerce, analytics, support, and campaign workflows.</textarea>
+				</fieldset>
+			</div>
+		</div>
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body">
+				<h2 class="card-title">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/photo.svg" class="size-5"></svg>
+					Media gallery
+				</h2>
+				<div class="grid gap-3 sm:grid-cols-3">
+					<img
+						class="rounded-box aspect-square object-cover"
+						src="https://picsum.photos/360/360?31"
+						alt="Growth Suite primary media" />
+					<img
+						class="rounded-box aspect-square object-cover"
+						src="https://picsum.photos/360/360?41"
+						alt="Growth Suite dashboard media" />
+					<button class="btn btn-dash h-full min-h-36">
+						<svg data-src="https://unpkg.com/heroicons/20/solid/plus.svg" class="size-5"></svg>
+						Add media
+					</button>
+				</div>
+			</div>
+		</div>
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body">
+				<h2 class="card-title">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/banknotes.svg" class="size-5"></svg>
+					Pricing and inventory
+				</h2>
+				<div class="grid gap-4 lg:grid-cols-3">
+					<fieldset class="fieldset">
+						<label class="label">Price</label>
+						<input class="input w-full" value="$1,240" aria-label="$1,240" />
+					</fieldset>
+					<fieldset class="fieldset">
+						<label class="label">Compare-at price</label>
+						<input class="input w-full" value="$1,480" aria-label="$1,480" />
+					</fieldset>
+					<fieldset class="fieldset">
+						<label class="label">SKU</label>
+						<input class="input w-full" value="GS-ANNUAL" aria-label="GS-ANNUAL" />
+					</fieldset>
+					<fieldset class="fieldset">
+						<label class="label">Stock</label>
+						<input type="number" class="input w-full" value="248" aria-label="248" />
+					</fieldset>
+					<fieldset class="fieldset">
+						<label class="label">Low-stock threshold</label>
+						<input type="number" class="input w-full" value="30" aria-label="30" />
+					</fieldset>
+					<fieldset class="fieldset">
+						<label class="label">Warehouse</label>
+						<select class="select w-full" aria-label="Select option">
+							<option selected>Primary digital</option>
+							<option>East warehouse</option>
+							<option>West warehouse</option>
+						</select>
+					</fieldset>
+				</div>
+			</div>
+		</div>
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body">
+				<h2 class="card-title">
+					<svg
+						data-src="https://unpkg.com/heroicons/20/solid/squares-plus.svg"
+						class="size-5"></svg>
+					Variants and metadata
+				</h2>
+				<div class="grid gap-4 lg:grid-cols-2">
+					<fieldset class="fieldset">
+						<label class="label">Options</label>
+						<input
+							class="input w-full"
+							value="Monthly, Annual, Enterprise"
+							aria-label="Monthly, Annual, Enterprise" />
+					</fieldset>
+					<fieldset class="fieldset">
+						<label class="label">Shipping</label>
+						<input class="input w-full" value="Digital delivery" aria-label="Digital delivery" />
+					</fieldset>
+					<fieldset class="fieldset lg:col-span-2">
+						<label class="label">Metadata</label>
+						<textarea class="textarea min-h-24 w-full" aria-label="Text area">
+source=catalog, license=team, renewal=annual, segment=growth</textarea>
+					</fieldset>
+				</div>
+			</div>
+		</div>
+	</div>
+	<aside class="grid content-start gap-6">
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body">
+				<h2 class="card-title">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/cog-6-tooth.svg" class="size-5"></svg>
+					Publishing
+				</h2>
+				<fieldset class="fieldset">
+					<label class="label">Status</label>
+					<select class="select w-full" aria-label="Select option">
+						<option>Draft</option>
+						<option selected>Active</option>
+						<option>Archived</option>
+					</select>
+				</fieldset>
+				<fieldset class="fieldset">
+					<label class="label">Visibility</label>
+					<select class="select w-full" aria-label="Select option">
+						<option selected>Public catalog</option>
+						<option>Private link</option>
+						<option>Hidden</option>
+					</select>
+				</fieldset>
+				<label class="label cursor-pointer justify-between">
+					Featured product
+					<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+				</label>
+			</div>
+		</div>
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body">
+				<h2 class="card-title">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/tag.svg" class="size-5"></svg>
+					Organization
+				</h2>
+				<fieldset class="fieldset">
+					<label class="label">Category</label>
+					<select class="select w-full" aria-label="Select option">
+						<option selected>Software</option>
+						<option>Services</option>
+						<option>Templates</option>
+					</select>
+				</fieldset>
+				<fieldset class="fieldset">
+					<label class="label">Tags</label>
+					<input
+						class="input w-full"
+						value="featured, recurring, bundle"
+						aria-label="featured, recurring, bundle" />
+				</fieldset>
+				<fieldset class="fieldset">
+					<label class="label">SEO title</label>
+					<input
+						class="input w-full"
+						value="Growth Suite for Commerce Teams"
+						aria-label="Growth Suite for Commerce Teams" />
+				</fieldset>
+				<fieldset class="fieldset">
+					<label class="label">Connected products</label>
+					<input
+						class="input w-full"
+						value="Commerce Pro, Analytics Add-on"
+						aria-label="Commerce Pro, Analytics Add-on" />
+				</fieldset>
+			</div>
+		</div>
+	</aside>
+</section>
+<!-- /form -->
+<!-- section -->
+<section class="col-span-12">
+	<div class="tabs tabs-box w-fit">
+		<a class="tab tab-active">Attributes</a>
+		<a class="tab">Variants</a>
+		<a class="tab" href="/products/inventory.html">Inventory history</a>
+		<a class="tab">SEO</a>
+		<a class="tab">Related products</a>
+		<a class="tab" href="/products/logs.html">Logs</a>
+	</div>
+</section>
+<!-- /section -->
+{{> foot }}

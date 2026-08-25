@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Dashboard</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta
+			name="description"
+			content="Pineapple Tech dashboard for commerce operations, orders, products, customers, analytics, and system tools." />
+		<link href="/output.css" rel="stylesheet" />
+		<!-- chart library -->
+		<script
+			type="module"
+			src="https://cdn.jsdelivr.net/npm/@weblogin/trendchart-elements@1.1.0/dist/index.js/+esm"
+			async></script>
+		<!-- svg loader for icons -->
+		<script
+			src="https://cdn.jsdelivr.net/npm/external-svg-loader@1.6.10/svg-loader.min.js"
+			async></script>
+		<script src="https://cdn.jsdelivr.net/npm/theme-change@3/index.js"></script>
+	</head>
+	<body class="drawer lg:drawer-open min-h-screen bg-base-200">
+		<input id="my-drawer" type="checkbox" class="drawer-toggle" aria-label="Toggle sidebar" />
+		<main class="drawer-content bg-base-100 lg:mt-2 lg:border-t lg:border-s lg:border-base-300 lg:rounded-ss-4xl lg:[corner-start-start-shape:squircle] lg:bg-[radial-gradient(ellipse_50rem_30rem_at_50%_0%,color-mix(oklch(96%_0.008_68)_3%,transparent)_0%,transparent_80%)]">
+			<div class="grid grid-cols-12 gap-6 p-4 lg:p-10">
+				<header class="col-span-12 flex items-center gap-1">
+					<label
+						for="my-drawer"
+						class="btn btn-square btn-ghost drawer-button lg:hidden"
+						aria-label="Open sidebar">
+						<svg data-src="https://unpkg.com/heroicons/20/solid/bars-3.svg" class="h-5 w-5"></svg>
+					</label>
+					<div class="grow">
+						<h1 class="page-title lg:text-xl lg:font-light opacity-50">Dashboard</h1>
+					</div>
+					<div>
+						<input type="text" placeholder="Search" class="input input-sm rounded-full" aria-label="Search" />
+					</div>
+					<label class="btn btn-circle btn-sm btn-ghost swap swap-rotate" aria-label="Toggle theme">
+						<input type="checkbox" value="light" data-set-theme aria-label="Toggle theme" />
+						<svg class="swap-on size-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+							<path
+								d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z" />
+						</svg>
+						<svg
+							class="swap-off size-4 fill-current"
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24">
+							<path
+								d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z" />
+						</svg>
+					</label>
+
+					<div class="z-10">
+						<button
+							class="btn btn-circle btn-sm btn-ghost"
+							aria-label="Open notifications"
+							popovertarget="header-notifications-dropdown"
+							style="anchor-name: --header-notifications-anchor">
+							<div class="indicator">
+								<span class="status indicator-item status-error"></span>
+								<svg data-src="https://unpkg.com/heroicons/20/solid/bell.svg" class="size-4"></svg>
+							</div>
+						</button>
+						<ul
+							class="menu dropdown rounded-box bg-base-100 mt-3 w-80 p-2 shadow-2xl"
+							popover
+							id="header-notifications-dropdown"
+							style="position-anchor: --header-notifications-anchor">
+							<li>
+								<a class="gap-4">
+									<div class="avatar">
+										<div class="w-8 rounded-full">
+											<img src="https://picsum.photos/80/80?1" alt="Alice avatar" />
+										</div>
+									</div>
+									<span>
+										<b>New message</b>
+										<br />
+										Alice: Hi, did you get my files?
+									</span>
+								</a>
+							</li>
+							<li>
+								<a class="gap-4">
+									<div class="avatar">
+										<div class="w-8 rounded-full">
+											<img src="https://picsum.photos/80/80?2" alt="Reminder notification avatar" />
+										</div>
+									</div>
+									<span>
+										<b>Reminder</b>
+										<br />
+										Your meeting is at 10am
+									</span>
+								</a>
+							</li>
+							<li>
+								<a class="gap-4">
+									<div class="avatar">
+										<div class="w-8 rounded-full">
+											<img src="https://picsum.photos/80/80?3" alt="John Doe avatar" />
+										</div>
+									</div>
+									<span>
+										<b>New payment</b>
+										<br />
+										Received $2500 from John Doe
+									</span>
+								</a>
+							</li>
+							<li>
+								<a class="gap-4">
+									<div class="avatar">
+										<div class="w-8 rounded-full">
+											<img src="https://picsum.photos/80/80?4" alt="Alice payment avatar" />
+										</div>
+									</div>
+									<span>
+										<b>New payment</b>
+										<br />
+										Received $1900 from Alice
+									</span>
+								</a>
+							</li>
+						</ul>
+					</div>
+					<div class="z-10">
+						<button
+							class="avatar btn btn-sm btn-circle btn-ghost"
+							aria-label="Open profile menu"
+							popovertarget="header-profile-dropdown"
+							style="anchor-name: --header-profile-anchor">
+							<div class="size-7 rounded-full">
+								<img src="https://picsum.photos/80/80?5" alt="Current user avatar" />
+							</div>
+						</button>
+						<ul
+							class="menu dropdown rounded-box bg-base-100 mt-3 w-52 p-2 shadow-2xl"
+							popover
+							id="header-profile-dropdown"
+							style="position-anchor: --header-profile-anchor">
+							<li><a>Profile</a></li>
+							<li>
+								<a>
+									Inbox
+									<span class="badge badge-xs">12</span>
+								</a>
+							</li>
+							<li><a>Settings</a></li>
+							<li><a>Logout</a></li>
+						</ul>
+					</div>
+				</header>
+
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/plugins.html">Plugins</a></li>
+				<li><h1>Plugin Logs</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<a href="/plugins/add.html" class="btn btn-sm btn-primary">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/plus.svg" class="size-4"></svg>
+			Add plugin
+		</a>
+		<button class="btn btn-sm">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/arrow-path.svg" class="size-4"></svg>
+			Check updates
+		</button>
+	</div>
+</header>
+<!-- /header -->
+<!-- stats -->
+<section class="stats stats-vertical bg-base-200 xl:stats-horizontal col-span-12 shadow-xs">
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/puzzle-piece.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Installed</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">28</div>
+		<div class="stat-desc">22 active</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/arrow-path.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Updates</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">6</div>
+		<div class="stat-desc">2 security related</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/cpu-chip.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Avg overhead</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">84ms</div>
+		<div class="stat-desc">Frontend impact</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/key.svg" class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Licenses</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">24/28</div>
+		<div class="stat-desc">4 need attention</div>
+	</div>
+</section>
+<!-- /stats -->
+
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body gap-4">
+		<h2 class="card-title">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/document-magnifying-glass.svg"
+				class="size-5"></svg>
+			Plugin Logs
+		</h2>
+		<div class="flex flex-col gap-3 xl:flex-row">
+			<label class="input input-sm w-full">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input type="search" placeholder="Search plugin logs" aria-label="Search plugin logs" />
+			</label>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All status</option>
+				<option>Active</option>
+				<option>Draft</option>
+				<option>Paused</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Category</option>
+				<option>Active</option>
+				<option>Draft</option>
+				<option>Paused</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Update state</option>
+				<option>Active</option>
+				<option>Draft</option>
+				<option>Paused</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Sort: Impact</option>
+				<option>Active</option>
+				<option>Draft</option>
+				<option>Paused</option>
+			</select>
+			<button class="btn btn-sm xl:ml-auto">
+				<svg data-src="https://unpkg.com/heroicons/20/solid/queue-list.svg" class="size-4"></svg>
+				Bulk actions
+			</button>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Plugin</th>
+						<th>Status</th>
+						<th>Category</th>
+						<th>Version</th>
+						<th>Overhead</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Commerce Sync</td>
+						<td><span class="badge badge-warning badge-sm">Update</span></td>
+						<td>Commerce</td>
+						<td>v2.4.0</td>
+						<td>8 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>SEO Toolkit</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Content</td>
+						<td>v3.4.1</td>
+						<td>16 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>Fraud Shield</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Security</td>
+						<td>v4.4.2</td>
+						<td>24 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>Email Bridge</td>
+						<td><span class="badge badge-info badge-sm">Paused</span></td>
+						<td>Marketing</td>
+						<td>v5.4.3</td>
+						<td>32 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>Media Optimizer</td>
+						<td><span class="badge badge-warning badge-sm">Update</span></td>
+						<td>Commerce</td>
+						<td>v6.4.4</td>
+						<td>40 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>Analytics Pro</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Content</td>
+						<td>v7.4.5</td>
+						<td>48 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>Backup Vault</td>
+						<td><span class="badge badge-info badge-sm">Paused</span></td>
+						<td>Security</td>
+						<td>v8.4.6</td>
+						<td>56 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>Support Desk</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Marketing</td>
+						<td>v9.4.7</td>
+						<td>64 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>Tax Engine</td>
+						<td><span class="badge badge-warning badge-sm">Update</span></td>
+						<td>Commerce</td>
+						<td>v10.4.8</td>
+						<td>72 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+					<tr>
+						<td>Loyalty Core</td>
+						<td><span class="badge badge-info badge-sm">Paused</span></td>
+						<td>Content</td>
+						<td>v11.4.9</td>
+						<td>80 ms</td>
+						<td><button class="btn btn-ghost btn-xs">Manage</button></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="flex flex-col gap-3 pt-2 md:flex-row md:items-center">
+			<p class="grow text-sm opacity-60">Showing 10 of 248 items</p>
+			<div class="join">
+				<button class="btn btn-sm join-item">Previous</button>
+				<button class="btn btn-sm join-item btn-active">1</button>
+				<button class="btn btn-sm join-item">2</button>
+				<button class="btn btn-sm join-item">3</button>
+				<button class="btn btn-sm join-item">Next</button>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+			</div>
+		</main>
+		<aside class="drawer-side z-10">
+	<label for="my-drawer" class="drawer-overlay"></label>
+	<!-- sidebar menu -->
+	<nav class="bg-base-200 flex min-h-screen w-64 flex-col gap-2 px-2 pt-10">
+		<div class="mx-5 flex items-center gap-2 font-semibold">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+			  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
+			</svg>
+			Pineapple Tech
+		</div>
+		<ul class="menu w-full overflow-y-auto">
+			<li>
+				<a href="/index.html">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/home.svg" class="size-4"></svg>
+					Dashboard
+				</a>
+			</li>
+			<li>
+				<details open name="sidebar-group">
+					<summary>
+						<svg
+							data-src="https://unpkg.com/heroicons/20/solid/user-group.svg"
+							class="size-4"></svg>
+						Users
+					</summary>
+					<ul>
+						<li><a href="/users.html">All Users</a></li>
+						<li><a href="/users/new.html">Add User</a></li>
+						<li><a href="/users/roles.html">Roles</a></li>
+						<li><a href="/users/permissions.html">Permissions</a></li>
+						<li><a href="/users/logs.html">User Logs</a></li>
+						<li><a href="/users/stats.html">User Stats</a></li>
+						<li><a href="/users/payments.html">User Payments</a></li>
+						<li><a href="/users/products.html">User Products</a></li>
+					</ul>
+				</details>
+			</li>
+			<li>
+				<details open name="sidebar-group">
+					<summary>
+						<svg
+							data-src="https://unpkg.com/heroicons/20/solid/squares-2x2.svg"
+							class="size-4"></svg>
+						Products
+					</summary>
+					<ul>
+						<li><a href="/products.html">All Products</a></li>
+						<li><a href="/products/new.html">Add Product</a></li>
+						<li><a href="/products/categories.html">Categories</a></li>
+						<li><a href="/products/tags.html">Tags</a></li>
+						<li><a href="/products/inventory.html">Inventory</a></li>
+						<li><a href="/products/logs.html">Product Logs</a></li>
+						<li><a href="/products/stats.html">Product Stats</a></li>
+					</ul>
+				</details>
+			</li>
+			<li>
+				<details open name="sidebar-group">
+					<summary>
+						<svg
+							data-src="https://unpkg.com/heroicons/20/solid/credit-card.svg"
+							class="size-4"></svg>
+						Transactions
+					</summary>
+					<ul>
+						<li><a href="/transactions.html">All Transactions</a></li>
+						<li><a href="/transactions/detail.html">Transaction Detail</a></li>
+						<li><a href="/transactions/refunds.html">Refunds</a></li>
+						<li><a href="/transactions/logs.html">Transaction Logs</a></li>
+					</ul>
+				</details>
+			</li>
+			<li>
+				<details open name="sidebar-group">
+					<summary>
+						<svg
+							data-src="https://unpkg.com/heroicons/20/solid/shopping-bag.svg"
+							class="size-4"></svg>
+						Orders
+					</summary>
+					<ul>
+						<li><a href="/orders.html">All Orders</a></li>
+						<li><a href="/orders/detail.html">Order Detail</a></li>
+						<li><a href="/orders/fulfillment.html">Fulfillment</a></li>
+						<li><a href="/orders/returns.html">Returns</a></li>
+						<li><a href="/orders/abandoned-checkouts.html">Abandoned Checkouts</a></li>
+					</ul>
+				</details>
+			</li>
+			<li>
+				<details open name="sidebar-group">
+					<summary>
+						<svg data-src="https://unpkg.com/heroicons/20/solid/users.svg" class="size-4"></svg>
+						Customers
+					</summary>
+					<ul>
+						<li><a href="/customers.html">All Customers</a></li>
+						<li><a href="/customers/detail.html">Customer Detail</a></li>
+						<li><a href="/customers/segments.html">Segments</a></li>
+						<li><a href="/customers/notes.html">Customer Notes</a></li>
+					</ul>
+				</details>
+			</li>
+			<li>
+				<details open name="sidebar-group">
+					<summary>
+						<svg data-src="https://unpkg.com/heroicons/20/solid/inbox.svg" class="size-4"></svg>
+						Messages
+						<span class="badge badge-xs">12</span>
+					</summary>
+					<ul>
+						<li><a href="/messages.html">Conversations</a></li>
+						<li><a href="/messages/detail.html">Conversation Detail</a></li>
+						<li><a href="/messages/agents.html">Support Agents</a></li>
+						<li><a href="/messages/canned-replies.html">Canned Replies</a></li>
+						<li><a href="/messages/departments.html">Departments</a></li>
+					</ul>
+				</details>
+			</li>
+			<li>
+				<details open name="sidebar-group">
+					<summary>
+						<svg data-src="https://unpkg.com/heroicons/20/solid/photo.svg" class="size-4"></svg>
+						Media
+					</summary>
+					<ul>
+						<li><a href="/media.html">Library</a></li>
+						<li><a href="/media/upload.html">Upload</a></li>
+						<li><a href="/media/folders.html">Folders</a></li>
+						<li><a href="/media/settings.html">Media Settings</a></li>
+					</ul>
+				</details>
+			</li>
+			<li>
+				<details open name="sidebar-group">
+					<summary>
+						<svg
+							data-src="https://unpkg.com/heroicons/20/solid/document-duplicate.svg"
+							class="size-4"></svg>
+						Pages
+					</summary>
+					<ul>
+						<li><a href="/pages.html">All Pages</a></li>
+						<li><a href="/pages/edit.html">Page Editor</a></li>
+						<li><a href="/pages/revisions.html">Revisions</a></li>
+					</ul>
+				</details>
+			</li>
+			<li>
+				<details open name="sidebar-group">
+					<summary>
+						<svg data-src="https://unpkg.com/heroicons/20/solid/newspaper.svg" class="size-4"></svg>
+						Blog
+					</summary>
+					<ul>
+						<li><a href="/blog/posts.html">Posts</a></li>
+						<li><a href="/blog/posts/new.html">Add Post</a></li>
+						<li><a href="/blog/categories.html">Categories</a></li>
+						<li><a href="/blog/tags.html">Tags</a></li>
+						<li><a href="/blog/comments.html">Comments</a></li>
+					</ul>
+				</details>
+			</li>
+			<li>
+				<details open name="sidebar-group">
+					<summary>
+						<svg
+							data-src="https://unpkg.com/heroicons/20/solid/receipt-percent.svg"
+							class="size-4"></svg>
+						Promotions
+					</summary>
+					<ul>
+						<li><a href="/promotions/coupons.html">Coupons</a></li>
+						<li><a href="/promotions/discounts.html">Discounts</a></li>
+						<li><a href="/promotions/campaigns.html">Campaigns</a></li>
+						<li><a href="/promotions/gift-cards.html">Gift Cards</a></li>
+					</ul>
+				</details>
+			</li>
+			<li>
+				<details open name="sidebar-group">
+					<summary>
+						<svg data-src="https://unpkg.com/heroicons/20/solid/chart-pie.svg" class="size-4"></svg>
+						Analytics
+					</summary>
+					<ul>
+						<li><a href="/analytics.html">Overview</a></li>
+						<li><a href="/analytics/sales.html">Sales</a></li>
+						<li><a href="/analytics/users.html">Users</a></li>
+						<li><a href="/analytics/products.html">Products</a></li>
+						<li><a href="/analytics/support.html">Support</a></li>
+						<li><a href="/analytics/traffic.html">Traffic</a></li>
+						<li><a href="/analytics/reports.html">Reports</a></li>
+					</ul>
+				</details>
+			</li>
+			<li>
+				<details open name="sidebar-group">
+					<summary>
+						<svg data-src="https://unpkg.com/heroicons/20/solid/megaphone.svg" class="size-4"></svg>
+						Marketing
+					</summary>
+					<ul>
+						<li><a href="/marketing/campaigns.html">Campaigns</a></li>
+						<li><a href="/marketing/email.html">Email</a></li>
+						<li><a href="/marketing/automations.html">Automations</a></li>
+						<li><a href="/marketing/audiences.html">Audiences</a></li>
+					</ul>
+				</details>
+			</li>
+			<li>
+				<details open name="sidebar-group">
+					<summary>
+						<svg
+							data-src="https://unpkg.com/heroicons/20/solid/puzzle-piece.svg"
+							class="size-4"></svg>
+						Plugins
+					</summary>
+					<ul>
+						<li><a href="/plugins.html">Installed Plugins</a></li>
+						<li><a href="/plugins/add.html">Add Plugin</a></li>
+						<li><a href="/plugins/settings.html">Plugin Settings</a></li>
+						<li><a href="/plugins/logs.html">Plugin Logs</a></li>
+					</ul>
+				</details>
+			</li>
+			<li>
+				<details open name="sidebar-group">
+					<summary>
+						<svg
+							data-src="https://unpkg.com/heroicons/20/solid/wrench-screwdriver.svg"
+							class="size-4"></svg>
+						Tools
+					</summary>
+					<ul>
+						<li><a href="/tools/import.html">Import</a></li>
+						<li><a href="/tools/export.html">Export</a></li>
+						<li><a href="/tools/scheduled-jobs.html">Scheduled Jobs</a></li>
+						<li><a href="/tools/system-health.html">System Health</a></li>
+						<li><a href="/tools/audit-logs.html">Audit Logs</a></li>
+					</ul>
+				</details>
+			</li>
+			<li>
+				<details open name="sidebar-group">
+					<summary>
+						<svg
+							data-src="https://unpkg.com/heroicons/20/solid/adjustments-vertical.svg"
+							class="size-4"></svg>
+						Settings
+					</summary>
+					<ul>
+						<li><a href="/settings/general.html">General</a></li>
+						<li><a href="/settings/commerce.html">Commerce</a></li>
+						<li><a href="/settings/payments.html">Payments</a></li>
+						<li><a href="/settings/shipping.html">Shipping</a></li>
+						<li><a href="/settings/taxes.html">Taxes</a></li>
+						<li><a href="/settings/notifications.html">Notifications</a></li>
+						<li><a href="/settings/integrations.html">Integrations</a></li>
+						<li><a href="/settings/security.html">Security</a></li>
+					</ul>
+				</details>
+			</li>
+		</ul>
+		<!-- user menu -->
+		<div class="sticky border-t border-base-content/5 bottom-0 py-2 mt-auto bg-base-200">
+			<button
+				class="btn btn-ghost h-auto w-full justify-start px-3 py-2"
+				aria-label="Open account menu"
+				popovertarget="sidebar-account-dropdown"
+				style="anchor-name: --sidebar-account-anchor">
+				<div class="avatar avatar-online">
+					<div class="w-9 rounded-full">
+						<img src="https://picsum.photos/80/80?5" alt="Ari Lane avatar" />
+					</div>
+				</div>
+				<span class="grid min-w-0 grow text-left">
+					<span class="truncate font-semibold">Ari Lane</span>
+					<span class="truncate text-xs font-normal opacity-60">Admin</span>
+				</span>
+				<svg data-src="https://unpkg.com/heroicons/20/solid/chevron-up.svg" class="size-4"></svg>
+			</button>
+			<ul
+				class="menu dropdown dropdown-top bg-base-100 rounded-box z-20 mb-2 w-60 p-2 shadow-2xl"
+				popover
+				id="sidebar-account-dropdown"
+				style="position-anchor: --sidebar-account-anchor">
+				<li>
+					<a href="/settings/general.html">
+						<svg data-src="https://unpkg.com/heroicons/20/solid/user-circle.svg" class="size-4"></svg>
+						Profile settings
+					</a>
+				</li>
+				<li>
+					<a>
+						<svg data-src="https://unpkg.com/heroicons/20/solid/book-open.svg" class="size-4"></svg>
+						Docs
+					</a>
+				</li>
+				<li>
+					<a href="/settings/integrations.html">
+						<svg data-src="https://unpkg.com/heroicons/20/solid/code-bracket.svg" class="size-4"></svg>
+						API settings
+					</a>
+				</li>
+				<li>
+					<a>
+						<svg
+							data-src="https://unpkg.com/heroicons/20/solid/arrow-right-on-rectangle.svg"
+							class="size-4"></svg>
+						Logout
+					</a>
+				</li>
+			</ul>
+		</div>
+		<!-- /user menu -->
+	</nav>
+	<!-- /sidebar menu -->
+</aside>
+	</body>
+</html>
+

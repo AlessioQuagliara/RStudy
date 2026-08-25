@@ -1,0 +1,473 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/media.html">Media</a></li>
+				<li><h1>Library</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<a href="/media/upload.html" class="btn btn-sm btn-primary">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/arrow-up-tray.svg" class="size-4"></svg>
+			Upload
+		</a>
+		<button
+			class="btn btn-sm"
+			popovertarget="media-export-dropdown"
+			style="anchor-name: --media-export-dropdown-anchor">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/arrow-down-tray.svg" class="size-4"></svg>
+			Export
+		</button>
+		<ul
+			class="menu dropdown dropdown-end bg-base-200 rounded-box z-1 mt-2 w-52 p-2 shadow"
+			popover
+			id="media-export-dropdown"
+			style="position-anchor: --media-export-dropdown-anchor">
+			<li><a>Media metadata CSV</a></li>
+			<li><a>Selected URLs</a></li>
+			<li><a>Storage report</a></li>
+		</ul>
+	</div>
+</header>
+<!-- /header -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body gap-4">
+		<div class="flex flex-col gap-3 xl:flex-row">
+			<label class="input input-sm w-full">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input
+					type="search"
+					placeholder="Search media, filename, alt text"
+					aria-label="Search media, filename, alt text" />
+			</label>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All types</option>
+				<option>Images</option>
+				<option>Video</option>
+				<option>Documents</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All dates</option>
+				<option>This month</option>
+				<option>2026</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All folders</option>
+				<option>Products</option>
+				<option>Blog</option>
+				<option>Pages</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Sort: Newest</option>
+				<option>Name</option>
+				<option>Size</option>
+			</select>
+			<div class="join">
+				<button class="btn join-item btn-sm btn-active" aria-label="Squares 2x2">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/squares-2x2.svg" class="size-4"></svg>
+				</button>
+				<button class="btn join-item btn-sm" aria-label="List bullet">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/list-bullet.svg" class="size-4"></svg>
+				</button>
+			</div>
+		</div>
+		<div class="grid gap-6 xl:grid-cols-[16rem_minmax(0,1fr)]">
+			<aside class="card bg-base-100 shadow-xs">
+				<div class="card-body gap-3">
+					<h2 class="card-title">
+						<svg data-src="https://unpkg.com/heroicons/20/solid/folder.svg" class="size-5"></svg>
+						Folders
+					</h2>
+					<ul class="menu menu-xs w-full">
+						<li>
+							<a class="active">
+								<svg
+									data-src="https://unpkg.com/heroicons/20/solid/folder-open.svg"
+									class="h-4 w-4"></svg>
+								All files
+							</a>
+						</li>
+						<li>
+							<details open>
+								<summary>
+									<svg
+										data-src="https://unpkg.com/heroicons/20/solid/folder.svg"
+										class="h-4 w-4"></svg>
+									Products
+								</summary>
+								<ul>
+									<li><a>Catalog</a></li>
+									<li><a>Gallery</a></li>
+									<li><a>Downloads</a></li>
+								</ul>
+							</details>
+						</li>
+						<li>
+							<details open>
+								<summary>
+									<svg
+										data-src="https://unpkg.com/heroicons/20/solid/folder.svg"
+										class="h-4 w-4"></svg>
+									Content
+								</summary>
+								<ul>
+									<li>
+										<details open>
+											<summary>
+												<svg
+													data-src="https://unpkg.com/heroicons/20/solid/folder.svg"
+													class="h-4 w-4"></svg>
+												Blog
+											</summary>
+											<ul>
+												<li><a>Featured images</a></li>
+												<li><a>Inline media</a></li>
+											</ul>
+										</details>
+									</li>
+									<li><a>Pages</a></li>
+									<li><a>Campaigns</a></li>
+								</ul>
+							</details>
+						</li>
+						<li>
+							<a>
+								<svg
+									data-src="https://unpkg.com/heroicons/20/solid/archive-box.svg"
+									class="h-4 w-4"></svg>
+								Archived
+							</a>
+						</li>
+					</ul>
+					<progress class="progress progress-primary" value="68" max="100"></progress>
+					<p class="text-sm opacity-60">68 GB of 100 GB used</p>
+				</div>
+			</aside>
+			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+				<div class="card bg-base-100 shadow-xs">
+					<figure>
+						<img
+							class="aspect-square w-full object-cover"
+							src="https://picsum.photos/360/360?400"
+							alt="Media asset 1" />
+					</figure>
+					<div class="card-body p-4">
+						<div class="flex items-start gap-2">
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+							<div class="min-w-0 grow">
+								<h2 class="truncate font-semibold">asset-1.jpg</h2>
+								<p class="text-sm opacity-60">240 KB · Products</p>
+							</div>
+						</div>
+						<div class="card-actions justify-end">
+							<a href="/media/edit.html" class="btn btn-xs">Edit</a>
+							<button class="btn btn-xs btn-ghost">Copy URL</button>
+						</div>
+					</div>
+				</div>
+				<div class="card bg-base-100 shadow-xs">
+					<figure>
+						<img
+							class="aspect-square w-full object-cover"
+							src="https://picsum.photos/360/360?401"
+							alt="Media asset 2" />
+					</figure>
+					<div class="card-body p-4">
+						<div class="flex items-start gap-2">
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+							<div class="min-w-0 grow">
+								<h2 class="truncate font-semibold">asset-2.jpg</h2>
+								<p class="text-sm opacity-60">512 KB · Blog</p>
+							</div>
+						</div>
+						<div class="card-actions justify-end">
+							<a href="/media/edit.html" class="btn btn-xs">Edit</a>
+							<button class="btn btn-xs btn-ghost">Copy URL</button>
+						</div>
+					</div>
+				</div>
+				<div class="card bg-base-100 shadow-xs">
+					<figure>
+						<img
+							class="aspect-square w-full object-cover"
+							src="https://picsum.photos/360/360?402"
+							alt="Media asset 3" />
+					</figure>
+					<div class="card-body p-4">
+						<div class="flex items-start gap-2">
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+							<div class="min-w-0 grow">
+								<h2 class="truncate font-semibold">asset-3.jpg</h2>
+								<p class="text-sm opacity-60">1080 KB · Pages</p>
+							</div>
+						</div>
+						<div class="card-actions justify-end">
+							<a href="/media/edit.html" class="btn btn-xs">Edit</a>
+							<button class="btn btn-xs btn-ghost">Copy URL</button>
+						</div>
+					</div>
+				</div>
+				<div class="card bg-base-100 shadow-xs">
+					<figure>
+						<img
+							class="aspect-square w-full object-cover"
+							src="https://picsum.photos/360/360?403"
+							alt="Media asset 4" />
+					</figure>
+					<div class="card-body p-4">
+						<div class="flex items-start gap-2">
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+							<div class="min-w-0 grow">
+								<h2 class="truncate font-semibold">asset-4.jpg</h2>
+								<p class="text-sm opacity-60">240 KB · Products</p>
+							</div>
+						</div>
+						<div class="card-actions justify-end">
+							<a href="/media/edit.html" class="btn btn-xs">Edit</a>
+							<button class="btn btn-xs btn-ghost">Copy URL</button>
+						</div>
+					</div>
+				</div>
+				<div class="card bg-base-100 shadow-xs">
+					<figure>
+						<img
+							class="aspect-square w-full object-cover"
+							src="https://picsum.photos/360/360?404"
+							alt="Media asset 5" />
+					</figure>
+					<div class="card-body p-4">
+						<div class="flex items-start gap-2">
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+							<div class="min-w-0 grow">
+								<h2 class="truncate font-semibold">asset-5.jpg</h2>
+								<p class="text-sm opacity-60">512 KB · Blog</p>
+							</div>
+						</div>
+						<div class="card-actions justify-end">
+							<a href="/media/edit.html" class="btn btn-xs">Edit</a>
+							<button class="btn btn-xs btn-ghost">Copy URL</button>
+						</div>
+					</div>
+				</div>
+				<div class="card bg-base-100 shadow-xs">
+					<figure>
+						<img
+							class="aspect-square w-full object-cover"
+							src="https://picsum.photos/360/360?405"
+							alt="Media asset 6" />
+					</figure>
+					<div class="card-body p-4">
+						<div class="flex items-start gap-2">
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+							<div class="min-w-0 grow">
+								<h2 class="truncate font-semibold">asset-6.jpg</h2>
+								<p class="text-sm opacity-60">1080 KB · Pages</p>
+							</div>
+						</div>
+						<div class="card-actions justify-end">
+							<a href="/media/edit.html" class="btn btn-xs">Edit</a>
+							<button class="btn btn-xs btn-ghost">Copy URL</button>
+						</div>
+					</div>
+				</div>
+				<div class="card bg-base-100 shadow-xs">
+					<figure>
+						<img
+							class="aspect-square w-full object-cover"
+							src="https://picsum.photos/360/360?406"
+							alt="Media asset 7" />
+					</figure>
+					<div class="card-body p-4">
+						<div class="flex items-start gap-2">
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+							<div class="min-w-0 grow">
+								<h2 class="truncate font-semibold">asset-7.jpg</h2>
+								<p class="text-sm opacity-60">240 KB · Products</p>
+							</div>
+						</div>
+						<div class="card-actions justify-end">
+							<a href="/media/edit.html" class="btn btn-xs">Edit</a>
+							<button class="btn btn-xs btn-ghost">Copy URL</button>
+						</div>
+					</div>
+				</div>
+				<div class="card bg-base-100 shadow-xs">
+					<figure>
+						<img
+							class="aspect-square w-full object-cover"
+							src="https://picsum.photos/360/360?407"
+							alt="Media asset 8" />
+					</figure>
+					<div class="card-body p-4">
+						<div class="flex items-start gap-2">
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+							<div class="min-w-0 grow">
+								<h2 class="truncate font-semibold">asset-8.jpg</h2>
+								<p class="text-sm opacity-60">512 KB · Blog</p>
+							</div>
+						</div>
+						<div class="card-actions justify-end">
+							<a href="/media/edit.html" class="btn btn-xs">Edit</a>
+							<button class="btn btn-xs btn-ghost">Copy URL</button>
+						</div>
+					</div>
+				</div>
+				<div class="card bg-base-100 shadow-xs">
+					<figure>
+						<img
+							class="aspect-square w-full object-cover"
+							src="https://picsum.photos/360/360?408"
+							alt="Media asset 9" />
+					</figure>
+					<div class="card-body p-4">
+						<div class="flex items-start gap-2">
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+							<div class="min-w-0 grow">
+								<h2 class="truncate font-semibold">asset-9.jpg</h2>
+								<p class="text-sm opacity-60">1080 KB · Pages</p>
+							</div>
+						</div>
+						<div class="card-actions justify-end">
+							<a href="/media/edit.html" class="btn btn-xs">Edit</a>
+							<button class="btn btn-xs btn-ghost">Copy URL</button>
+						</div>
+					</div>
+				</div>
+				<div class="card bg-base-100 shadow-xs">
+					<figure>
+						<img
+							class="aspect-square w-full object-cover"
+							src="https://picsum.photos/360/360?409"
+							alt="Media asset 10" />
+					</figure>
+					<div class="card-body p-4">
+						<div class="flex items-start gap-2">
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+							<div class="min-w-0 grow">
+								<h2 class="truncate font-semibold">asset-10.jpg</h2>
+								<p class="text-sm opacity-60">240 KB · Products</p>
+							</div>
+						</div>
+						<div class="card-actions justify-end">
+							<a href="/media/edit.html" class="btn btn-xs">Edit</a>
+							<button class="btn btn-xs btn-ghost">Copy URL</button>
+						</div>
+					</div>
+				</div>
+				<div class="card bg-base-100 shadow-xs">
+					<figure>
+						<img
+							class="aspect-square w-full object-cover"
+							src="https://picsum.photos/360/360?410"
+							alt="Media asset 11" />
+					</figure>
+					<div class="card-body p-4">
+						<div class="flex items-start gap-2">
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+							<div class="min-w-0 grow">
+								<h2 class="truncate font-semibold">asset-11.jpg</h2>
+								<p class="text-sm opacity-60">512 KB · Blog</p>
+							</div>
+						</div>
+						<div class="card-actions justify-end">
+							<a href="/media/edit.html" class="btn btn-xs">Edit</a>
+							<button class="btn btn-xs btn-ghost">Copy URL</button>
+						</div>
+					</div>
+				</div>
+				<div class="card bg-base-100 shadow-xs">
+					<figure>
+						<img
+							class="aspect-square w-full object-cover"
+							src="https://picsum.photos/360/360?411"
+							alt="Media asset 12" />
+					</figure>
+					<div class="card-body p-4">
+						<div class="flex items-start gap-2">
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+							<div class="min-w-0 grow">
+								<h2 class="truncate font-semibold">asset-12.jpg</h2>
+								<p class="text-sm opacity-60">1080 KB · Pages</p>
+							</div>
+						</div>
+						<div class="card-actions justify-end">
+							<a href="/media/edit.html" class="btn btn-xs">Edit</a>
+							<button class="btn btn-xs btn-ghost">Copy URL</button>
+						</div>
+					</div>
+				</div>
+				<div class="card bg-base-100 shadow-xs">
+					<figure>
+						<img
+							class="aspect-square w-full object-cover"
+							src="https://picsum.photos/360/360?412"
+							alt="Media asset 13" />
+					</figure>
+					<div class="card-body p-4">
+						<div class="flex items-start gap-2">
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+							<div class="min-w-0 grow">
+								<h2 class="truncate font-semibold">asset-13.jpg</h2>
+								<p class="text-sm opacity-60">240 KB · Products</p>
+							</div>
+						</div>
+						<div class="card-actions justify-end">
+							<a href="/media/edit.html" class="btn btn-xs">Edit</a>
+							<button class="btn btn-xs btn-ghost">Copy URL</button>
+						</div>
+					</div>
+				</div>
+				<div class="card bg-base-100 shadow-xs">
+					<figure>
+						<img
+							class="aspect-square w-full object-cover"
+							src="https://picsum.photos/360/360?413"
+							alt="Media asset 14" />
+					</figure>
+					<div class="card-body p-4">
+						<div class="flex items-start gap-2">
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+							<div class="min-w-0 grow">
+								<h2 class="truncate font-semibold">asset-14.jpg</h2>
+								<p class="text-sm opacity-60">512 KB · Blog</p>
+							</div>
+						</div>
+						<div class="card-actions justify-end">
+							<a href="/media/edit.html" class="btn btn-xs">Edit</a>
+							<button class="btn btn-xs btn-ghost">Copy URL</button>
+						</div>
+					</div>
+				</div>
+				<div class="card bg-base-100 shadow-xs">
+					<figure>
+						<img
+							class="aspect-square w-full object-cover"
+							src="https://picsum.photos/360/360?414"
+							alt="Media asset 15" />
+					</figure>
+					<div class="card-body p-4">
+						<div class="flex items-start gap-2">
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+							<div class="min-w-0 grow">
+								<h2 class="truncate font-semibold">asset-15.jpg</h2>
+								<p class="text-sm opacity-60">1080 KB · Pages</p>
+							</div>
+						</div>
+						<div class="card-actions justify-end">
+							<a href="/media/edit.html" class="btn btn-xs">Edit</a>
+							<button class="btn btn-xs btn-ghost">Copy URL</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

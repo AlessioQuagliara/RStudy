@@ -1,0 +1,844 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/tools/import.html">Tools</a></li>
+				<li><h1>System Health</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<button class="btn btn-sm">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/play.svg" class="size-4"></svg>
+			Run diagnostics
+		</button>
+		<button class="btn btn-sm">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/arrow-down-tray.svg" class="size-4"></svg>
+			Export report
+		</button>
+	</div>
+</header>
+<!-- /header -->
+
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs md:col-span-6 xl:col-span-3">
+	<div class="card-body items-center text-center">
+		<div
+			class="radial-progress text-success"
+			style="--value: 99"
+			aria-label="API gateway health"
+			aria-valuenow="99"
+			role="progressbar">
+			99%
+		</div>
+		<h2 class="card-title">API gateway</h2>
+		<p class="text-sm opacity-60">38 ms p95 latency</p>
+		<progress class="progress progress-success" value="99" max="100"></progress>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs md:col-span-6 xl:col-span-3">
+	<div class="card-body items-center text-center">
+		<div
+			class="radial-progress text-success"
+			style="--value: 97"
+			aria-label="Checkout service health"
+			aria-valuenow="97"
+			role="progressbar">
+			97%
+		</div>
+		<h2 class="card-title">Checkout service</h2>
+		<p class="text-sm opacity-60">0.03% error rate</p>
+		<progress class="progress progress-success" value="97" max="100"></progress>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs md:col-span-6 xl:col-span-3">
+	<div class="card-body items-center text-center">
+		<div
+			class="radial-progress text-success"
+			style="--value: 98"
+			aria-label="Database primary health"
+			aria-valuenow="98"
+			role="progressbar">
+			98%
+		</div>
+		<h2 class="card-title">Database primary</h2>
+		<p class="text-sm opacity-60">12 ms query median</p>
+		<progress class="progress progress-success" value="98" max="100"></progress>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs md:col-span-6 xl:col-span-3">
+	<div class="card-body items-center text-center">
+		<div
+			class="radial-progress text-info"
+			style="--value: 96"
+			aria-label="Object storage health"
+			aria-valuenow="96"
+			role="progressbar">
+			96%
+		</div>
+		<h2 class="card-title">Object storage</h2>
+		<p class="text-sm opacity-60">2.8 TB available</p>
+		<progress class="progress progress-info" value="96" max="100"></progress>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs md:col-span-6 xl:col-span-3">
+	<div class="card-body items-center text-center">
+		<div
+			class="radial-progress text-info"
+			style="--value: 91"
+			aria-label="Email provider health"
+			aria-valuenow="91"
+			role="progressbar">
+			91%
+		</div>
+		<h2 class="card-title">Email provider</h2>
+		<p class="text-sm opacity-60">99.1% accepted</p>
+		<progress class="progress progress-info" value="91" max="100"></progress>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs md:col-span-6 xl:col-span-3">
+	<div class="card-body items-center text-center">
+		<div
+			class="radial-progress text-warning"
+			style="--value: 89"
+			aria-label="Analytics pipeline health"
+			aria-valuenow="89"
+			role="progressbar">
+			89%
+		</div>
+		<h2 class="card-title">Analytics pipeline</h2>
+		<p class="text-sm opacity-60">7 min ingest delay</p>
+		<progress class="progress progress-warning" value="89" max="100"></progress>
+	</div>
+</section>
+<!-- /card -->
+
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs md:col-span-6 xl:col-span-3">
+	<div class="card-body pb-0">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/queue-list.svg" class="size-5"></svg>
+			Queue workers
+		</h2>
+		<p class="text-sm opacity-60">Jobs processed per minute</p>
+	</div>
+	<tc-line
+		class="h-28 w-full [--area-opacity:.18] [--shape-color:var(--color-info)]"
+		values="[42,48,51,58,64,62,70,76,82,79,88,94]"
+		min="0"></tc-line>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs md:col-span-6 xl:col-span-3">
+	<div class="card-body pb-0">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/circle-stack.svg" class="size-5"></svg>
+			Database replicas
+		</h2>
+		<p class="text-sm opacity-60">Replication lag in seconds</p>
+	</div>
+	<tc-line
+		class="h-28 w-full [--area-opacity:.18] [--shape-color:var(--color-success)]"
+		values="[8,7,6,5,8,9,6,4,5,6,4,3]"
+		min="0"></tc-line>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs md:col-span-6 xl:col-span-3">
+	<div class="card-body pb-0">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/bolt.svg" class="size-5"></svg>
+			Redis cache
+		</h2>
+		<p class="text-sm opacity-60">Hit ratio over the last hour</p>
+	</div>
+	<tc-line
+		class="h-28 w-full [--area-opacity:.18] [--shape-color:var(--color-warning)]"
+		values="[84,82,86,88,87,90,89,91,88,86,85,84]"
+		min="0"></tc-line>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs md:col-span-6 xl:col-span-3">
+	<div class="card-body pb-0">
+		<h2 class="card-title">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+				class="size-5"></svg>
+			Search index
+		</h2>
+		<p class="text-sm opacity-60">Indexed documents per batch</p>
+	</div>
+	<tc-line
+		class="h-28 w-full [--area-opacity:.18] [--shape-color:var(--color-primary)]"
+		values="[18,22,31,28,42,48,53,60,58,64,70,78]"
+		min="0"></tc-line>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs md:col-span-6 xl:col-span-3">
+	<div class="card-body pb-0">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/share.svg" class="size-5"></svg>
+			Webhook bus
+		</h2>
+		<p class="text-sm opacity-60">Delivery retries by interval</p>
+	</div>
+	<tc-line
+		class="h-28 w-full [--area-opacity:.18] [--shape-color:var(--color-error)]"
+		values="[2,4,3,8,6,12,9,7,5,4,3,2]"
+		min="0"></tc-line>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs md:col-span-6 xl:col-span-3">
+	<div class="card-body pb-0">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/photo.svg" class="size-5"></svg>
+			Media processor
+		</h2>
+		<p class="text-sm opacity-60">Derivative backlog trend</p>
+	</div>
+	<tc-line
+		class="h-28 w-full [--area-opacity:.18] [--shape-color:var(--color-accent)]"
+		values="[73,80,88,94,91,86,82,79,76,74,71,69]"
+		min="0"></tc-line>
+</section>
+<!-- /card -->
+
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/server.svg" class="size-5"></svg>
+			App servers uptime
+		</h2>
+		<p class="text-sm opacity-60">24 hourly samples across web nodes</p>
+		<div class="flex h-20 items-end gap-1 overflow-hidden" aria-label="24 hour uptime bars">
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+		</div>
+		<div class="flex justify-between text-xs opacity-60">
+			<span>00:00</span>
+			<span>12:00</span>
+			<span>23:00</span>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/cloud.svg" class="size-5"></svg>
+			Edge uptime
+		</h2>
+		<p class="text-sm opacity-60">24 hourly CDN and edge availability samples</p>
+		<div class="flex h-20 items-end gap-1 overflow-hidden" aria-label="24 hour uptime bars">
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+		</div>
+		<div class="flex justify-between text-xs opacity-60">
+			<span>00:00</span>
+			<span>12:00</span>
+			<span>23:00</span>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/circle-stack.svg" class="size-5"></svg>
+			Data layer uptime
+		</h2>
+		<p class="text-sm opacity-60">24 hourly database, cache, search, and storage samples</p>
+		<div class="flex h-20 items-end gap-1 overflow-hidden" aria-label="24 hour uptime bars">
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-warning h-11 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-info h-14 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+			<span class="bg-success h-16 w-1.5 rounded-full"></span>
+		</div>
+		<div class="flex justify-between text-xs opacity-60">
+			<span>00:00</span>
+			<span>12:00</span>
+			<span>23:00</span>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body">
+		<div class="flex flex-col gap-2 lg:flex-row lg:items-center">
+			<h2 class="card-title grow">
+				<svg data-src="https://unpkg.com/heroicons/20/solid/calendar-days.svg" class="size-5"></svg>
+				Yearly activity
+			</h2>
+			<div class="flex items-center gap-2 text-xs opacity-70">
+				<span>Less</span>
+				<span class="bg-base-300 block size-3 rounded-sm"></span>
+				<span class="bg-info/30 block size-3 rounded-sm"></span>
+				<span class="bg-info/60 block size-3 rounded-sm"></span>
+				<span class="bg-info block size-3 rounded-sm"></span>
+				<span>More</span>
+			</div>
+		</div>
+		<div class="overflow-x-auto">
+			<div class="flex min-w-max gap-4">
+				<div class="grid gap-1">
+					<div class="text-xs opacity-60">Jan</div>
+					<div class="grid grid-flow-col grid-rows-7 gap-1">
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+					</div>
+				</div>
+				<div class="grid gap-1">
+					<div class="text-xs opacity-60">Feb</div>
+					<div class="grid grid-flow-col grid-rows-7 gap-1">
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+					</div>
+				</div>
+				<div class="grid gap-1">
+					<div class="text-xs opacity-60">Mar</div>
+					<div class="grid grid-flow-col grid-rows-7 gap-1">
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+					</div>
+				</div>
+				<div class="grid gap-1">
+					<div class="text-xs opacity-60">Apr</div>
+					<div class="grid grid-flow-col grid-rows-7 gap-1">
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+					</div>
+				</div>
+				<div class="grid gap-1">
+					<div class="text-xs opacity-60">May</div>
+					<div class="grid grid-flow-col grid-rows-7 gap-1">
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+					</div>
+				</div>
+				<div class="grid gap-1">
+					<div class="text-xs opacity-60">Jun</div>
+					<div class="grid grid-flow-col grid-rows-7 gap-1">
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+					</div>
+				</div>
+				<div class="grid gap-1">
+					<div class="text-xs opacity-60">Jul</div>
+					<div class="grid grid-flow-col grid-rows-7 gap-1">
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+					</div>
+				</div>
+				<div class="grid gap-1">
+					<div class="text-xs opacity-60">Aug</div>
+					<div class="grid grid-flow-col grid-rows-7 gap-1">
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+					</div>
+				</div>
+				<div class="grid gap-1">
+					<div class="text-xs opacity-60">Sep</div>
+					<div class="grid grid-flow-col grid-rows-7 gap-1">
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+					</div>
+				</div>
+				<div class="grid gap-1">
+					<div class="text-xs opacity-60">Oct</div>
+					<div class="grid grid-flow-col grid-rows-7 gap-1">
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+					</div>
+				</div>
+				<div class="grid gap-1">
+					<div class="text-xs opacity-60">Nov</div>
+					<div class="grid grid-flow-col grid-rows-7 gap-1">
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+					</div>
+				</div>
+				<div class="grid gap-1">
+					<div class="text-xs opacity-60">Dec</div>
+					<div class="grid grid-flow-col grid-rows-7 gap-1">
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-base-300 size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/30 size-3 rounded-sm"></span>
+						<span class="bg-info size-3 rounded-sm"></span>
+						<span class="bg-info/60 size-3 rounded-sm"></span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/table-cells.svg" class="size-5"></svg>
+			Incidents and microservice logs
+		</h2>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Service</th>
+						<th>Signal</th>
+						<th>Last event</th>
+						<th>Owner</th>
+						<th>Status</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Media processor</td>
+						<td>Backlog above 5K</td>
+						<td>6 min ago</td>
+						<td>Platform</td>
+						<td><span class="badge badge-warning badge-sm">Investigating</span></td>
+					</tr>
+					<tr>
+						<td>Search index</td>
+						<td>Reindex slow</td>
+						<td>18 min ago</td>
+						<td>Search</td>
+						<td><span class="badge badge-info badge-sm">Monitoring</span></td>
+					</tr>
+					<tr>
+						<td>Checkout service</td>
+						<td>Payment retries normal</td>
+						<td>2 min ago</td>
+						<td>Commerce</td>
+						<td><span class="badge badge-success badge-sm">Healthy</span></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

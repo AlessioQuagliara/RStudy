@@ -1,0 +1,138 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-3 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/users.html">Users</a></li>
+				<li><a href="/users/detail.html">Mina Park</a></li>
+				<li>Edit User</li>
+			</ul>
+		</div>
+	</div>
+	<a href="/users/detail.html" class="btn btn-sm">
+		<svg data-src="https://unpkg.com/heroicons/20/solid/eye.svg" class="size-4"></svg>
+		View profile
+	</a>
+	<button class="btn btn-sm btn-primary">
+		<svg data-src="https://unpkg.com/heroicons/20/solid/check.svg" class="size-4"></svg>
+		Save changes
+	</button>
+</header>
+<!-- /header -->
+<!-- form -->
+<section class="col-span-12 grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+	<div class="grid gap-6">
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body">
+				<div class="flex items-center gap-4">
+					<div class="avatar avatar-online">
+						<div class="w-16 rounded-full">
+							<img src="https://picsum.photos/120/120?11" alt="Mina Park avatar" />
+						</div>
+					</div>
+					<div>
+						<h2 class="card-title">
+							<svg
+								data-src="https://unpkg.com/heroicons/20/solid/user-circle.svg"
+								class="size-5"></svg>
+							Mina Park
+						</h2>
+						<p class="text-base-content/60">mina@example.com</p>
+					</div>
+				</div>
+				<div class="grid gap-4 lg:grid-cols-2">
+					<fieldset class="fieldset">
+						<label class="label">Name</label>
+						<input class="input w-full" value="Mina Park" aria-label="Mina Park" />
+					</fieldset>
+					<fieldset class="fieldset">
+						<label class="label">Company</label>
+						<input class="input w-full" value="Northwind Studio" aria-label="Northwind Studio" />
+					</fieldset>
+					<fieldset class="fieldset">
+						<label class="label">Email</label>
+						<input class="input w-full" value="mina@example.com" aria-label="mina@example.com" />
+					</fieldset>
+					<fieldset class="fieldset">
+						<label class="label">Phone</label>
+						<input class="input w-full" value="+1 212 555 0134" aria-label="+1 212 555 0134" />
+					</fieldset>
+				</div>
+			</div>
+		</div>
+		<div class="tabs tabs-box w-fit">
+			<a class="tab tab-active">Profile</a>
+			<a class="tab" href="/users/payments.html">Payments</a>
+			<a class="tab" href="/users/products.html">Products</a>
+			<a class="tab" href="/users/logs.html">Logs</a>
+		</div>
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body">
+				<h2 class="card-title">
+					<svg
+						data-src="https://unpkg.com/heroicons/20/solid/pencil-square.svg"
+						class="size-5"></svg>
+					Admin notes
+				</h2>
+				<textarea class="textarea min-h-32 w-full" aria-label="Text area">
+High-value customer. Approved for beta catalog access.</textarea>
+			</div>
+		</div>
+	</div>
+	<aside class="grid content-start gap-6">
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body">
+				<h2 class="card-title">
+					<svg
+						data-src="https://unpkg.com/heroicons/20/solid/identification.svg"
+						class="size-5"></svg>
+					Status and role
+				</h2>
+				<fieldset class="fieldset">
+					<label class="label">Status</label>
+					<select class="select w-full" aria-label="Select option">
+						<option selected>Active</option>
+						<option>Suspended</option>
+						<option>Invited</option>
+					</select>
+				</fieldset>
+				<fieldset class="fieldset">
+					<label class="label">Role</label>
+					<select class="select w-full" aria-label="Select option">
+						<option selected>Owner</option>
+						<option>Admin</option>
+						<option>Editor</option>
+						<option>Customer</option>
+					</select>
+				</fieldset>
+				<label class="label cursor-pointer justify-between">
+					Two-factor auth
+					<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+				</label>
+				<label class="label cursor-pointer justify-between">
+					Marketing email
+					<input type="checkbox" class="toggle toggle-sm" aria-label="Toggle option" />
+				</label>
+			</div>
+		</div>
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body">
+				<h2 class="card-title">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/bolt.svg" class="size-5"></svg>
+					Account actions
+				</h2>
+				<button class="btn">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/key.svg" class="size-4"></svg>
+					Send password reset
+				</button>
+				<button class="btn btn-warning">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/no-symbol.svg" class="size-4"></svg>
+					Suspend user
+				</button>
+			</div>
+		</div>
+	</aside>
+</section>
+<!-- /form -->
+{{> foot }}

@@ -1,0 +1,153 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/settings/general.html">Settings</a></li>
+				<li><h1>Payment Settings</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<button class="btn btn-sm">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/arrow-path.svg" class="size-4"></svg>
+			Reset
+		</button>
+		<button class="btn btn-sm btn-primary">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/check.svg" class="size-4"></svg>
+			Save settings
+		</button>
+	</div>
+</header>
+<!-- /header -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/credit-card.svg" class="size-5"></svg>
+			Gateways
+		</h2>
+		<ul class="list bg-base-100 rounded-box">
+			<li class="list-row flex items-center justify-between">
+				<div>Stripe</div>
+				<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+			</li>
+			<li class="list-row flex items-center justify-between">
+				<div>PayPal</div>
+				<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+			</li>
+			<li class="list-row flex items-center justify-between">
+				<div>Manual invoice</div>
+				<input type="checkbox" class="toggle toggle-sm" aria-label="Toggle option" />
+			</li>
+			<li class="list-row flex items-center justify-between">
+				<div>Bank transfer</div>
+				<input type="checkbox" class="toggle toggle-sm" aria-label="Toggle option" />
+			</li>
+		</ul>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/shield-check.svg" class="size-5"></svg>
+			Risk controls
+		</h2>
+		<div class="grid gap-4">
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>3D Secure coverage</span>
+					<span>82%</span>
+				</div>
+				<progress class="progress progress-primary" value="82" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Retry recovery</span>
+					<span>41%</span>
+				</div>
+				<progress class="progress progress-info" value="41" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Dispute risk</span>
+					<span>6%</span>
+				</div>
+				<progress class="progress progress-error" value="6" max="100"></progress>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/document-text.svg" class="size-5"></svg>
+			Receipt settings
+		</h2>
+		<fieldset class="fieldset">
+			<label class="label">Statement descriptor</label>
+			<input class="input w-full" value="DAISY CORP" aria-label="DAISY CORP" />
+		</fieldset>
+		<label class="label justify-between">
+			Send receipts
+			<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+		</label>
+		<label class="label justify-between">
+			Attach invoice PDF
+			<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+		</label>
+		<label class="label justify-between">
+			Capture manually
+			<input type="checkbox" class="toggle toggle-sm" aria-label="Toggle option" />
+		</label>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/receipt-refund.svg" class="size-5"></svg>
+			Refund rules
+		</h2>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Rule</th>
+						<th>Window</th>
+						<th>Approval</th>
+						<th>Status</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Standard refund</td>
+						<td>30 days</td>
+						<td>Agent</td>
+						<td>Active</td>
+					</tr>
+					<tr>
+						<td>High value refund</td>
+						<td>$1,000+</td>
+						<td>Manager</td>
+						<td>Active</td>
+					</tr>
+					<tr>
+						<td>Digital access revoke</td>
+						<td>Immediate</td>
+						<td>System</td>
+						<td>Active</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

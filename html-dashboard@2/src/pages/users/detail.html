@@ -1,0 +1,169 @@
+{{> head }}
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body">
+		<div class="flex flex-col gap-5 lg:flex-row lg:items-center">
+			<div class="flex items-center gap-4">
+				<div class="avatar avatar-online">
+					<div class="w-20 rounded-full">
+						<img src="https://picsum.photos/160/160?11" alt="Mina Park avatar" />
+					</div>
+				</div>
+				<div>
+					<div class="flex flex-wrap items-center gap-2">
+						<h1>Mina Park</h1>
+						<span class="badge badge-success">Active</span>
+						<span class="badge badge-neutral">Owner</span>
+					</div>
+					<p class="text-base-content/60">
+						mina@example.com · Northwind Studio · Last active 4 min ago
+					</p>
+				</div>
+			</div>
+			<div class="flex flex-wrap gap-2 lg:ml-auto">
+				<a href="/users/edit.html" class="btn btn-primary">
+					<svg
+						data-src="https://unpkg.com/heroicons/20/solid/pencil-square.svg"
+						class="size-4"></svg>
+					Edit user
+				</a>
+				<button class="btn">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/key.svg" class="size-4"></svg>
+					Reset password
+				</button>
+				<button class="btn btn-warning">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/no-symbol.svg" class="size-4"></svg>
+					Suspend
+				</button>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- stats -->
+<section class="stats stats-vertical bg-base-200 xl:stats-horizontal col-span-12 shadow-xs">
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/banknotes.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Lifetime value</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">$12.4K</div>
+		<div class="stat-desc">42 transactions</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/squares-2x2.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Products</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">18</div>
+		<div class="stat-desc">6 active licenses</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/chat-bubble-left-right.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Support</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">7</div>
+		<div class="stat-desc">1 open conversation</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/shield-check.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Risk</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">Low</div>
+		<div class="stat-desc">2FA enabled</div>
+	</div>
+</section>
+<!-- /stats -->
+<!-- section -->
+<section class="col-span-12">
+	<div class="tabs tabs-box w-fit">
+		<a class="tab tab-active">Overview</a>
+		<a class="tab" href="/users/payments.html">Payments</a>
+		<a class="tab" href="/users/products.html">Products</a>
+		<a class="tab" href="/users/permissions.html">Permissions</a>
+		<a class="tab" href="/users/logs.html">Logs</a>
+	</div>
+</section>
+<!-- /section -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-7">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/clock.svg" class="size-5"></svg>
+			Activity timeline
+		</h2>
+		<ul class="timeline timeline-vertical">
+			<li>
+				<div class="timeline-start text-sm opacity-60">Today</div>
+				<div class="timeline-middle"><span class="status status-success"></span></div>
+				<div class="timeline-end timeline-box">Purchased Growth Suite annual plan</div>
+				<hr />
+			</li>
+			<li>
+				<hr />
+				<div class="timeline-start text-sm opacity-60">Yesterday</div>
+				<div class="timeline-middle"><span class="status status-info"></span></div>
+				<div class="timeline-end timeline-box">Changed billing address</div>
+				<hr />
+			</li>
+			<li>
+				<hr />
+				<div class="timeline-start text-sm opacity-60">Jun 28</div>
+				<div class="timeline-middle"><span class="status status-warning"></span></div>
+				<div class="timeline-end timeline-box">Opened support conversation #8492</div>
+			</li>
+		</ul>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-5">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/identification.svg" class="size-5"></svg>
+			Account summary
+		</h2>
+		<div class="grid gap-3 text-sm">
+			<div class="flex justify-between">
+				<span class="opacity-60">Role</span>
+				<span>Owner</span>
+			</div>
+			<div class="flex justify-between">
+				<span class="opacity-60">Segment</span>
+				<span>Enterprise customer</span>
+			</div>
+			<div class="flex justify-between">
+				<span class="opacity-60">Created</span>
+				<span>Jan 14, 2024</span>
+			</div>
+			<div class="flex justify-between">
+				<span class="opacity-60">Location</span>
+				<span>New York, US</span>
+			</div>
+			<div class="flex justify-between">
+				<span class="opacity-60">Sessions</span>
+				<span>3 active</span>
+			</div>
+		</div>
+		<div class="divider"></div>
+		<h3 class="flex items-center gap-2 font-semibold">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/document-text.svg" class="size-4"></svg>
+			Notes
+		</h3>
+		<p class="text-base-content/70">
+			High-value customer with beta access and priority support enabled.
+		</p>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

@@ -1,0 +1,246 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/transactions.html">Transactions</a></li>
+				<li><h1>Transaction Detail</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<button class="btn btn-sm">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/printer.svg" class="size-4"></svg>
+			Receipt
+		</button>
+		<button class="btn btn-sm btn-warning">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/arrow-uturn-left.svg"
+				class="size-4"></svg>
+			Refund
+		</button>
+	</div>
+</header>
+<!-- /header -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body gap-5">
+		<div class="flex flex-col gap-4 lg:flex-row lg:items-center">
+			<div class="grow">
+				<h2 class="card-title">TX-10482</h2>
+				<p class="opacity-60">Stripe charge ch_3Qk912 · paid July 1, 2026 at 09:42</p>
+			</div>
+			<span class="badge badge-success">Paid</span>
+			<span class="badge badge-info">Fraud score 12</span>
+		</div>
+		<div class="grid gap-4 lg:grid-cols-4">
+			<div>
+				<div class="text-sm opacity-60">Amount</div>
+				<div class="text-2xl font-semibold">$1,240</div>
+			</div>
+			<div>
+				<div class="text-sm opacity-60">Customer</div>
+				<div>Mina Park</div>
+			</div>
+			<div>
+				<div class="text-sm opacity-60">Method</div>
+				<div>Visa ending 4242</div>
+			</div>
+			<div>
+				<div class="text-sm opacity-60">Gateway response</div>
+				<div>Approved</div>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-7">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/shopping-bag.svg" class="size-5"></svg>
+			Purchased products
+		</h2>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<th>Product</th>
+						<th>SKU</th>
+						<th>Qty</th>
+						<th>Amount</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Growth Suite</td>
+						<td>GS-ANNUAL</td>
+						<td>1</td>
+						<td>$1,240</td>
+						<td class="text-right">
+							<a href="/products/detail.html" class="btn btn-ghost btn-xs">View</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Analytics Add-on</td>
+						<td>AN-PRO</td>
+						<td>1</td>
+						<td>$320</td>
+						<td class="text-right">
+							<a href="/products/detail.html" class="btn btn-ghost btn-xs">View</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Priority Support</td>
+						<td>SUP-PRIO</td>
+						<td>1</td>
+						<td>$180</td>
+						<td class="text-right">
+							<a href="/products/detail.html" class="btn btn-ghost btn-xs">View</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Media Vault</td>
+						<td>MV-100</td>
+						<td>1</td>
+						<td>$96</td>
+						<td class="text-right">
+							<a href="/products/detail.html" class="btn btn-ghost btn-xs">View</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Content Studio</td>
+						<td>CS-PRO</td>
+						<td>1</td>
+						<td>$240</td>
+						<td class="text-right">
+							<a href="/products/detail.html" class="btn btn-ghost btn-xs">View</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Starter Catalog</td>
+						<td>SC-BASE</td>
+						<td>1</td>
+						<td>$64</td>
+						<td class="text-right">
+							<a href="/products/detail.html" class="btn btn-ghost btn-xs">View</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Launch Analytics Kit</td>
+						<td>LAK-PRO</td>
+						<td>1</td>
+						<td>$420</td>
+						<td class="text-right">
+							<a href="/products/detail.html" class="btn btn-ghost btn-xs">View</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
+			<div class="text-sm opacity-60">Showing 7 purchased products</div>
+			<div class="join sm:ml-auto">
+				<button class="btn join-item btn-sm">Previous</button>
+				<button class="btn join-item btn-sm btn-active">1</button>
+				<button class="btn join-item btn-sm">2</button>
+				<button class="btn join-item btn-sm">Next</button>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-5">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/clock.svg" class="size-5"></svg>
+			Timeline
+		</h2>
+		<ul class="timeline timeline-snap-icon timeline-compact timeline-vertical">
+			<li>
+				<div class="timeline-middle">
+					<span class="status status-info"></span>
+				</div>
+				<div class="timeline-end timeline-box">
+					<div class="font-semibold">Authorization requested</div>
+					<div class="text-sm opacity-60">09:40 · Visa ending 4242 · Stripe</div>
+				</div>
+				<hr class="bg-info" />
+			</li>
+			<li>
+				<hr class="bg-info" />
+				<div class="timeline-middle">
+					<span class="status status-success"></span>
+				</div>
+				<div class="timeline-end timeline-box">
+					<div class="font-semibold">Capture succeeded</div>
+					<div class="text-sm opacity-60">09:42 · Gateway response approved</div>
+				</div>
+				<hr class="bg-success" />
+			</li>
+			<li>
+				<hr class="bg-success" />
+				<div class="timeline-middle">
+					<span class="status status-success"></span>
+				</div>
+				<div class="timeline-end timeline-box">
+					<div class="font-semibold">Fraud check cleared</div>
+					<div class="text-sm opacity-60">09:42 · Risk score 12 · No manual review</div>
+				</div>
+				<hr class="bg-success" />
+			</li>
+			<li>
+				<hr class="bg-success" />
+				<div class="timeline-middle">
+					<span class="status status-info"></span>
+				</div>
+				<div class="timeline-end timeline-box">
+					<div class="font-semibold">Receipt sent</div>
+					<div class="text-sm opacity-60">09:43 · mina@example.com</div>
+				</div>
+			</li>
+			<li>
+				<div class="timeline-middle">
+					<span class="status status-warning"></span>
+				</div>
+				<div class="timeline-end timeline-box">
+					<div class="font-semibold">Refund window open</div>
+					<div class="text-sm opacity-60">Eligible until July 15, 2026</div>
+				</div>
+			</li>
+		</ul>
+		<textarea
+			class="textarea w-full"
+			placeholder="Internal refund note"
+			aria-label="Internal refund note"></textarea>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

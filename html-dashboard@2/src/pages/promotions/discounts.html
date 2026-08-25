@@ -1,0 +1,223 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/promotions/coupons.html">Promotions</a></li>
+				<li><h1>Discounts</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<a href="#" class="btn btn-sm btn-primary">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/plus.svg" class="size-4"></svg>
+			New discount
+		</a>
+		<button class="btn btn-sm">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/calculator.svg" class="size-4"></svg>
+			Simulate
+		</button>
+	</div>
+</header>
+<!-- /header -->
+<!-- stats -->
+<section class="stats stats-vertical bg-base-200 xl:stats-horizontal col-span-12 shadow-xs">
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/receipt-percent.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Automatic discounts</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">16</div>
+		<div class="stat-desc">9 product scoped</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/shopping-bag.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Eligible carts</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">48K</div>
+		<div class="stat-desc">Last 30 days</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/arrow-trending-up.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">AOV lift</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">12.4%</div>
+		<div class="stat-desc">Bundles outperform</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/scale.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Margin impact</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">8.1%</div>
+		<div class="stat-desc">Within target</div>
+	</div>
+</section>
+<!-- /stats -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/queue-list.svg" class="size-5"></svg>
+			Discount ladder
+		</h2>
+		<ul class="steps steps-vertical">
+			<li class="step step-primary">Buy 2 items</li>
+			<li class="step step-primary">Unlock 10%</li>
+			<li class="step step-primary">Buy 4 items</li>
+			<li class="step step-warning">Unlock 20%</li>
+			<li class="step">VIP override</li>
+		</ul>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-8">
+	<div class="card-body pb-0">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/chart-bar.svg" class="size-5"></svg>
+			Cart value lift
+		</h2>
+		<p class="text-base-content/60">Median cart value when automatic rules apply</p>
+	</div>
+	<tc-line
+		class="h-64 w-full [--area-opacity:.18] [--shape-color:var(--color-secondary)]"
+		values="[64,68,72,70,79,82,88,91,96,102,108,104,114,119,126]"
+		min="0"></tc-line>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/chart-pie.svg" class="size-5"></svg>
+			Discount scope mix
+		</h2>
+		<p class="text-base-content/60">Where automatic discounts are attached</p>
+		<div class="flex items-center gap-6">
+			<tc-pie
+				class="h-32 w-32 shrink-0 [--shape-color-1:var(--color-primary)] [--shape-color-2:var(--color-secondary)] [--shape-color-3:var(--color-accent)] [--shape-color-4:var(--color-info)]"
+				values="[46,24,18,12]"
+				shape-size="30"
+				shape-gap="6"></tc-pie>
+			<div class="grid gap-2 text-sm">
+				<span>
+					<span class="badge badge-xs bg-primary"></span>
+					Product
+				</span>
+				<span>
+					<span class="badge badge-xs bg-secondary"></span>
+					Category
+				</span>
+				<span>
+					<span class="badge badge-xs bg-accent"></span>
+					Cart
+				</span>
+				<span>
+					<span class="badge badge-xs bg-info"></span>
+					Shipping
+				</span>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-8">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/table-cells.svg" class="size-5"></svg>
+			Rule matrix
+		</h2>
+		<div class="flex flex-col gap-3 xl:flex-row">
+			<label class="input input-sm w-full">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input
+					type="search"
+					placeholder="Search discount rules"
+					aria-label="Search discount rules" />
+			</label>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Trigger</option>
+				<option>Active</option>
+				<option>Paused</option>
+				<option>Draft</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Scope</option>
+				<option>Active</option>
+				<option>Paused</option>
+				<option>Draft</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Status</option>
+				<option>Active</option>
+				<option>Paused</option>
+				<option>Draft</option>
+			</select>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Rule</th>
+						<th>Trigger</th>
+						<th>Scope</th>
+						<th>Priority</th>
+						<th>Margin guard</th>
+						<th>Status</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Starter bundle</td>
+						<td>2+ same category</td>
+						<td>Templates</td>
+						<td>1</td>
+						<td>40% minimum</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+					</tr>
+					<tr>
+						<td>Annual upgrade</td>
+						<td>Plan switch</td>
+						<td>Subscriptions</td>
+						<td>2</td>
+						<td>55% minimum</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+					</tr>
+					<tr>
+						<td>Low stock push</td>
+						<td>Inventory flag</td>
+						<td>Hardware</td>
+						<td>3</td>
+						<td>25% minimum</td>
+						<td><span class="badge badge-warning badge-sm">Review</span></td>
+					</tr>
+					<tr>
+						<td>Winback cart</td>
+						<td>Customer segment</td>
+						<td>All products</td>
+						<td>4</td>
+						<td>35% minimum</td>
+						<td><span class="badge badge-info badge-sm">Testing</span></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

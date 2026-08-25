@@ -1,0 +1,246 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/transactions.html">Transactions</a></li>
+				<li><h1>Transaction Logs</h1></li>
+			</ul>
+		</div>
+	</div>
+</header>
+<!-- /header -->
+
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body gap-4">
+		<div class="flex flex-col gap-3 xl:flex-row">
+			<label class="input input-sm w-full">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input
+					type="search"
+					placeholder="Search payment events, gateway responses, disputes"
+					aria-label="Search payment events, gateway responses, disputes" />
+			</label>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All events</option>
+				<option>Authorization</option>
+				<option>Capture</option>
+				<option>Refund</option>
+				<option>Dispute</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All severity</option>
+				<option>Info</option>
+				<option>Warning</option>
+				<option>Error</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Sort: Newest</option>
+				<option>Severity</option>
+			</select>
+			<button
+				class="btn btn-sm xl:ml-auto"
+				popovertarget="transaction-logs-bulk-actions-dropdown"
+				style="anchor-name: --transaction-logs-bulk-actions-dropdown-anchor">
+				<svg data-src="https://unpkg.com/heroicons/20/solid/queue-list.svg" class="size-4"></svg>
+				Bulk actions
+			</button>
+			<ul
+				class="menu dropdown dropdown-end bg-base-200 rounded-box z-1 mt-2 w-52 p-2 shadow"
+				popover
+				id="transaction-logs-bulk-actions-dropdown"
+				style="position-anchor: --transaction-logs-bulk-actions-dropdown-anchor">
+				<li><a>Export selected</a></li>
+				<li><a>Change status</a></li>
+				<li><a>Assign tag</a></li>
+				<li><a class="text-error">Delete selected</a></li>
+			</ul>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<th>Event</th>
+						<th>Transaction</th>
+						<th>Gateway</th>
+						<th>Message</th>
+						<th>Severity</th>
+						<th>IP</th>
+						<th>Date</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Capture succeeded</td>
+						<td>TX-10482</td>
+						<td>Stripe</td>
+						<td>Gateway event stored and reconciled</td>
+						<td><span class="badge badge-info badge-sm">Info</span></td>
+						<td>192.0.2.20</td>
+						<td>Jul 1, 2026</td>
+						<td class="text-right">
+							<a href="/transactions/detail.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Refund requested</td>
+						<td>TX-10481</td>
+						<td>Adyen</td>
+						<td>Gateway event stored and reconciled</td>
+						<td><span class="badge badge-warning badge-sm">Warning</span></td>
+						<td>192.0.2.21</td>
+						<td>Jul 2, 2026</td>
+						<td class="text-right">
+							<a href="/transactions/detail.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Dispute opened</td>
+						<td>TX-10480</td>
+						<td>Braintree</td>
+						<td>Gateway event stored and reconciled</td>
+						<td><span class="badge badge-error badge-sm">Error</span></td>
+						<td>192.0.2.22</td>
+						<td>Jul 3, 2026</td>
+						<td class="text-right">
+							<a href="/transactions/detail.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Fraud checked</td>
+						<td>TX-10479</td>
+						<td>Stripe</td>
+						<td>Gateway event stored and reconciled</td>
+						<td><span class="badge badge-info badge-sm">Info</span></td>
+						<td>192.0.2.23</td>
+						<td>Jul 4, 2026</td>
+						<td class="text-right">
+							<a href="/transactions/detail.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Capture succeeded</td>
+						<td>TX-10478</td>
+						<td>Adyen</td>
+						<td>Gateway event stored and reconciled</td>
+						<td><span class="badge badge-info badge-sm">Info</span></td>
+						<td>192.0.2.24</td>
+						<td>Jul 5, 2026</td>
+						<td class="text-right">
+							<a href="/transactions/detail.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Refund requested</td>
+						<td>TX-10477</td>
+						<td>Braintree</td>
+						<td>Gateway event stored and reconciled</td>
+						<td><span class="badge badge-warning badge-sm">Warning</span></td>
+						<td>192.0.2.25</td>
+						<td>Jul 6, 2026</td>
+						<td class="text-right">
+							<a href="/transactions/detail.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Dispute opened</td>
+						<td>TX-10476</td>
+						<td>Stripe</td>
+						<td>Gateway event stored and reconciled</td>
+						<td><span class="badge badge-error badge-sm">Error</span></td>
+						<td>192.0.2.26</td>
+						<td>Jul 7, 2026</td>
+						<td class="text-right">
+							<a href="/transactions/detail.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Fraud checked</td>
+						<td>TX-10475</td>
+						<td>Adyen</td>
+						<td>Gateway event stored and reconciled</td>
+						<td><span class="badge badge-info badge-sm">Info</span></td>
+						<td>192.0.2.27</td>
+						<td>Jul 8, 2026</td>
+						<td class="text-right">
+							<a href="/transactions/detail.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Capture succeeded</td>
+						<td>TX-10474</td>
+						<td>Braintree</td>
+						<td>Gateway event stored and reconciled</td>
+						<td><span class="badge badge-info badge-sm">Info</span></td>
+						<td>192.0.2.28</td>
+						<td>Jul 9, 2026</td>
+						<td class="text-right">
+							<a href="/transactions/detail.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Refund requested</td>
+						<td>TX-10473</td>
+						<td>Stripe</td>
+						<td>Gateway event stored and reconciled</td>
+						<td><span class="badge badge-warning badge-sm">Warning</span></td>
+						<td>192.0.2.29</td>
+						<td>Jul 10, 2026</td>
+						<td class="text-right">
+							<a href="/transactions/detail.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
+			<div class="text-sm opacity-60">Showing 1-10 of 284 records</div>
+			<div class="join sm:ml-auto">
+				<button class="btn join-item btn-sm">Previous</button>
+				<button class="btn join-item btn-sm btn-active">1</button>
+				<button class="btn join-item btn-sm">2</button>
+				<button class="btn join-item btn-sm">Next</button>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

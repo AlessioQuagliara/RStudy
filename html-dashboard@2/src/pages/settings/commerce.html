@@ -1,0 +1,133 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/settings/general.html">Settings</a></li>
+				<li><h1>Commerce Settings</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<button class="btn btn-sm">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/arrow-path.svg" class="size-4"></svg>
+			Reset
+		</button>
+		<button class="btn btn-sm btn-primary">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/check.svg" class="size-4"></svg>
+			Save settings
+		</button>
+	</div>
+</header>
+<!-- /header -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-6">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/shopping-bag.svg" class="size-5"></svg>
+			Catalog and checkout
+		</h2>
+		<div class="grid gap-4">
+			<fieldset class="fieldset">
+				<label class="label">Store currency</label>
+				<select class="select w-full" aria-label="Select option">
+					<option>USD</option>
+					<option>EUR</option>
+				</select>
+			</fieldset>
+			<label class="label justify-between">
+				Guest checkout
+				<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+			</label>
+			<label class="label justify-between">
+				Reserve inventory at checkout
+				<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+			</label>
+			<label class="label justify-between">
+				Allow backorders
+				<input type="checkbox" class="toggle toggle-sm" aria-label="Toggle option" />
+			</label>
+			<fieldset class="fieldset">
+				<label class="label">Cart expiration</label>
+				<input class="input w-full" value="24 hours" aria-label="24 hours" />
+			</fieldset>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-6">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/hashtag.svg" class="size-5"></svg>
+			Order numbering
+		</h2>
+		<div class="grid gap-4">
+			<input class="input w-full" value="ORD-{YYYY}-{000000}" aria-label="ORD-{YYYY}-{000000}" />
+			<div class="join">
+				<input
+					class="join-item btn"
+					type="radio"
+					name="order-mode"
+					aria-label="Sequential"
+					checked />
+				<input class="join-item btn" type="radio" name="order-mode" aria-label="Random" />
+			</div>
+			<label class="label justify-between">
+				Lock order numbers after payment
+				<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+			</label>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/table-cells.svg" class="size-5"></svg>
+			Commerce modules
+		</h2>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Module</th>
+						<th>Enabled</th>
+						<th>Policy</th>
+						<th>Owner</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Products</td>
+						<td>Yes</td>
+						<td>Published only</td>
+						<td>Catalog</td>
+					</tr>
+					<tr>
+						<td>Orders</td>
+						<td>Yes</td>
+						<td>Fraud checked</td>
+						<td>Commerce</td>
+					</tr>
+					<tr>
+						<td>Returns</td>
+						<td>Yes</td>
+						<td>30-day window</td>
+						<td>Support</td>
+					</tr>
+					<tr>
+						<td>Abandoned checkout</td>
+						<td>Yes</td>
+						<td>3-message sequence</td>
+						<td>Marketing</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

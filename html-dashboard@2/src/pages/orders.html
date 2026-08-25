@@ -1,0 +1,359 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/orders.html">Orders</a></li>
+				<li><h1>All Orders</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<button
+			class="btn btn-sm"
+			popovertarget="orders-export-dropdown"
+			style="anchor-name: --orders-export-dropdown-anchor">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/arrow-down-tray.svg" class="size-4"></svg>
+			Export
+		</button>
+		<ul
+			class="menu dropdown dropdown-end bg-base-200 rounded-box z-1 mt-2 w-52 p-2 shadow"
+			popover
+			id="orders-export-dropdown"
+			style="position-anchor: --orders-export-dropdown-anchor">
+			<li><a>Orders CSV</a></li>
+			<li><a>Fulfillment queue</a></li>
+			<li><a>Tax export</a></li>
+		</ul>
+	</div>
+</header>
+<!-- /header -->
+<!-- stats -->
+<section class="stats stats-vertical bg-base-200 xl:stats-horizontal col-span-12 shadow-xs">
+	<div class="stat">
+		<div class="stat-title">Open orders</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">184</div>
+		<div class="stat-desc">42 due today</div>
+	</div>
+	<div class="stat">
+		<div class="stat-title">Fulfilled</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">12,408</div>
+		<div class="stat-desc">+7.1% this month</div>
+	</div>
+	<div class="stat">
+		<div class="stat-title">Refunds</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">93</div>
+		<div class="stat-desc">$18.2K total</div>
+	</div>
+	<div class="stat">
+		<div class="stat-title">Average order value</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">$148</div>
+		<div class="stat-desc">+$12 this month</div>
+	</div>
+</section>
+<!-- /stats -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body pb-0">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/check-circle.svg" class="size-5"></svg>
+			Successful orders
+		</h2>
+		<p class="text-base-content/60">Paid orders by day</p>
+	</div>
+	<tc-line
+		class="h-30 w-full [--area-opacity:.18] [--shape-color:var(--color-success)]"
+		values="[82,88,91,84,96,104,112,108,119,124,132,128,136,144,151,148,156,164]"
+		min="0"></tc-line>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body pb-0">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/banknotes.svg" class="size-5"></svg>
+			Revenue
+		</h2>
+		<p class="text-base-content/60">Gross order value</p>
+	</div>
+	<tc-line
+		class="h-30 w-full [--area-opacity:.18] [--shape-color:var(--color-primary)]"
+		values="[18,22,24,21,28,31,34,32,36,40,44,42,48,52,55,53,59,64]"
+		min="0"></tc-line>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/chart-pie.svg" class="size-5"></svg>
+			Order type
+		</h2>
+		<div class="flex items-center gap-6">
+			<div class="grid grow gap-2 text-sm">
+				<div class="flex items-center gap-2">
+					<span class="badge badge-xs bg-primary"></span>
+					Online store
+				</div>
+				<div class="flex items-center gap-2">
+					<span class="badge badge-xs bg-secondary"></span>
+					Subscription
+				</div>
+				<div class="flex items-center gap-2">
+					<span class="badge badge-xs bg-accent"></span>
+					Admin
+				</div>
+			</div>
+			<tc-pie
+				class="h-24 w-24 shrink-0 [--shape-color-1:var(--color-primary)] [--shape-color-2:var(--color-secondary)] [--shape-color-3:var(--color-accent)]"
+				values="[52,31,17]"
+				shape-size="28"
+				shape-gap="6"></tc-pie>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body gap-4">
+		<div class="flex flex-col gap-3 xl:flex-row">
+			<label class="input input-sm w-full">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input
+					type="search"
+					placeholder="Search order number, customer, email"
+					aria-label="Search order number, customer, email" />
+			</label>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All status</option>
+				<option>Open</option>
+				<option>Fulfilled</option>
+				<option>Cancelled</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Fulfillment</option>
+				<option>Unfulfilled</option>
+				<option>Partially fulfilled</option>
+				<option>Fulfilled</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Payment</option>
+				<option>Paid</option>
+				<option>Pending</option>
+				<option>Refunded</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Date range</option>
+				<option>Today</option>
+				<option>Last 7 days</option>
+				<option>Last 30 days</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Sort: Newest</option>
+				<option>Total</option>
+			</select>
+			<button
+				class="btn btn-sm xl:ml-auto"
+				popovertarget="orders-bulk-actions-dropdown"
+				style="anchor-name: --orders-bulk-actions-dropdown-anchor">
+				<svg data-src="https://unpkg.com/heroicons/20/solid/queue-list.svg" class="size-4"></svg>
+				Bulk actions
+			</button>
+			<ul
+				class="menu dropdown dropdown-end bg-base-200 rounded-box z-1 mt-2 w-52 p-2 shadow"
+				popover
+				id="orders-bulk-actions-dropdown"
+				style="position-anchor: --orders-bulk-actions-dropdown-anchor">
+				<li><a>Export selected</a></li>
+				<li><a>Change status</a></li>
+				<li><a>Assign tag</a></li>
+				<li><a class="text-error">Delete selected</a></li>
+			</ul>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<th>Order</th>
+						<th>Customer</th>
+						<th>Total</th>
+						<th>Payment</th>
+						<th>Fulfillment</th>
+						<th>Channel</th>
+						<th>Date</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12092</td>
+						<td>Mina Park</td>
+						<td>$1240</td>
+						<td><span class="badge badge-warning badge-sm">Pending</span></td>
+						<td><span class="badge badge-neutral badge-sm">Fulfilled</span></td>
+						<td>Online store</td>
+						<td>Jul 1, 2026</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Details</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12091</td>
+						<td>Arman Bell</td>
+						<td>$780</td>
+						<td><span class="badge badge-success badge-sm">Paid</span></td>
+						<td><span class="badge badge-info badge-sm">Processing</span></td>
+						<td>Admin</td>
+						<td>Jul 2, 2026</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Details</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12090</td>
+						<td>Nora Quinn</td>
+						<td>$420</td>
+						<td><span class="badge badge-success badge-sm">Paid</span></td>
+						<td><span class="badge badge-info badge-sm">Processing</span></td>
+						<td>Subscription</td>
+						<td>Jul 3, 2026</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Details</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12089</td>
+						<td>Tessa Cole</td>
+						<td>$320</td>
+						<td><span class="badge badge-warning badge-sm">Pending</span></td>
+						<td><span class="badge badge-info badge-sm">Processing</span></td>
+						<td>Online store</td>
+						<td>Jul 4, 2026</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Details</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12088</td>
+						<td>Mina Park</td>
+						<td>$1240</td>
+						<td><span class="badge badge-success badge-sm">Paid</span></td>
+						<td><span class="badge badge-neutral badge-sm">Fulfilled</span></td>
+						<td>Admin</td>
+						<td>Jul 5, 2026</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Details</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12087</td>
+						<td>Arman Bell</td>
+						<td>$780</td>
+						<td><span class="badge badge-success badge-sm">Paid</span></td>
+						<td><span class="badge badge-info badge-sm">Processing</span></td>
+						<td>Subscription</td>
+						<td>Jul 6, 2026</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Details</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12086</td>
+						<td>Nora Quinn</td>
+						<td>$420</td>
+						<td><span class="badge badge-warning badge-sm">Pending</span></td>
+						<td><span class="badge badge-info badge-sm">Processing</span></td>
+						<td>Online store</td>
+						<td>Jul 7, 2026</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Details</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12085</td>
+						<td>Tessa Cole</td>
+						<td>$320</td>
+						<td><span class="badge badge-success badge-sm">Paid</span></td>
+						<td><span class="badge badge-info badge-sm">Processing</span></td>
+						<td>Admin</td>
+						<td>Jul 8, 2026</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Details</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12084</td>
+						<td>Mina Park</td>
+						<td>$1240</td>
+						<td><span class="badge badge-success badge-sm">Paid</span></td>
+						<td><span class="badge badge-neutral badge-sm">Fulfilled</span></td>
+						<td>Subscription</td>
+						<td>Jul 9, 2026</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Details</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12083</td>
+						<td>Arman Bell</td>
+						<td>$780</td>
+						<td><span class="badge badge-warning badge-sm">Pending</span></td>
+						<td><span class="badge badge-info badge-sm">Processing</span></td>
+						<td>Online store</td>
+						<td>Jul 10, 2026</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Details</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
+			<div class="text-sm opacity-60">Showing 1-10 of 284 records</div>
+			<div class="join sm:ml-auto">
+				<button class="btn join-item btn-sm">Previous</button>
+				<button class="btn join-item btn-sm btn-active">1</button>
+				<button class="btn join-item btn-sm">2</button>
+				<button class="btn join-item btn-sm">Next</button>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

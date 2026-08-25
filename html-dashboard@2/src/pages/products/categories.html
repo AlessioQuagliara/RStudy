@@ -1,0 +1,149 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/products.html">Products</a></li>
+				<li>Categories</li>
+			</ul>
+		</div>
+	</div>
+	<button class="btn btn-sm btn-primary">
+		<svg data-src="https://unpkg.com/heroicons/20/solid/plus.svg" class="size-4"></svg>
+		New category
+	</button>
+</header>
+<!-- /header -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body gap-4">
+		<div class="flex flex-col gap-3 lg:flex-row">
+			<label class="input input-sm w-full lg:max-w-sm">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input type="search" placeholder="Search categories" aria-label="Search categories" />
+			</label>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All visibility</option>
+				<option>Visible</option>
+				<option>Hidden</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Sort: Product count</option>
+				<option>Name</option>
+				<option>Newest</option>
+			</select>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Category</th>
+						<th>Hierarchy</th>
+						<th>Products</th>
+						<th>Slug</th>
+						<th>Visibility</th>
+						<th>SEO</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td class="font-bold">Software</td>
+						<td>Root</td>
+						<td>1,284</td>
+						<td>software</td>
+						<td><span class="badge badge-success">Visible</span></td>
+						<td>Complete</td>
+						<td class="text-right"><button class="btn btn-ghost btn-xs">Edit</button></td>
+					</tr>
+					<tr>
+						<td class="font-bold">Extensions</td>
+						<td>Software / Extensions</td>
+						<td>642</td>
+						<td>extensions</td>
+						<td><span class="badge badge-success">Visible</span></td>
+						<td>Complete</td>
+						<td class="text-right"><button class="btn btn-ghost btn-xs">Edit</button></td>
+					</tr>
+					<tr>
+						<td class="font-bold">Templates</td>
+						<td>Root</td>
+						<td>580</td>
+						<td>templates</td>
+						<td><span class="badge badge-success">Visible</span></td>
+						<td>Needs review</td>
+						<td class="text-right"><button class="btn btn-ghost btn-xs">Edit</button></td>
+					</tr>
+					<tr>
+						<td class="font-bold">Services</td>
+						<td>Root</td>
+						<td>218</td>
+						<td>services</td>
+						<td><span class="badge badge-success">Visible</span></td>
+						<td>Complete</td>
+						<td class="text-right"><button class="btn btn-ghost btn-xs">Edit</button></td>
+					</tr>
+					<tr>
+						<td class="font-bold">Hardware</td>
+						<td>Root</td>
+						<td>96</td>
+						<td>hardware</td>
+						<td><span class="badge badge-warning">Limited</span></td>
+						<td>Complete</td>
+						<td class="text-right"><button class="btn btn-ghost btn-xs">Edit</button></td>
+					</tr>
+					<tr>
+						<td class="font-bold">Storage</td>
+						<td>Infrastructure / Storage</td>
+						<td>74</td>
+						<td>storage</td>
+						<td><span class="badge badge-success">Visible</span></td>
+						<td>Missing description</td>
+						<td class="text-right"><button class="btn btn-ghost btn-xs">Edit</button></td>
+					</tr>
+					<tr>
+						<td class="font-bold">Utilities</td>
+						<td>Software / Utilities</td>
+						<td>58</td>
+						<td>utilities</td>
+						<td><span class="badge badge-neutral">Hidden</span></td>
+						<td>Complete</td>
+						<td class="text-right"><button class="btn btn-ghost btn-xs">Edit</button></td>
+					</tr>
+					<tr>
+						<td class="font-bold">Bundles</td>
+						<td>Software / Bundles</td>
+						<td>42</td>
+						<td>bundles</td>
+						<td><span class="badge badge-success">Visible</span></td>
+						<td>Complete</td>
+						<td class="text-right"><button class="btn btn-ghost btn-xs">Edit</button></td>
+					</tr>
+					<tr>
+						<td class="font-bold">Training</td>
+						<td>Services / Training</td>
+						<td>25</td>
+						<td>training</td>
+						<td><span class="badge badge-success">Visible</span></td>
+						<td>Needs title</td>
+						<td class="text-right"><button class="btn btn-ghost btn-xs">Edit</button></td>
+					</tr>
+					<tr>
+						<td class="font-bold">Archive</td>
+						<td>Root</td>
+						<td>19</td>
+						<td>archive</td>
+						<td><span class="badge badge-neutral">Hidden</span></td>
+						<td>No index</td>
+						<td class="text-right"><button class="btn btn-ghost btn-xs">Review</button></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

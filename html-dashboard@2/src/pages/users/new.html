@@ -1,0 +1,175 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-3 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/users.html">Users</a></li>
+				<li>Add User</li>
+			</ul>
+		</div>
+	</div>
+	<a href="/users.html" class="btn btn-sm">
+		<svg data-src="https://unpkg.com/heroicons/20/solid/x-mark.svg" class="size-4"></svg>
+		Cancel
+	</a>
+	<button class="btn btn-sm btn-primary">
+		<svg data-src="https://unpkg.com/heroicons/20/solid/user-plus.svg" class="size-4"></svg>
+		Create user
+	</button>
+</header>
+<!-- /header -->
+
+<!-- form -->
+<section class="col-span-12 grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+	<div class="grid gap-6">
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body">
+				<h2 class="card-title">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/user-circle.svg" class="size-5"></svg>
+					Profile
+				</h2>
+				<div class="grid gap-4 lg:grid-cols-2">
+					<fieldset class="fieldset">
+						<label class="label">First name</label>
+						<input class="input w-full" value="Leah" aria-label="Leah" />
+					</fieldset>
+					<fieldset class="fieldset">
+						<label class="label">Last name</label>
+						<input class="input w-full" value="Stone" aria-label="Stone" />
+					</fieldset>
+					<fieldset class="fieldset">
+						<label class="label">Email</label>
+						<input
+							type="email"
+							class="input w-full"
+							value="leah@example.com"
+							aria-label="leah@example.com" />
+					</fieldset>
+					<fieldset class="fieldset">
+						<label class="label">Phone</label>
+						<input class="input w-full" value="+1 415 555 0198" aria-label="+1 415 555 0198" />
+					</fieldset>
+				</div>
+				<fieldset class="fieldset">
+					<label class="label">Internal notes</label>
+					<textarea
+						class="textarea min-h-28 w-full"
+						placeholder="Add account context for admins"
+						aria-label="Add account context for admins"></textarea>
+				</fieldset>
+			</div>
+		</div>
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body">
+				<h2 class="card-title">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/key.svg" class="size-5"></svg>
+					Access
+				</h2>
+				<div class="grid gap-4 lg:grid-cols-2">
+					<fieldset class="fieldset">
+						<label class="label">Temporary password</label>
+						<input
+							type="password"
+							class="input w-full"
+							value="dashboard-user-2026"
+							aria-label="dashboard-user-2026" />
+					</fieldset>
+					<fieldset class="fieldset">
+						<label class="label">Account segment</label>
+						<select class="select w-full" aria-label="Select option">
+							<option>Retail customer</option>
+							<option>Partner</option>
+							<option>Internal staff</option>
+						</select>
+					</fieldset>
+				</div>
+				<label class="label cursor-pointer justify-start gap-3">
+					<input type="checkbox" class="checkbox checkbox-sm" checked aria-label="Toggle option" />
+					Send invitation email
+				</label>
+			</div>
+		</div>
+	</div>
+	<aside class="grid content-start gap-6">
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body">
+				<h2 class="card-title">
+					<svg data-src="https://unpkg.com/heroicons/20/solid/cog-6-tooth.svg" class="size-5"></svg>
+					Account settings
+				</h2>
+				<fieldset class="fieldset">
+					<label class="label">Status</label>
+					<select class="select w-full" aria-label="Select option">
+						<option>Active</option>
+						<option selected>Invited</option>
+						<option>Suspended</option>
+					</select>
+				</fieldset>
+				<fieldset class="fieldset">
+					<label class="label">Role</label>
+					<select class="select w-full" aria-label="Select option">
+						<option>Owner</option>
+						<option>Admin</option>
+						<option>Editor</option>
+						<option selected>Customer</option>
+					</select>
+				</fieldset>
+				<label class="label cursor-pointer justify-between">
+					Require two-factor auth
+					<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+				</label>
+				<label class="label cursor-pointer justify-between">
+					Allow product access
+					<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+				</label>
+			</div>
+		</div>
+		<div class="card bg-base-200 shadow-xs">
+			<div class="card-body">
+				<h2 class="card-title">
+					<svg
+						data-src="https://unpkg.com/heroicons/20/solid/shield-check.svg"
+						class="size-5"></svg>
+					Permissions
+				</h2>
+				<div class="grid gap-3">
+					<label class="label cursor-pointer justify-start gap-3">
+						<input
+							type="checkbox"
+							class="checkbox checkbox-sm"
+							checked
+							aria-label="Toggle option" />
+						View products
+					</label>
+					<label class="label cursor-pointer justify-start gap-3">
+						<input
+							type="checkbox"
+							class="checkbox checkbox-sm"
+							checked
+							aria-label="Toggle option" />
+						Create support tickets
+					</label>
+					<label class="label cursor-pointer justify-start gap-3">
+						<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						Manage billing
+					</label>
+					<label class="label cursor-pointer justify-start gap-3">
+						<input
+							type="checkbox"
+							class="checkbox checkbox-sm"
+							checked
+							aria-label="Toggle option" />
+						Download invoices
+					</label>
+					<label class="label cursor-pointer justify-start gap-3">
+						<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						Export account data
+					</label>
+				</div>
+			</div>
+		</div>
+	</aside>
+</section>
+<!-- /form -->
+{{> foot }}

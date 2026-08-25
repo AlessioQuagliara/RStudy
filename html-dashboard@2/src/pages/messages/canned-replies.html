@@ -1,0 +1,327 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/messages.html">Messages</a></li>
+				<li><h1>Canned Replies</h1></li>
+			</ul>
+		</div>
+	</div>
+	<button class="btn btn-sm btn-primary">
+		<svg data-src="https://unpkg.com/heroicons/20/solid/plus.svg" class="size-4"></svg>
+		New reply
+	</button>
+</header>
+<!-- /header -->
+
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body gap-4">
+		<div class="flex flex-col gap-3 xl:flex-row">
+			<label class="input input-sm w-full">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input
+					type="search"
+					placeholder="Search replies, category, text"
+					aria-label="Search replies, category, text" />
+			</label>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All categories</option>
+				<option>Billing</option>
+				<option>Technical</option>
+				<option>Returns</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All status</option>
+				<option>Active</option>
+				<option>Draft</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Sort: Usage</option>
+				<option>Updated</option>
+			</select>
+			<button
+				class="btn btn-sm xl:ml-auto"
+				popovertarget="canned-bulk-actions-dropdown"
+				style="anchor-name: --canned-bulk-actions-dropdown-anchor">
+				<svg data-src="https://unpkg.com/heroicons/20/solid/queue-list.svg" class="size-4"></svg>
+				Bulk actions
+			</button>
+			<ul
+				class="menu dropdown dropdown-end bg-base-200 rounded-box z-1 mt-2 w-52 p-2 shadow"
+				popover
+				id="canned-bulk-actions-dropdown"
+				style="position-anchor: --canned-bulk-actions-dropdown-anchor">
+				<li><a>Export selected</a></li>
+				<li><a>Change status</a></li>
+				<li><a>Assign tag</a></li>
+				<li><a class="text-error">Delete selected</a></li>
+			</ul>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<th>Reply</th>
+						<th>Category</th>
+						<th>Usage</th>
+						<th>Status</th>
+						<th>Updated</th>
+						<th>Owner</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Refund policy</td>
+						<td>Billing</td>
+						<td>420</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Jun 14, 2026</td>
+						<td>
+							<div class="flex items-center gap-3">
+								<div class="avatar avatar-online">
+									<div class="w-10 rounded-full">
+										<img src="https://picsum.photos/80/80?350" alt="Ari Lane avatar" />
+									</div>
+								</div>
+								<div class="font-bold">Ari Lane</div>
+							</div>
+						</td>
+						<td class="text-right">
+							<a href="/messages/detail.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Receipt update</td>
+						<td>Billing</td>
+						<td>402</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Jun 15, 2026</td>
+						<td>
+							<div class="flex items-center gap-3">
+								<div class="avatar">
+									<div class="w-10 rounded-full">
+										<img src="https://picsum.photos/80/80?351" alt="Jules Kim avatar" />
+									</div>
+								</div>
+								<div class="font-bold">Jules Kim</div>
+							</div>
+						</td>
+						<td class="text-right">
+							<a href="/messages/detail.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Import troubleshooting</td>
+						<td>Technical</td>
+						<td>384</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Jun 16, 2026</td>
+						<td>
+							<div class="flex items-center gap-3">
+								<div class="avatar avatar-online">
+									<div class="w-10 rounded-full">
+										<img src="https://picsum.photos/80/80?352" alt="Dev Patel avatar" />
+									</div>
+								</div>
+								<div class="font-bold">Dev Patel</div>
+							</div>
+						</td>
+						<td class="text-right">
+							<a href="/messages/detail.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Access reset</td>
+						<td>Accounts</td>
+						<td>366</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Jun 17, 2026</td>
+						<td>
+							<div class="flex items-center gap-3">
+								<div class="avatar">
+									<div class="w-10 rounded-full">
+										<img src="https://picsum.photos/80/80?353" alt="Nia Fox avatar" />
+									</div>
+								</div>
+								<div class="font-bold">Nia Fox</div>
+							</div>
+						</td>
+						<td class="text-right">
+							<a href="/messages/detail.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Refund policy</td>
+						<td>Billing</td>
+						<td>348</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Jun 18, 2026</td>
+						<td>
+							<div class="flex items-center gap-3">
+								<div class="avatar avatar-online">
+									<div class="w-10 rounded-full">
+										<img src="https://picsum.photos/80/80?354" alt="Omar Reed avatar" />
+									</div>
+								</div>
+								<div class="font-bold">Omar Reed</div>
+							</div>
+						</td>
+						<td class="text-right">
+							<a href="/messages/detail.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Receipt update</td>
+						<td>Billing</td>
+						<td>330</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Jun 19, 2026</td>
+						<td>
+							<div class="flex items-center gap-3">
+								<div class="avatar">
+									<div class="w-10 rounded-full">
+										<img src="https://picsum.photos/80/80?355" alt="Sara Stone avatar" />
+									</div>
+								</div>
+								<div class="font-bold">Sara Stone</div>
+							</div>
+						</td>
+						<td class="text-right">
+							<a href="/messages/detail.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Import troubleshooting</td>
+						<td>Technical</td>
+						<td>312</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Jun 20, 2026</td>
+						<td>
+							<div class="flex items-center gap-3">
+								<div class="avatar avatar-online">
+									<div class="w-10 rounded-full">
+										<img src="https://picsum.photos/80/80?356" alt="Ivy Bell avatar" />
+									</div>
+								</div>
+								<div class="font-bold">Ivy Bell</div>
+							</div>
+						</td>
+						<td class="text-right">
+							<a href="/messages/detail.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Access reset</td>
+						<td>Accounts</td>
+						<td>294</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Jun 21, 2026</td>
+						<td>
+							<div class="flex items-center gap-3">
+								<div class="avatar">
+									<div class="w-10 rounded-full">
+										<img src="https://picsum.photos/80/80?357" alt="Ken Wu avatar" />
+									</div>
+								</div>
+								<div class="font-bold">Ken Wu</div>
+							</div>
+						</td>
+						<td class="text-right">
+							<a href="/messages/detail.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Refund policy</td>
+						<td>Billing</td>
+						<td>276</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Jun 22, 2026</td>
+						<td>
+							<div class="flex items-center gap-3">
+								<div class="avatar avatar-online">
+									<div class="w-10 rounded-full">
+										<img src="https://picsum.photos/80/80?358" alt="Lia Hart avatar" />
+									</div>
+								</div>
+								<div class="font-bold">Lia Hart</div>
+							</div>
+						</td>
+						<td class="text-right">
+							<a href="/messages/detail.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Receipt update</td>
+						<td>Billing</td>
+						<td>258</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>Jun 23, 2026</td>
+						<td>
+							<div class="flex items-center gap-3">
+								<div class="avatar">
+									<div class="w-10 rounded-full">
+										<img src="https://picsum.photos/80/80?359" alt="Noah Vale avatar" />
+									</div>
+								</div>
+								<div class="font-bold">Noah Vale</div>
+							</div>
+						</td>
+						<td class="text-right">
+							<a href="/messages/detail.html" class="btn btn-ghost btn-xs">Edit</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
+			<div class="text-sm opacity-60">Showing 1-10 of 284 records</div>
+			<div class="join sm:ml-auto">
+				<button class="btn join-item btn-sm">Previous</button>
+				<button class="btn join-item btn-sm btn-active">1</button>
+				<button class="btn join-item btn-sm">2</button>
+				<button class="btn join-item btn-sm">Next</button>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

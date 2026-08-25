@@ -1,0 +1,223 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/orders.html">Orders</a></li>
+				<li><h1>Order Detail</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<button class="btn btn-sm">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/printer.svg" class="size-4"></svg>
+			Print
+		</button>
+		<button class="btn btn-sm btn-primary">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/truck.svg" class="size-4"></svg>
+			Create fulfillment
+		</button>
+	</div>
+</header>
+<!-- /header -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body">
+		<div class="flex flex-col gap-4 lg:flex-row lg:items-center">
+			<div class="grow">
+				<h2 class="card-title">Order #12092</h2>
+				<p class="opacity-60">Mina Park · paid · online store · July 1, 2026</p>
+			</div>
+			<span class="badge badge-success">Paid</span>
+			<span class="badge badge-info">Processing</span>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-8">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/shopping-cart.svg" class="size-5"></svg>
+			Line items
+		</h2>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<th>Product</th>
+						<th>SKU</th>
+						<th>Qty</th>
+						<th>Total</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Growth Suite</td>
+						<td>GS-ANNUAL</td>
+						<td>1</td>
+						<td>$1,240</td>
+						<td class="text-right">
+							<a href="/products/detail.html" class="btn btn-ghost btn-xs">View</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Priority Support</td>
+						<td>SUP-PRIO</td>
+						<td>1</td>
+						<td>$180</td>
+						<td class="text-right">
+							<a href="/products/detail.html" class="btn btn-ghost btn-xs">View</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Analytics Add-on</td>
+						<td>ANL-PRO</td>
+						<td>2</td>
+						<td>$640</td>
+						<td class="text-right">
+							<a href="/products/detail.html" class="btn btn-ghost btn-xs">View</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Team Seats</td>
+						<td>TEAM-SEAT</td>
+						<td>8</td>
+						<td>$960</td>
+						<td class="text-right">
+							<a href="/products/detail.html" class="btn btn-ghost btn-xs">View</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Commerce Connector</td>
+						<td>COM-CONN</td>
+						<td>1</td>
+						<td>$420</td>
+						<td class="text-right">
+							<a href="/products/detail.html" class="btn btn-ghost btn-xs">View</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Data Migration Pack</td>
+						<td>MIG-DATA</td>
+						<td>1</td>
+						<td>$780</td>
+						<td class="text-right">
+							<a href="/products/detail.html" class="btn btn-ghost btn-xs">View</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Training Workshop</td>
+						<td>TRN-WORK</td>
+						<td>1</td>
+						<td>$520</td>
+						<td class="text-right">
+							<a href="/products/detail.html" class="btn btn-ghost btn-xs">View</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
+			<div class="text-sm opacity-60">Showing 1-10 of 284 records</div>
+			<div class="join sm:ml-auto">
+				<button class="btn join-item btn-sm">Previous</button>
+				<button class="btn join-item btn-sm btn-active">1</button>
+				<button class="btn join-item btn-sm">2</button>
+				<button class="btn join-item btn-sm">Next</button>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/map-pin.svg" class="size-5"></svg>
+			Customer and address
+		</h2>
+		<div class="grid gap-3">
+			<div class="card bg-base-100 shadow-xs">
+				<div class="card-body p-4">
+					<div class="flex items-center gap-3">
+						<div class="avatar">
+							<div class="w-10 rounded-full">
+								<img src="https://picsum.photos/80/80?230" alt="Mina Park avatar" />
+							</div>
+						</div>
+						<div>
+							<div class="font-semibold">Mina Park</div>
+							<div class="text-sm opacity-60">mina@example.com</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="card bg-base-100 shadow-xs">
+				<div class="card-body p-4">
+					<div class="flex items-start justify-between gap-3">
+						<div>
+							<div class="font-semibold">Shipping address</div>
+							<div class="mt-2 text-sm leading-6">
+								14 Market Street, Suite 820
+								<br />
+								San Francisco, CA 94105
+								<br />
+								United States
+							</div>
+						</div>
+						<span class="badge badge-success badge-sm">Verified</span>
+					</div>
+				</div>
+			</div>
+			<div class="card bg-base-100 shadow-xs">
+				<div class="card-body p-4">
+					<div class="flex items-start justify-between gap-3">
+						<div>
+							<div class="font-semibold">Billing address</div>
+							<div class="mt-2 text-sm leading-6">
+								Acme Finance
+								<br />
+								14 Market Street, Suite 820
+								<br />
+								San Francisco, CA 94105
+							</div>
+						</div>
+						<button class="btn btn-xs">Edit</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="divider"></div>
+		<textarea class="textarea w-full" placeholder="Order notes" aria-label="Order notes">
+Customer requested weekday delivery.</textarea>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

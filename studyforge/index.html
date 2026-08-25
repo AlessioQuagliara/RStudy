@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      La Content-Security-Policy viene applicata dal main process
+      (electron/main/security.ts), non qui: una CSP statica in questo file si
+      applicherebbe anche al dev server Vite, che richiede eval/inline per
+      HMR e Fast Refresh, lasciando la finestra vuota in sviluppo.
+    -->
+    <title>StudyForge</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

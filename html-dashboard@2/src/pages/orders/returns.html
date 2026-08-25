@@ -1,0 +1,246 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/orders.html">Orders</a></li>
+				<li><h1>Returns</h1></li>
+			</ul>
+		</div>
+	</div>
+</header>
+<!-- /header -->
+
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body gap-4">
+		<div class="flex flex-col gap-3 xl:flex-row">
+			<label class="input input-sm w-full">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input
+					type="search"
+					placeholder="Search returns, reasons, customers"
+					aria-label="Search returns, reasons, customers" />
+			</label>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All status</option>
+				<option>Requested</option>
+				<option>Approved</option>
+				<option>Received</option>
+				<option>Restocked</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All reasons</option>
+				<option>Changed mind</option>
+				<option>Damaged</option>
+				<option>Wrong item</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Sort: Newest</option>
+				<option>Amount</option>
+			</select>
+			<button
+				class="btn btn-sm xl:ml-auto"
+				popovertarget="returns-bulk-actions-dropdown"
+				style="anchor-name: --returns-bulk-actions-dropdown-anchor">
+				<svg data-src="https://unpkg.com/heroicons/20/solid/queue-list.svg" class="size-4"></svg>
+				Bulk actions
+			</button>
+			<ul
+				class="menu dropdown dropdown-end bg-base-200 rounded-box z-1 mt-2 w-52 p-2 shadow"
+				popover
+				id="returns-bulk-actions-dropdown"
+				style="position-anchor: --returns-bulk-actions-dropdown-anchor">
+				<li><a>Export selected</a></li>
+				<li><a>Change status</a></li>
+				<li><a>Assign tag</a></li>
+				<li><a class="text-error">Delete selected</a></li>
+			</ul>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<th>Return</th>
+						<th>Order</th>
+						<th>Customer</th>
+						<th>Reason</th>
+						<th>Status</th>
+						<th>Refund</th>
+						<th>Restock</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>RT-5500</td>
+						<td>#12092</td>
+						<td>Mina Park</td>
+						<td>Changed mind</td>
+						<td><span class="badge badge-warning badge-sm">Requested</span></td>
+						<td>Pending</td>
+						<td>Hold</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Review</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>RT-5501</td>
+						<td>#12091</td>
+						<td>Arman Bell</td>
+						<td>Damaged</td>
+						<td><span class="badge badge-success badge-sm">Received</span></td>
+						<td>Linked</td>
+						<td>Yes</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Review</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>RT-5502</td>
+						<td>#12090</td>
+						<td>Nora Quinn</td>
+						<td>Wrong item</td>
+						<td><span class="badge badge-warning badge-sm">Requested</span></td>
+						<td>Pending</td>
+						<td>Yes</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Review</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>RT-5503</td>
+						<td>#12089</td>
+						<td>Tessa Cole</td>
+						<td>Changed mind</td>
+						<td><span class="badge badge-success badge-sm">Received</span></td>
+						<td>Linked</td>
+						<td>Hold</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Review</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>RT-5504</td>
+						<td>#12088</td>
+						<td>Mina Park</td>
+						<td>Damaged</td>
+						<td><span class="badge badge-warning badge-sm">Requested</span></td>
+						<td>Pending</td>
+						<td>Yes</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Review</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>RT-5505</td>
+						<td>#12087</td>
+						<td>Arman Bell</td>
+						<td>Wrong item</td>
+						<td><span class="badge badge-success badge-sm">Received</span></td>
+						<td>Linked</td>
+						<td>Yes</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Review</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>RT-5506</td>
+						<td>#12086</td>
+						<td>Nora Quinn</td>
+						<td>Changed mind</td>
+						<td><span class="badge badge-warning badge-sm">Requested</span></td>
+						<td>Pending</td>
+						<td>Hold</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Review</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>RT-5507</td>
+						<td>#12085</td>
+						<td>Tessa Cole</td>
+						<td>Damaged</td>
+						<td><span class="badge badge-success badge-sm">Received</span></td>
+						<td>Linked</td>
+						<td>Yes</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Review</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>RT-5508</td>
+						<td>#12084</td>
+						<td>Mina Park</td>
+						<td>Wrong item</td>
+						<td><span class="badge badge-warning badge-sm">Requested</span></td>
+						<td>Pending</td>
+						<td>Yes</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Review</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>RT-5509</td>
+						<td>#12083</td>
+						<td>Arman Bell</td>
+						<td>Changed mind</td>
+						<td><span class="badge badge-success badge-sm">Received</span></td>
+						<td>Linked</td>
+						<td>Hold</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Review</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
+			<div class="text-sm opacity-60">Showing 1-10 of 284 records</div>
+			<div class="join sm:ml-auto">
+				<button class="btn join-item btn-sm">Previous</button>
+				<button class="btn join-item btn-sm btn-active">1</button>
+				<button class="btn join-item btn-sm">2</button>
+				<button class="btn join-item btn-sm">Next</button>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

@@ -1,0 +1,133 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/settings/general.html">Settings</a></li>
+				<li><h1>General Settings</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<button class="btn btn-sm">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/arrow-path.svg" class="size-4"></svg>
+			Reset
+		</button>
+		<button class="btn btn-sm btn-primary">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/check.svg" class="size-4"></svg>
+			Save settings
+		</button>
+	</div>
+</header>
+<!-- /header -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-7">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/building-office.svg" class="size-5"></svg>
+			Site identity
+		</h2>
+		<div class="grid gap-4 md:grid-cols-2">
+			<fieldset class="fieldset">
+				<label class="label">Site name</label>
+				<input class="input w-full" value="daisy Corp" aria-label="daisy Corp" />
+			</fieldset>
+			<fieldset class="fieldset">
+				<label class="label">Admin email</label>
+				<input
+					type="email"
+					class="input w-full"
+					value="admin@example.com"
+					aria-label="admin@example.com" />
+			</fieldset>
+			<fieldset class="fieldset">
+				<label class="label">Timezone</label>
+				<select class="select w-full" aria-label="Select option">
+					<option>Europe/Istanbul</option>
+					<option>UTC</option>
+				</select>
+			</fieldset>
+			<fieldset class="fieldset">
+				<label class="label">Locale</label>
+				<select class="select w-full" aria-label="Select option">
+					<option>English</option>
+					<option>German</option>
+				</select>
+			</fieldset>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-5">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/adjustments-horizontal.svg"
+				class="size-5"></svg>
+			Workspace behavior
+		</h2>
+		<label class="label justify-between">
+			Maintenance banner
+			<input type="checkbox" class="toggle toggle-sm" aria-label="Toggle option" />
+		</label>
+		<label class="label justify-between">
+			Command menu
+			<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+		</label>
+		<label class="label justify-between">
+			Saved views
+			<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+		</label>
+		<label class="label justify-between">
+			Screen preferences
+			<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+		</label>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/list-bullet.svg" class="size-5"></svg>
+			Admin defaults
+		</h2>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Area</th>
+						<th>Default</th>
+						<th>Override</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Landing page</td>
+						<td>Dashboard</td>
+						<td>Per role</td>
+					</tr>
+					<tr>
+						<td>Table density</td>
+						<td>Comfortable</td>
+						<td>Per user</td>
+					</tr>
+					<tr>
+						<td>Date format</td>
+						<td>Jul 1, 2026</td>
+						<td>Global</td>
+					</tr>
+					<tr>
+						<td>Help drawer</td>
+						<td>Enabled</td>
+						<td>Per module</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

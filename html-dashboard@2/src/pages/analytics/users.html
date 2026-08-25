@@ -1,0 +1,188 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/analytics.html">Analytics</a></li>
+				<li><h1>Users</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2"></div>
+</header>
+<!-- /header -->
+<!-- stats -->
+<section class="stats stats-vertical bg-base-200 xl:stats-horizontal col-span-12 shadow-xs">
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/user-plus.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">New users</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">24.8K</div>
+		<div class="stat-desc">+22%</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/signal.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Active users</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">118K</div>
+		<div class="stat-desc">+9.1%</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/arrow-path.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Retention</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">71%</div>
+		<div class="stat-desc">+4 points</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/no-symbol.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Churn risk</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">4.2K</div>
+		<div class="stat-desc">Needs campaign</div>
+	</div>
+</section>
+<!-- /stats -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-8">
+	<div class="card-body pb-0">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/chart-bar.svg" class="size-5"></svg>
+			Signup and activation
+		</h2>
+		<p class="text-base-content/60">New accounts that completed onboarding</p>
+	</div>
+	<tc-line
+		class="h-64 w-full [--area-opacity:.18] [--shape-color:var(--color-info)]"
+		values="[22,28,31,36,34,42,48,51,57,63,68,72,78,82]"
+		min="0"></tc-line>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/users.svg" class="size-5"></svg>
+			Role distribution
+		</h2>
+		<tc-pie
+			class="mx-auto h-40 w-40 [--shape-color-1:var(--color-primary)] [--shape-color-2:var(--color-secondary)] [--shape-color-3:var(--color-accent)] [--shape-color-4:var(--color-info)]"
+			values="[12,18,24,46]"
+			shape-size="34"
+			shape-gap="6"></tc-pie>
+		<div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+			<span>Owners 12%</span>
+			<span>Admins 18%</span>
+			<span>Editors 24%</span>
+			<span>Customers 46%</span>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-6">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/table-cells.svg" class="size-5"></svg>
+			Retention cohorts
+		</h2>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Cohort</th>
+						<th>Week 1</th>
+						<th>Week 4</th>
+						<th>Week 8</th>
+						<th>Paid</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>May 2026</td>
+						<td>88%</td>
+						<td>72%</td>
+						<td>61%</td>
+						<td>18%</td>
+					</tr>
+					<tr>
+						<td>Apr 2026</td>
+						<td>84%</td>
+						<td>69%</td>
+						<td>58%</td>
+						<td>17%</td>
+					</tr>
+					<tr>
+						<td>Mar 2026</td>
+						<td>81%</td>
+						<td>66%</td>
+						<td>54%</td>
+						<td>15%</td>
+					</tr>
+					<tr>
+						<td>Feb 2026</td>
+						<td>79%</td>
+						<td>63%</td>
+						<td>51%</td>
+						<td>14%</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-6">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/map.svg" class="size-5"></svg>
+			Geography
+		</h2>
+		<div class="grid gap-4">
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>United States</span>
+					<span>42%</span>
+				</div>
+				<progress class="progress progress-primary" value="42" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>United Kingdom</span>
+					<span>18%</span>
+				</div>
+				<progress class="progress progress-secondary" value="18" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Germany</span>
+					<span>12%</span>
+				</div>
+				<progress class="progress progress-accent" value="12" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Canada</span>
+					<span>9%</span>
+				</div>
+				<progress class="progress progress-info" value="9" max="100"></progress>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

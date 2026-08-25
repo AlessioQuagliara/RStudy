@@ -1,0 +1,23 @@
+appId: com.alessioquagliara.studyforge
+productName: StudyForge
+directories:
+  output: release
+files:
+  - dist/main/**/*
+  - dist/preload/**/*
+  - dist/renderer/**/*
+  - package.json
+extraResources:
+  - from: drizzle
+    to: drizzle
+asarUnpack:
+  - "**/*.node"
+mac:
+  category: public.app-category.education
+  target:
+    - target: dmg
+      arch: [arm64]
+    - target: zip
+      arch: [arm64]
+  hardenedRuntime: true
+  gatekeeperAssess: false

@@ -1,0 +1,237 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/messages.html">Messages</a></li>
+				<li><h1>Departments</h1></li>
+			</ul>
+		</div>
+	</div>
+	<button class="btn btn-sm btn-primary">
+		<svg data-src="https://unpkg.com/heroicons/20/solid/plus.svg" class="size-4"></svg>
+		New department
+	</button>
+</header>
+<!-- /header -->
+
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body gap-4">
+		<div class="flex flex-col gap-3 xl:flex-row">
+			<label class="input input-sm w-full">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input
+					type="search"
+					placeholder="Search departments and routing rules"
+					aria-label="Search departments and routing rules" />
+			</label>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All status</option>
+				<option>Active</option>
+				<option>Paused</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>SLA</option>
+				<option>15 min</option>
+				<option>1 hour</option>
+				<option>1 day</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Sort: Volume</option>
+				<option>Agents</option>
+			</select>
+			<button
+				class="btn btn-sm xl:ml-auto"
+				popovertarget="departments-bulk-actions-dropdown"
+				style="anchor-name: --departments-bulk-actions-dropdown-anchor">
+				<svg data-src="https://unpkg.com/heroicons/20/solid/queue-list.svg" class="size-4"></svg>
+				Bulk actions
+			</button>
+			<ul
+				class="menu dropdown dropdown-end bg-base-200 rounded-box z-1 mt-2 w-52 p-2 shadow"
+				popover
+				id="departments-bulk-actions-dropdown"
+				style="position-anchor: --departments-bulk-actions-dropdown-anchor">
+				<li><a>Export selected</a></li>
+				<li><a>Change status</a></li>
+				<li><a>Assign tag</a></li>
+				<li><a class="text-error">Delete selected</a></li>
+			</ul>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<th>Department</th>
+						<th>Routing rules</th>
+						<th>Agents</th>
+						<th>SLA</th>
+						<th>Status</th>
+						<th>Open conversations</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Billing</td>
+						<td>Payment keywords</td>
+						<td>4</td>
+						<td>15 min</td>
+						<td><span class="badge badge-warning badge-sm">Paused</span></td>
+						<td>20</td>
+						<td class="text-right">
+							<a href="/messages/agents.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Technical support</td>
+						<td>Product keywords</td>
+						<td>5</td>
+						<td>1 hour</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>23</td>
+						<td class="text-right">
+							<a href="/messages/agents.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Returns</td>
+						<td>Return reasons</td>
+						<td>6</td>
+						<td>4 hours</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>26</td>
+						<td class="text-right">
+							<a href="/messages/agents.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Enterprise</td>
+						<td>Account tier</td>
+						<td>7</td>
+						<td>15 min</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>29</td>
+						<td class="text-right">
+							<a href="/messages/agents.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Billing</td>
+						<td>Payment keywords</td>
+						<td>8</td>
+						<td>1 hour</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>32</td>
+						<td class="text-right">
+							<a href="/messages/agents.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Technical support</td>
+						<td>Product keywords</td>
+						<td>9</td>
+						<td>4 hours</td>
+						<td><span class="badge badge-warning badge-sm">Paused</span></td>
+						<td>35</td>
+						<td class="text-right">
+							<a href="/messages/agents.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Returns</td>
+						<td>Return reasons</td>
+						<td>10</td>
+						<td>15 min</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>38</td>
+						<td class="text-right">
+							<a href="/messages/agents.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Enterprise</td>
+						<td>Account tier</td>
+						<td>11</td>
+						<td>1 hour</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>41</td>
+						<td class="text-right">
+							<a href="/messages/agents.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Billing</td>
+						<td>Payment keywords</td>
+						<td>12</td>
+						<td>4 hours</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>44</td>
+						<td class="text-right">
+							<a href="/messages/agents.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Technical support</td>
+						<td>Product keywords</td>
+						<td>13</td>
+						<td>15 min</td>
+						<td><span class="badge badge-success badge-sm">Active</span></td>
+						<td>47</td>
+						<td class="text-right">
+							<a href="/messages/agents.html" class="btn btn-ghost btn-xs">Open</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
+			<div class="text-sm opacity-60">Showing 1-10 of 284 records</div>
+			<div class="join sm:ml-auto">
+				<button class="btn join-item btn-sm">Previous</button>
+				<button class="btn join-item btn-sm btn-active">1</button>
+				<button class="btn join-item btn-sm">2</button>
+				<button class="btn join-item btn-sm">Next</button>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

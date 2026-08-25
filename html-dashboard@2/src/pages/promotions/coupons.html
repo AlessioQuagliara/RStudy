@@ -1,0 +1,248 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/promotions/coupons.html">Promotions</a></li>
+				<li><h1>Coupons</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<a href="#" class="btn btn-sm btn-primary">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/plus.svg" class="size-4"></svg>
+			New coupon
+		</a>
+		<button class="btn btn-sm">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/arrow-down-tray.svg" class="size-4"></svg>
+			Export
+		</button>
+	</div>
+</header>
+<!-- /header -->
+<!-- stats -->
+<section class="stats stats-vertical bg-base-200 xl:stats-horizontal col-span-12 shadow-xs">
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/ticket.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Live coupons</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">38</div>
+		<div class="stat-desc">12 single-use codes</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/receipt-percent.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Redemptions</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">14.8K</div>
+		<div class="stat-desc">+18% this week</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/banknotes.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Discounted revenue</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">$184K</div>
+		<div class="stat-desc">31% from returning buyers</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/shield-check.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Abuse blocks</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">426</div>
+		<div class="stat-desc">Stacking prevented</div>
+	</div>
+</section>
+<!-- /stats -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-8">
+	<div class="card-body pb-0">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/chart-bar.svg" class="size-5"></svg>
+			Coupon redemption curve
+		</h2>
+		<p class="text-base-content/60">Daily uses across public, VIP, and recovery codes</p>
+	</div>
+	<tc-line
+		class="h-64 w-full [--area-opacity:.18] [--shape-color:var(--color-primary)]"
+		values="[180,220,260,240,310,380,420,390,470,520,610,580,690,740,720,810]"
+		min="0"></tc-line>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/sparkles.svg" class="size-5"></svg>
+			Offer health
+		</h2>
+		<div class="grid gap-4">
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Margin retained</span>
+					<span>72%</span>
+				</div>
+				<progress class="progress progress-success" value="72" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Fraud pressure</span>
+					<span>11%</span>
+				</div>
+				<progress class="progress progress-warning" value="11" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Stacking conflicts</span>
+					<span>24%</span>
+				</div>
+				<progress class="progress progress-info" value="24" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Expired-code traffic</span>
+					<span>36%</span>
+				</div>
+				<progress class="progress progress-error" value="36" max="100"></progress>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-5">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/adjustments-horizontal.svg"
+				class="size-5"></svg>
+			Coupon rules
+		</h2>
+		<div class="grid gap-3">
+			<label class="label justify-between">
+				Allow coupon stacking
+				<input type="checkbox" class="toggle toggle-sm" aria-label="Toggle option" />
+			</label>
+			<label class="label justify-between">
+				One use per customer
+				<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+			</label>
+			<label class="label justify-between">
+				Block disposable emails
+				<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+			</label>
+			<fieldset class="fieldset">
+				<label class="label">Minimum order value</label>
+				<input class="input w-full" value="$120" aria-label="$120" />
+			</fieldset>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-7">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/table-cells.svg" class="size-5"></svg>
+			Coupon performance table
+		</h2>
+		<div class="flex flex-col gap-3 xl:flex-row">
+			<label class="input input-sm w-full">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input
+					type="search"
+					placeholder="Search code, campaign, owner"
+					aria-label="Search code, campaign, owner" />
+			</label>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All campaigns</option>
+				<option>Active</option>
+				<option>Paused</option>
+				<option>Draft</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All types</option>
+				<option>Active</option>
+				<option>Paused</option>
+				<option>Draft</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Sort: Redemptions</option>
+				<option>Active</option>
+				<option>Paused</option>
+				<option>Draft</option>
+			</select>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Code</th>
+						<th>Campaign</th>
+						<th>Type</th>
+						<th>Limit</th>
+						<th>Used</th>
+						<th>Revenue</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>SAVE20</td>
+						<td>Summer Launch</td>
+						<td>Percent</td>
+						<td>25,000</td>
+						<td>8,420</td>
+						<td>$72,400</td>
+					</tr>
+					<tr>
+						<td>VIP50</td>
+						<td>VIP Upgrade</td>
+						<td>Fixed</td>
+						<td>2,500</td>
+						<td>1,120</td>
+						<td>$31,800</td>
+					</tr>
+					<tr>
+						<td>WELCOME15</td>
+						<td>New customer</td>
+						<td>Percent</td>
+						<td>Unlimited</td>
+						<td>4,980</td>
+						<td>$44,120</td>
+					</tr>
+					<tr>
+						<td>SHIPFREE</td>
+						<td>Shipping rescue</td>
+						<td>Shipping</td>
+						<td>10,000</td>
+						<td>2,204</td>
+						<td>$18,900</td>
+					</tr>
+					<tr>
+						<td>BUNDLE30</td>
+						<td>Bundle push</td>
+						<td>Percent</td>
+						<td>7,500</td>
+						<td>3,830</td>
+						<td>$51,600</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

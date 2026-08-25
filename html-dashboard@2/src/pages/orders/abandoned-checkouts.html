@@ -1,0 +1,320 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/orders.html">Orders</a></li>
+				<li><h1>Abandoned Checkouts</h1></li>
+			</ul>
+		</div>
+	</div>
+</header>
+<!-- /header -->
+
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body gap-4">
+		<div class="card bg-base-100 shadow-xs">
+			<div class="card-body gap-3">
+				<div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+					<div class="grow">
+						<h2 class="card-title">
+							<svg data-src="https://unpkg.com/heroicons/20/solid/signal.svg" class="size-5"></svg>
+							Checkout recovery status
+						</h2>
+						<p class="text-base-content/60">Last 50 checkout outcomes</p>
+					</div>
+					<div class="flex gap-3 text-sm">
+						<span class="flex items-center gap-1">
+							<span class="badge badge-xs bg-success"></span>
+							Successful
+						</span>
+						<span class="flex items-center gap-1">
+							<span class="badge badge-xs bg-error"></span>
+							Refund
+						</span>
+					</div>
+				</div>
+				<div class="grid grid-cols-[repeat(50,minmax(0,1fr))] gap-1">
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-error h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-error h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-error h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-error h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-error h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-error h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-error h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-error h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-error h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-error h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+					<div class="bg-success h-8 rounded-sm sm:h-12"></div>
+				</div>
+			</div>
+		</div>
+		<div class="flex flex-col gap-3 xl:flex-row">
+			<label class="input input-sm w-full">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input
+					type="search"
+					placeholder="Search customer, cart, email"
+					aria-label="Search customer, cart, email" />
+			</label>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All recovery</option>
+				<option>Not sent</option>
+				<option>Sent</option>
+				<option>Recovered</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Cart value</option>
+				<option>$0-$100</option>
+				<option>$100-$500</option>
+				<option>$500+</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Sort: Last activity</option>
+				<option>Value</option>
+			</select>
+			<button
+				class="btn btn-sm xl:ml-auto"
+				popovertarget="abandoned-bulk-actions-dropdown"
+				style="anchor-name: --abandoned-bulk-actions-dropdown-anchor">
+				<svg data-src="https://unpkg.com/heroicons/20/solid/queue-list.svg" class="size-4"></svg>
+				Bulk actions
+			</button>
+			<ul
+				class="menu dropdown dropdown-end bg-base-200 rounded-box z-1 mt-2 w-52 p-2 shadow"
+				popover
+				id="abandoned-bulk-actions-dropdown"
+				style="position-anchor: --abandoned-bulk-actions-dropdown-anchor">
+				<li><a>Export selected</a></li>
+				<li><a>Change status</a></li>
+				<li><a>Assign tag</a></li>
+				<li><a class="text-error">Delete selected</a></li>
+			</ul>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<th>Customer</th>
+						<th>Cart value</th>
+						<th>Items</th>
+						<th>Recovery</th>
+						<th>Last activity</th>
+						<th>Channel</th>
+						<th>Actions</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Mina Park</td>
+						<td>$1240</td>
+						<td>2 items</td>
+						<td><span class="badge badge-warning badge-sm">Email sent</span></td>
+						<td>1 hours ago</td>
+						<td>Online store</td>
+						<td>Send reminder</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Recover</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Arman Bell</td>
+						<td>$780</td>
+						<td>4 items</td>
+						<td><span class="badge badge-warning badge-sm">Email sent</span></td>
+						<td>2 hours ago</td>
+						<td>Admin</td>
+						<td>Send reminder</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Recover</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Nora Quinn</td>
+						<td>$420</td>
+						<td>1 item</td>
+						<td><span class="badge badge-success badge-sm">Recovered</span></td>
+						<td>3 hours ago</td>
+						<td>Subscription</td>
+						<td>Send reminder</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Recover</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Tessa Cole</td>
+						<td>$320</td>
+						<td>2 items</td>
+						<td><span class="badge badge-warning badge-sm">Email sent</span></td>
+						<td>4 hours ago</td>
+						<td>Online store</td>
+						<td>Send reminder</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Recover</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Mina Park</td>
+						<td>$1240</td>
+						<td>4 items</td>
+						<td><span class="badge badge-warning badge-sm">Email sent</span></td>
+						<td>5 hours ago</td>
+						<td>Admin</td>
+						<td>Send reminder</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Recover</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Arman Bell</td>
+						<td>$780</td>
+						<td>1 item</td>
+						<td><span class="badge badge-success badge-sm">Recovered</span></td>
+						<td>6 hours ago</td>
+						<td>Subscription</td>
+						<td>Send reminder</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Recover</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Nora Quinn</td>
+						<td>$420</td>
+						<td>2 items</td>
+						<td><span class="badge badge-warning badge-sm">Email sent</span></td>
+						<td>7 hours ago</td>
+						<td>Online store</td>
+						<td>Send reminder</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Recover</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Tessa Cole</td>
+						<td>$320</td>
+						<td>4 items</td>
+						<td><span class="badge badge-warning badge-sm">Email sent</span></td>
+						<td>8 hours ago</td>
+						<td>Admin</td>
+						<td>Send reminder</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Recover</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Mina Park</td>
+						<td>$1240</td>
+						<td>1 item</td>
+						<td><span class="badge badge-success badge-sm">Recovered</span></td>
+						<td>9 hours ago</td>
+						<td>Subscription</td>
+						<td>Send reminder</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Recover</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>Arman Bell</td>
+						<td>$780</td>
+						<td>2 items</td>
+						<td><span class="badge badge-warning badge-sm">Email sent</span></td>
+						<td>10 hours ago</td>
+						<td>Online store</td>
+						<td>Send reminder</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Recover</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
+			<div class="text-sm opacity-60">Showing 1-10 of 284 records</div>
+			<div class="join sm:ml-auto">
+				<button class="btn join-item btn-sm">Previous</button>
+				<button class="btn join-item btn-sm btn-active">1</button>
+				<button class="btn join-item btn-sm">2</button>
+				<button class="btn join-item btn-sm">Next</button>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

@@ -1,0 +1,305 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/orders.html">Orders</a></li>
+				<li><h1>Fulfillment</h1></li>
+			</ul>
+		</div>
+	</div>
+</header>
+<!-- /header -->
+
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body gap-4">
+		<div class="grid gap-4 xl:grid-cols-3">
+			<div class="card bg-base-100 shadow-xs">
+				<div class="card-body pb-0">
+					<h2 class="card-title">
+						<svg data-src="https://unpkg.com/heroicons/20/solid/truck.svg" class="size-5"></svg>
+						Fulfilled orders
+					</h2>
+					<p class="text-base-content/60">Shipments completed by day</p>
+				</div>
+				<tc-line
+					class="h-30 w-full [--area-opacity:.18] [--shape-color:var(--color-success)]"
+					values="[42,48,44,51,58,62,60,67,72,70,76,81,84,82,88,94,91,98]"
+					min="0"></tc-line>
+			</div>
+			<div class="card bg-base-100 shadow-xs">
+				<div class="card-body pb-0">
+					<h2 class="card-title">
+						<svg
+							data-src="https://unpkg.com/heroicons/20/solid/exclamation-triangle.svg"
+							class="size-5"></svg>
+						SLA risk
+					</h2>
+					<p class="text-base-content/60">Orders due today and overdue</p>
+				</div>
+				<tc-line
+					class="h-30 w-full [--area-opacity:.18] [--shape-color:var(--color-warning)]"
+					values="[12,10,14,13,16,18,15,19,21,18,22,24,20,23,26,25,28,24]"
+					min="0"></tc-line>
+			</div>
+			<div class="card bg-base-100 shadow-xs">
+				<div class="card-body">
+					<h2 class="card-title">
+						<svg data-src="https://unpkg.com/heroicons/20/solid/chart-pie.svg" class="size-5"></svg>
+						Carrier mix
+					</h2>
+					<div class="flex items-center gap-6">
+						<div class="grid grow gap-2 text-sm">
+							<div class="flex items-center gap-2">
+								<span class="badge badge-xs bg-primary"></span>
+								UPS
+							</div>
+							<div class="flex items-center gap-2">
+								<span class="badge badge-xs bg-secondary"></span>
+								FedEx
+							</div>
+							<div class="flex items-center gap-2">
+								<span class="badge badge-xs bg-accent"></span>
+								DHL
+							</div>
+						</div>
+						<tc-pie
+							class="h-24 w-24 shrink-0 [--shape-color-1:var(--color-primary)] [--shape-color-2:var(--color-secondary)] [--shape-color-3:var(--color-accent)]"
+							values="[42,34,24]"
+							shape-size="22"
+							shape-gap="5"></tc-pie>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="flex flex-col gap-3 xl:flex-row">
+			<label class="input input-sm w-full">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input
+					type="search"
+					placeholder="Search orders, products, tracking"
+					aria-label="Search orders, products, tracking" />
+			</label>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All carriers</option>
+				<option>UPS</option>
+				<option>FedEx</option>
+				<option>DHL</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>All status</option>
+				<option>Pick</option>
+				<option>Pack</option>
+				<option>Ship</option>
+				<option>Delivered</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Sort: SLA</option>
+				<option>Newest</option>
+			</select>
+			<button
+				class="btn btn-sm xl:ml-auto"
+				popovertarget="fulfillment-bulk-actions-dropdown"
+				style="anchor-name: --fulfillment-bulk-actions-dropdown-anchor">
+				<svg data-src="https://unpkg.com/heroicons/20/solid/queue-list.svg" class="size-4"></svg>
+				Bulk actions
+			</button>
+			<ul
+				class="menu dropdown dropdown-end bg-base-200 rounded-box z-1 mt-2 w-52 p-2 shadow"
+				popover
+				id="fulfillment-bulk-actions-dropdown"
+				style="position-anchor: --fulfillment-bulk-actions-dropdown-anchor">
+				<li><a>Export selected</a></li>
+				<li><a>Change status</a></li>
+				<li><a>Assign tag</a></li>
+				<li><a class="text-error">Delete selected</a></li>
+			</ul>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<th>Order</th>
+						<th>Products</th>
+						<th>Carrier</th>
+						<th>Tracking</th>
+						<th>Status</th>
+						<th>Warehouse</th>
+						<th>SLA</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12092</td>
+						<td>Growth Suite, Support Desk</td>
+						<td>UPS</td>
+						<td>1Z999042</td>
+						<td><span class="badge badge-warning badge-sm">Pick</span></td>
+						<td>East</td>
+						<td>Due today</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Ship</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12091</td>
+						<td>Growth Suite, Support Desk</td>
+						<td>FedEx</td>
+						<td>1Z999142</td>
+						<td><span class="badge badge-info badge-sm">Pack</span></td>
+						<td>West</td>
+						<td>On time</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Ship</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12090</td>
+						<td>Growth Suite, Support Desk</td>
+						<td>DHL</td>
+						<td>1Z999242</td>
+						<td><span class="badge badge-info badge-sm">Ship</span></td>
+						<td>Digital</td>
+						<td>Due today</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Ship</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12089</td>
+						<td>Growth Suite, Support Desk</td>
+						<td>UPS</td>
+						<td>1Z999342</td>
+						<td><span class="badge badge-warning badge-sm">Pick</span></td>
+						<td>East</td>
+						<td>On time</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Ship</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12088</td>
+						<td>Growth Suite, Support Desk</td>
+						<td>FedEx</td>
+						<td>1Z999442</td>
+						<td><span class="badge badge-info badge-sm">Pack</span></td>
+						<td>West</td>
+						<td>Due today</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Ship</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12087</td>
+						<td>Growth Suite, Support Desk</td>
+						<td>DHL</td>
+						<td>1Z999542</td>
+						<td><span class="badge badge-info badge-sm">Ship</span></td>
+						<td>Digital</td>
+						<td>On time</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Ship</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12086</td>
+						<td>Growth Suite, Support Desk</td>
+						<td>UPS</td>
+						<td>1Z999642</td>
+						<td><span class="badge badge-warning badge-sm">Pick</span></td>
+						<td>East</td>
+						<td>Due today</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Ship</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12085</td>
+						<td>Growth Suite, Support Desk</td>
+						<td>FedEx</td>
+						<td>1Z999742</td>
+						<td><span class="badge badge-info badge-sm">Pack</span></td>
+						<td>West</td>
+						<td>On time</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Ship</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12084</td>
+						<td>Growth Suite, Support Desk</td>
+						<td>DHL</td>
+						<td>1Z999842</td>
+						<td><span class="badge badge-info badge-sm">Ship</span></td>
+						<td>Digital</td>
+						<td>Due today</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Ship</a>
+						</td>
+					</tr>
+					<tr>
+						<th>
+							<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+						</th>
+						<td>#12083</td>
+						<td>Growth Suite, Support Desk</td>
+						<td>UPS</td>
+						<td>1Z999942</td>
+						<td><span class="badge badge-warning badge-sm">Pick</span></td>
+						<td>East</td>
+						<td>On time</td>
+						<td class="text-right">
+							<a href="/orders/detail.html" class="btn btn-ghost btn-xs">Ship</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
+			<div class="text-sm opacity-60">Showing 1-10 of 284 records</div>
+			<div class="join sm:ml-auto">
+				<button class="btn join-item btn-sm">Previous</button>
+				<button class="btn join-item btn-sm btn-active">1</button>
+				<button class="btn join-item btn-sm">2</button>
+				<button class="btn join-item btn-sm">Next</button>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

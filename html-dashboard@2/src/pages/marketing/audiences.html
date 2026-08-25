@@ -1,0 +1,264 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/marketing/campaigns.html">Marketing</a></li>
+				<li><h1>Audiences</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<a href="#" class="btn btn-sm btn-primary">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/plus.svg" class="size-4"></svg>
+			New audience
+		</a>
+		<button class="btn btn-sm">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/arrow-down-tray.svg" class="size-4"></svg>
+			Export
+		</button>
+	</div>
+</header>
+<!-- /header -->
+<!-- stats -->
+<section class="stats stats-vertical bg-base-200 xl:stats-horizontal col-span-12 shadow-xs">
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/user-group.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Total contacts</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">284K</div>
+		<div class="stat-desc">+18%</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/funnel.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Segments</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">64</div>
+		<div class="stat-desc">12 dynamic</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/no-symbol.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">Suppressed</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">8.2K</div>
+		<div class="stat-desc">Compliance</div>
+	</div>
+	<div class="stat">
+		<div class="stat-figure">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/sparkles.svg"
+				class="size-7 opacity-40"></svg>
+		</div>
+		<div class="stat-title">High intent</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">18K</div>
+		<div class="stat-desc">Ready for campaign</div>
+	</div>
+</section>
+<!-- /stats -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-5">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/funnel.svg" class="size-5"></svg>
+			Segment builder
+		</h2>
+		<div class="grid gap-4">
+			<fieldset class="fieldset">
+				<label class="label">Include users where</label>
+				<select class="select w-full" aria-label="Select option">
+					<option>Purchased product</option>
+					<option>Visited page</option>
+					<option>Opened email</option>
+				</select>
+			</fieldset>
+			<fieldset class="fieldset">
+				<label class="label">Condition</label>
+				<input
+					class="input w-full"
+					value="Cart value greater than $250"
+					aria-label="Cart value greater than $250" />
+			</fieldset>
+			<label class="label justify-between">
+				Exclude refunded customers
+				<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+			</label>
+			<label class="label justify-between">
+				Sync to ads
+				<input type="checkbox" class="toggle toggle-sm" aria-label="Toggle option" />
+			</label>
+			<button class="btn btn-primary">Preview segment</button>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-3">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/chart-pie.svg" class="size-5"></svg>
+			Audience composition
+		</h2>
+		<p class="text-base-content/60">Segment share across lifecycle</p>
+		<div class="flex items-center gap-6">
+			<tc-pie
+				class="h-32 w-32 shrink-0 [--shape-color-1:var(--color-primary)] [--shape-color-2:var(--color-secondary)] [--shape-color-3:var(--color-accent)] [--shape-color-4:var(--color-info)]"
+				values="[34,28,24,14]"
+				shape-size="30"
+				shape-gap="6"></tc-pie>
+			<div class="grid gap-2 text-sm">
+				<span>
+					<span class="badge badge-xs bg-primary"></span>
+					Prospects
+				</span>
+				<span>
+					<span class="badge badge-xs bg-secondary"></span>
+					Trial
+				</span>
+				<span>
+					<span class="badge badge-xs bg-accent"></span>
+					Customers
+				</span>
+				<span>
+					<span class="badge badge-xs bg-info"></span>
+					VIP
+				</span>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/shield-check.svg" class="size-5"></svg>
+			Consent coverage
+		</h2>
+		<div class="grid gap-4">
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Email consent</span>
+					<span>82%</span>
+				</div>
+				<progress class="progress progress-primary" value="82" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>SMS consent</span>
+					<span>34%</span>
+				</div>
+				<progress class="progress progress-secondary" value="34" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Ads consent</span>
+					<span>58%</span>
+				</div>
+				<progress class="progress progress-accent" value="58" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Suppression matched</span>
+					<span>96%</span>
+				</div>
+				<progress class="progress progress-success" value="96" max="100"></progress>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-12">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/table-cells.svg" class="size-5"></svg>
+			Saved audiences
+		</h2>
+		<div class="flex flex-col gap-3 xl:flex-row">
+			<label class="input input-sm w-full">
+				<svg
+					data-src="https://unpkg.com/heroicons/20/solid/magnifying-glass.svg"
+					class="h-4 w-4 opacity-50"></svg>
+				<input type="search" placeholder="Search audiences" aria-label="Search audiences" />
+			</label>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Lifecycle</option>
+				<option>Active</option>
+				<option>Paused</option>
+				<option>Draft</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Consent</option>
+				<option>Active</option>
+				<option>Paused</option>
+				<option>Draft</option>
+			</select>
+			<select class="select select-sm" aria-label="Select option">
+				<option selected>Sync status</option>
+				<option>Active</option>
+				<option>Paused</option>
+				<option>Draft</option>
+			</select>
+		</div>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Audience</th>
+						<th>Rules</th>
+						<th>Size</th>
+						<th>Growth</th>
+						<th>Sync</th>
+						<th>Owner</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>High-intent carts</td>
+						<td>6</td>
+						<td>18,420</td>
+						<td>+14%</td>
+						<td>Ads + Email</td>
+						<td>Ari</td>
+					</tr>
+					<tr>
+						<td>VIP buyers</td>
+						<td>9</td>
+						<td>4,210</td>
+						<td>+4%</td>
+						<td>Email</td>
+						<td>Mina</td>
+					</tr>
+					<tr>
+						<td>Dormant paid users</td>
+						<td>5</td>
+						<td>8,900</td>
+						<td>-2%</td>
+						<td>Email</td>
+						<td>Jules</td>
+					</tr>
+					<tr>
+						<td>Support risk</td>
+						<td>7</td>
+						<td>1,240</td>
+						<td>+8%</td>
+						<td>Internal</td>
+						<td>Owen</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

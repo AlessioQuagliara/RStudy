@@ -1,0 +1,176 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/settings/general.html">Settings</a></li>
+				<li><h1>Security Settings</h1></li>
+			</ul>
+		</div>
+	</div>
+	<div class="flex flex-wrap gap-2">
+		<button class="btn btn-sm">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/arrow-path.svg" class="size-4"></svg>
+			Reset
+		</button>
+		<button class="btn btn-sm btn-primary">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/check.svg" class="size-4"></svg>
+			Save settings
+		</button>
+	</div>
+</header>
+<!-- /header -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/finger-print.svg" class="size-5"></svg>
+			Authentication
+		</h2>
+		<label class="label justify-between">
+			Require 2FA
+			<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+		</label>
+		<label class="label justify-between">
+			SSO required for admins
+			<input type="checkbox" class="toggle toggle-sm" aria-label="Toggle option" />
+		</label>
+		<label class="label justify-between">
+			Device approval
+			<input type="checkbox" class="toggle toggle-sm" checked aria-label="Toggle option" />
+		</label>
+		<fieldset class="fieldset">
+			<label class="label">Session length</label>
+			<select class="select w-full" aria-label="Select option">
+				<option>8 hours</option>
+				<option>24 hours</option>
+			</select>
+		</fieldset>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/lock-closed.svg" class="size-5"></svg>
+			Access policy
+		</h2>
+		<div class="grid gap-2">
+			<label class="label justify-start gap-2">
+				<input type="checkbox" class="checkbox checkbox-sm" checked aria-label="Toggle option" />
+				Block risky countries
+			</label>
+			<label class="label justify-start gap-2">
+				<input type="checkbox" class="checkbox checkbox-sm" checked aria-label="Toggle option" />
+				Require reauth for exports
+			</label>
+			<label class="label justify-start gap-2">
+				<input type="checkbox" class="checkbox checkbox-sm" aria-label="Toggle option" />
+				IP allowlist only
+			</label>
+			<label class="label justify-start gap-2">
+				<input type="checkbox" class="checkbox checkbox-sm" checked aria-label="Toggle option" />
+				Watermark exported files
+			</label>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/shield-exclamation.svg"
+				class="size-5"></svg>
+			Threat posture
+		</h2>
+		<div class="grid gap-4">
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Password strength</span>
+					<span>88%</span>
+				</div>
+				<progress class="progress progress-success" value="88" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Session risk</span>
+					<span>18%</span>
+				</div>
+				<progress class="progress progress-warning" value="18" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Export risk</span>
+					<span>34%</span>
+				</div>
+				<progress class="progress progress-info" value="34" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Admin exposure</span>
+					<span>9%</span>
+				</div>
+				<progress class="progress progress-error" value="9" max="100"></progress>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/table-cells.svg" class="size-5"></svg>
+			Security events
+		</h2>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Event</th>
+						<th>Actor</th>
+						<th>IP</th>
+						<th>Severity</th>
+						<th>Action</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>2FA challenge</td>
+						<td>Ari Lane</td>
+						<td>192.0.2.10</td>
+						<td>Info</td>
+						<td>Allowed</td>
+					</tr>
+					<tr>
+						<td>Export requested</td>
+						<td>Jules Kim</td>
+						<td>198.51.100.8</td>
+						<td>Warning</td>
+						<td>Reauth</td>
+					</tr>
+					<tr>
+						<td>Failed login</td>
+						<td>unknown</td>
+						<td>203.0.113.4</td>
+						<td>Error</td>
+						<td>Blocked</td>
+					</tr>
+					<tr>
+						<td>Role changed</td>
+						<td>Mina Park</td>
+						<td>192.0.2.22</td>
+						<td>Info</td>
+						<td>Logged</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

@@ -1,0 +1,17 @@
+{
+	"name": "dashboard",
+	"version": "2.0.0",
+	"scripts": {
+		"dev": "npm run build:css && vite",
+		"build": "vite build && npm run build:css",
+		"build:css": "tailwindcss -i ./src/css/tailwind.css -o ./public/output.css --minify"
+	},
+	"devDependencies": {
+		"@tailwindcss/cli": "^4.3.2",
+		"daisyui": "^5.6.6",
+		"prettier": "^3.9.3",
+		"prettier-plugin-tailwindcss": "^0.8.0",
+		"tailwindcss": "^4.3.2",
+		"vite": "^8.1.0"
+	}
+}

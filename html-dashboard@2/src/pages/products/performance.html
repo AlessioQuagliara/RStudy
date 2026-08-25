@@ -1,0 +1,146 @@
+{{> head }}
+<!-- header -->
+<header class="col-span-12 flex flex-col gap-4 lg:flex-row lg:items-end">
+	<div class="grow">
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li><a href="/products.html">Products</a></li>
+				<li>Performance</li>
+			</ul>
+		</div>
+	</div>
+	<select class="select select-sm w-full lg:w-52" aria-label="Select option">
+		<option selected>Last 30 days</option>
+		<option>Quarter to date</option>
+		<option>Year to date</option>
+	</select>
+</header>
+<!-- /header -->
+<!-- stats -->
+<section class="stats stats-vertical bg-base-200 xl:stats-horizontal col-span-12 shadow-xs">
+	<div class="stat">
+		<div class="stat-title">Revenue</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">$842K</div>
+		<div class="stat-desc">+12.2%</div>
+	</div>
+	<div class="stat">
+		<div class="stat-title">Conversion</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">4.8%</div>
+		<div class="stat-desc">+0.6 points</div>
+	</div>
+	<div class="stat">
+		<div class="stat-title">Traffic</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">284K</div>
+		<div class="stat-desc">Product page sessions</div>
+	</div>
+	<div class="stat">
+		<div class="stat-title">Top variant</div>
+		<div class="stat-value text-xl font-semibold tabular-nums">Annual</div>
+		<div class="stat-desc">62% of sales</div>
+	</div>
+</section>
+<!-- /stats -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-8">
+	<div class="card-body pb-0">
+		<h2 class="card-title">
+			<svg
+				data-src="https://unpkg.com/heroicons/20/solid/presentation-chart-line.svg"
+				class="size-5"></svg>
+			Revenue comparison
+		</h2>
+		<p class="text-base-content/60">Current period compared with prior period</p>
+	</div>
+	<tc-line
+		class="h-72 w-full [--area-opacity:.18] [--shape-color:var(--color-primary)]"
+		values="[32,36,35,44,48,52,50,58,62,64,70,74,72,80,84,90]"
+		min="0"></tc-line>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs xl:col-span-4">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/funnel.svg" class="size-5"></svg>
+			Traffic sources
+		</h2>
+		<div class="grid gap-3">
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Organic</span>
+					<span>44%</span>
+				</div>
+				<progress class="progress progress-primary w-full" value="44" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Email</span>
+					<span>24%</span>
+				</div>
+				<progress class="progress progress-secondary w-full" value="24" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Paid</span>
+					<span>19%</span>
+				</div>
+				<progress class="progress progress-accent w-full" value="19" max="100"></progress>
+			</div>
+			<div>
+				<div class="mb-1 flex justify-between text-sm">
+					<span>Partner</span>
+					<span>13%</span>
+				</div>
+				<progress class="progress progress-info w-full" value="13" max="100"></progress>
+			</div>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+<!-- card -->
+<section class="card bg-base-200 col-span-12 shadow-xs">
+	<div class="card-body">
+		<h2 class="card-title">
+			<svg data-src="https://unpkg.com/heroicons/20/solid/table-cells.svg" class="size-5"></svg>
+			Variant performance
+		</h2>
+		<div class="overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Variant</th>
+						<th>Customers</th>
+						<th>Conversion</th>
+						<th>Revenue</th>
+						<th>Refunds</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Annual</td>
+						<td>8,420</td>
+						<td>6.2%</td>
+						<td>$522K</td>
+						<td>1.2%</td>
+					</tr>
+					<tr>
+						<td>Monthly</td>
+						<td>7,180</td>
+						<td>4.1%</td>
+						<td>$214K</td>
+						<td>2.1%</td>
+					</tr>
+					<tr>
+						<td>Enterprise</td>
+						<td>420</td>
+						<td>8.4%</td>
+						<td>$106K</td>
+						<td>0.6%</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</section>
+<!-- /card -->
+{{> foot }}

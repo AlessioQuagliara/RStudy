@@ -284,3 +284,334 @@ export const backupDataSchema = z.object({
   courseAiOutputs: z.array(courseAiOutputSchema),
 });
 export type BackupData = z.infer<typeof backupDataSchema>;
+
+// ---------- AI: esercizi interattivi progressivi ----------
+// Contratto per la generazione di esercizi da una lezione. Solo tipi/schema:
+// nessuna chiamata al provider, nessun canale IPC, nessuna tabella DB qui.
+
+export const exerciseDifficultySchema = z.number().int().min(1).max(5);
+export type ExerciseDifficulty = z.infer<typeof exerciseDifficultySchema>;
+
+/**
+ * Linguaggi di programmazione supportati per i coding_challenge (e per i
+ * codeBlocks delle slide di presentazione). L'audit del repository non ha
+ * trovato un elenco di linguaggi già supportato altrove nell'app: questo
+ * enum ristretto è nuovo e va tenuto come unica fonte di verità.
+ */
+export const supportedCodeLanguageSchema = z.enum([
+  "javascript",
+  "typescript",
+  "python",
+  "c",
+  "cpp",
+]);
+export type SupportedCodeLanguage = z.infer<typeof supportedCodeLanguageSchema>;
+
+export const multipleChoiceExerciseSchema = z.object({
+  type: z.literal("multiple_choice"),
+  id: z.string().min(1),
+  // Testo Markdown con eventuale LaTeX delimitato da $...$ o $$...$$.
+  question: z.string().min(1),
+  options: z.array(z.string().min(1)).length(4),
+  correctAnswer: z.string().min(1),
+  explanation: z.string().min(1),
+  difficulty: exerciseDifficultySchema,
+});
+export type MultipleChoiceExercise = z.infer<typeof multipleChoiceExerciseSchema>;
+
+export const openAnswerExerciseSchema = z.object({
+  type: z.literal("open_answer"),
+  id: z.string().min(1),
+  question: z.string().min(1),
+  acceptedAnswers: z.array(z.string().min(1)).min(1),
+  explanation: z.string().min(1),
+  difficulty: exerciseDifficultySchema,
+});
+export type OpenAnswerExercise = z.infer<typeof openAnswerExerciseSchema>;
+
+export const codingChallengeExerciseSchema = z.object({
+  type: z.literal("coding_challenge"),
+  id: z.string().min(1),
+  question: z.string().min(1),
+  language: supportedCodeLanguageSchema,
+  // Stringa vuota ammessa: un esercizio può partire da un file bianco.
+  starterCode: z.string(),
+  expectedSolution: z.string().min(1),
+  evaluationHints: z.array(z.string().min(1)).optional(),
+  explanation: z.string().min(1),
+  difficulty: exerciseDifficultySchema,
+});
+export type CodingChallengeExercise = z.infer<typeof codingChallengeExerciseSchema>;
+
+/**
+ * Unione discriminata dei tre tipi di esercizio. `discriminatedUnion` non
+ * accetta membri con `.superRefine`/`.refine` (perde l'accesso diretto allo
+ * shape per il discriminante), quindi la validazione incrociata
+ * options/correctAnswer del multiple_choice è applicata con un
+ * `.superRefine` sopra l'intera unione invece che sul singolo schema.
+ */
+const exerciseUnionSchema = z.discriminatedUnion("type", [
+  multipleChoiceExerciseSchema,
+  openAnswerExerciseSchema,
+  codingChallengeExerciseSchema,
+]);
+
+export const exerciseSchema = exerciseUnionSchema.superRefine((exercise, ctx) => {
+  if (exercise.type !== "multiple_choice") return;
+  if (new Set(exercise.options).size !== exercise.options.length) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Le opzioni non possono contenere duplicati",
+      path: ["options"],
+    });
+  }
+  if (!exercise.options.includes(exercise.correctAnswer)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "correctAnswer deve essere una delle opzioni disponibili",
+      path: ["correctAnswer"],
+    });
+  }
+});
+export type Exercise = z.infer<typeof exerciseSchema>;
+
+export const exerciseSetSchema = z.object({
+  // Versione dello schema del contenuto generato (non il prompt_version del
+  // modello AI, vedi electron/ai/prompts.ts): permette di far evolvere la
+  // forma di ExerciseSet in futuro senza rompere i set già salvati.
+  version: z.number().int().positive(),
+  sourceLessonId: z.string().min(1),
+  title: z.string().min(1),
+  generatedAt: z.string().min(1),
+  exercises: z.array(exerciseSchema).min(3).max(8),
+  // Hash del testo sorgente (appunti lezione) usato per la generazione, utile
+  // in futuro per capire se il set è ancora coerente con gli appunti attuali.
+  sourceContentHash: z.string().min(1).optional(),
+});
+export type ExerciseSet = z.infer<typeof exerciseSetSchema>;
+
+export const localeSchema = z
+  .string()
+  .regex(/^[a-z]{2,3}(-[A-Z]{2})?$/, "Locale non valido (atteso formato BCP-47, es. it-IT)");
+
+export const generateExerciseSetInputSchema = z.object({
+  lessonId: z.string().min(1),
+  // Testo sorgente della lezione (notesPlainText, coerente con il pattern
+  // già usato da electron/ai/studyPack.ts): non l'HTML/JSON TipTap.
+  sourceText: z.string().min(1).max(20000),
+  subject: z.string().min(1).max(200).optional(),
+  requestedCount: z.number().int().min(3).max(8),
+  locale: localeSchema.default("it-IT"),
+});
+export type GenerateExerciseSetInput = z.infer<typeof generateExerciseSetInputSchema>;
+
+/**
+ * Input del canale IPC `studyAi:generateExercises`: SOLO `lessonId` (+ opzioni),
+ * mai `sourceText` dal renderer. Il main deriva gli appunti da leggere
+ * (`lessons.notesPlainText`) internamente, stesso pattern già in uso per
+ * `ai:generateLessonStudyPack` (electron/ipc/handlers/ai.ts): il renderer non
+ * spedisce mai il contenuto della lezione via IPC, e l'hash di cache viene
+ * sempre calcolato sul testo autorevole nel DB, non su testo arbitrario che
+ * un renderer compromesso o buggato potrebbe inviare.
+ */
+export const generateLessonExercisesInputSchema = z.object({
+  lessonId: z.string().min(1),
+  subject: z.string().min(1).max(200).optional(),
+  requestedCount: z.number().int().min(3).max(8).default(5),
+  locale: localeSchema.default("it-IT"),
+});
+/**
+ * `z.input` (non `z.infer`/`z.output`) di proposito: è il tipo di ciò che il
+ * CHIAMANTE può fornire prima dell'applicazione dei default Zod, quindi
+ * `requestedCount`/`locale` restano opzionali qui — il renderer può mandare
+ * solo `{ lessonId }` e lasciare che sia il main (via safeHandle -> .parse())
+ * ad applicare i default. Il tipo pienamente risolto (post-default) non ha
+ * bisogno di un proprio alias: emerge automaticamente da
+ * `generateLessonExercisesInputSchema.parse(...)` ovunque serva (vedi
+ * electron/ai/exerciseSet.ts).
+ */
+export type GenerateLessonExercisesInput = z.input<typeof generateLessonExercisesInputSchema>;
+
+// ---------- AI: presentazione sintetica ----------
+
+export const presentationSlideTypeSchema = z.enum(["title", "content", "code", "summary", "quiz"]);
+export type PresentationSlideType = z.infer<typeof presentationSlideTypeSchema>;
+
+export const presentationCodeBlockSchema = z.object({
+  language: supportedCodeLanguageSchema,
+  code: z.string().min(1),
+  caption: z.string().min(1).optional(),
+});
+export type PresentationCodeBlock = z.infer<typeof presentationCodeBlockSchema>;
+
+const presentationSlideShape = z.object({
+  id: z.string().min(1),
+  type: presentationSlideTypeSchema,
+  title: z.string().min(1),
+  // Elenco puntato in testo semplice/Markdown breve, mai HTML generato
+  // dall'AI: la presentazione è dati strutturati, non una stringa unica.
+  bullets: z.array(z.string().min(1)).max(12),
+  speakerNotes: z.string().min(1).optional(),
+  codeBlocks: z.array(presentationCodeBlockSchema).max(6).optional(),
+});
+
+export const presentationSlideSchema = presentationSlideShape.superRefine((slide, ctx) => {
+  if (slide.type === "code" && (!slide.codeBlocks || slide.codeBlocks.length === 0)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Le slide di tipo 'code' devono avere almeno un codeBlock",
+      path: ["codeBlocks"],
+    });
+  }
+});
+export type PresentationSlide = z.infer<typeof presentationSlideSchema>;
+
+export const presentationSchema = z.object({
+  version: z.number().int().positive(),
+  sourceLessonId: z.string().min(1),
+  title: z.string().min(1),
+  generatedAt: z.string().min(1),
+  // Limite superiore difensivo: nessun vincolo esplicito richiesto, ma un
+  // array non limitato non è sicuro da validare da un provider esterno.
+  slides: z.array(presentationSlideSchema).min(3).max(20),
+  sourceContentHash: z.string().min(1).optional(),
+});
+export type Presentation = z.infer<typeof presentationSchema>;
+
+export const generatePresentationInputSchema = z.object({
+  lessonId: z.string().min(1),
+  sourceText: z.string().min(1).max(20000),
+  subject: z.string().min(1).max(200).optional(),
+  requestedCount: z.number().int().min(3).max(20),
+  locale: localeSchema.default("it-IT"),
+});
+export type GeneratePresentationInput = z.infer<typeof generatePresentationInputSchema>;
+
+/** Input del canale IPC `studyAi:generatePresentation`: vedi il commento gemello su generateLessonExercisesInputSchema. */
+export const generateLessonPresentationInputSchema = z.object({
+  lessonId: z.string().min(1),
+  subject: z.string().min(1).max(200).optional(),
+  requestedCount: z.number().int().min(3).max(20).default(8),
+  locale: localeSchema.default("it-IT"),
+});
+/** `z.input`, non `z.infer`: vedi il commento gemello su GenerateLessonExercisesInput. */
+export type GenerateLessonPresentationInput = z.input<typeof generateLessonPresentationInputSchema>;
+
+// ---------- AI: risultato/errore serializzabile (boundary IPC) ----------
+// L'audit non ha trovato un envelope Result<T,E> già esistente: gli handler
+// IPC attuali (electron/ipc/safeHandle.ts) lasciano propagare l'eccezione e
+// si affidano alla serializzazione di default di Electron (solo
+// `error.message` arriva al renderer). L'unico precedente simile è
+// `testConnectionResultSchema` ({ ok, message }). Questo envelope è nuovo,
+// pensato per i futuri canali `ai:generateLessonExercises` /
+// `ai:generateLessonPresentation`, così l'esito (successo con dati tipizzati
+// o errore con codice) resti un oggetto JSON puro senza passare da
+// un'istanza `Error` non garantita serializzabile.
+
+export const aiGenerationErrorCodeSchema = z.enum([
+  // Nessuna API key AI configurata: non è stato nemmeno tentato un contatto col provider.
+  "not_configured",
+  // La lezione richiesta (lessonId) non esiste (più): nessun contatto col provider.
+  "not_found",
+  "invalid_response",
+  "provider_error",
+  "timeout",
+  "rate_limited",
+  "unknown",
+]);
+export type AiGenerationErrorCode = z.infer<typeof aiGenerationErrorCodeSchema>;
+
+export const aiGenerationErrorSchema = z.object({
+  code: aiGenerationErrorCodeSchema,
+  message: z.string().min(1),
+});
+export type AiGenerationError = z.infer<typeof aiGenerationErrorSchema>;
+
+export function createAiGenerationResultSchema<DataSchema extends z.ZodTypeAny>(
+  dataSchema: DataSchema,
+) {
+  return z.discriminatedUnion("status", [
+    z.object({ status: z.literal("success"), data: dataSchema }),
+    z.object({ status: z.literal("error"), error: aiGenerationErrorSchema }),
+  ]);
+}
+
+export const exerciseSetGenerationResultSchema = createAiGenerationResultSchema(exerciseSetSchema);
+export type ExerciseSetGenerationResult = z.infer<typeof exerciseSetGenerationResultSchema>;
+
+export const presentationGenerationResultSchema =
+  createAiGenerationResultSchema(presentationSchema);
+export type PresentationGenerationResult = z.infer<typeof presentationGenerationResultSchema>;
+
+/**
+ * Come createAiGenerationResultSchema, ma con `fromCache` incluso nello
+ * schema stesso (non aggiunto "a mano" dopo): è la forma restituita
+ * dall'orchestrazione con cache (electron/ai/exerciseSet.ts,
+ * electron/ai/presentation.ts) e quindi dai canali IPC
+ * `studyAi:generateExercises`/`studyAi:generatePresentation`.
+ */
+export function createAiGenerationOutcomeSchema<DataSchema extends z.ZodTypeAny>(
+  dataSchema: DataSchema,
+) {
+  return z.discriminatedUnion("status", [
+    z.object({ status: z.literal("success"), data: dataSchema, fromCache: z.boolean() }),
+    z.object({
+      status: z.literal("error"),
+      error: aiGenerationErrorSchema,
+      fromCache: z.boolean(),
+    }),
+  ]);
+}
+
+export const exerciseSetGenerationOutcomeSchema =
+  createAiGenerationOutcomeSchema(exerciseSetSchema);
+export type ExerciseSetGenerationOutcome = z.infer<typeof exerciseSetGenerationOutcomeSchema>;
+
+export const presentationGenerationOutcomeSchema =
+  createAiGenerationOutcomeSchema(presentationSchema);
+export type PresentationGenerationOutcome = z.infer<typeof presentationGenerationOutcomeSchema>;
+
+// ---------- AI: generazioni persistite per lezione (cache + storico) ----------
+// Forma della riga così come persistita in `lesson_ai_generations`
+// (electron/db/schema.ts): `payloadJson` è la stringa JSON grezza (validata
+// col relativo schema solo quando serve il contenuto tipizzato, vedi
+// electron/db/repositories.ts::LessonAiGenerationsRepo), non il payload già
+// parsato — stesso stile di `lessonAiOutputSchema`/`courseAiOutputSchema`.
+
+export const aiGenerationKindSchema = z.enum(["exercise_set", "presentation"]);
+export type AiGenerationKind = z.infer<typeof aiGenerationKindSchema>;
+
+export const aiGenerationStatusSchema = z.enum(["ready", "failed"]);
+export type AiGenerationStatus = z.infer<typeof aiGenerationStatusSchema>;
+
+export const lessonAiGenerationSchema = z
+  .object({
+    id: z.string(),
+    lessonId: z.string(),
+    kind: aiGenerationKindSchema,
+    sourceContentHash: z.string(),
+    schemaVersion: z.number().int(),
+    model: z.string(),
+    status: aiGenerationStatusSchema,
+    payloadJson: z.string().nullable(),
+    errorMessage: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  })
+  .superRefine((row, ctx) => {
+    if (row.status === "ready" && row.payloadJson === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Una generazione 'ready' deve avere un payloadJson",
+        path: ["payloadJson"],
+      });
+    }
+    if (row.status === "failed" && row.errorMessage === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Una generazione 'failed' deve avere un errorMessage",
+        path: ["errorMessage"],
+      });
+    }
+  });
+export type LessonAiGeneration = z.infer<typeof lessonAiGenerationSchema>;

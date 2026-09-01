@@ -17,6 +17,14 @@ export default defineConfig({
   platform: "node",
   target: "node20",
   sourcemap: true,
-  clean: true,
+  // NON true: `outDir` è "dist", la stessa cartella genitore in cui `pnpm
+  // build:renderer` (vite, build.outDir: "dist/renderer") scrive il
+  // renderer. `clean: true` di tsup cancella l'intero outDir prima di
+  // scrivere, quindi in `pnpm build` (build:renderer poi build:electron)
+  // wipeava dist/renderer appena costruito, lasciando un pacchetto senza
+  // renderer. tsup emette sempre gli stessi due file (main/index.js,
+  // preload/index.js, nomi fissi non hashati): non pulire prima non lascia
+  // residui stantii da ripulire, a differenza dei chunk hashati di vite.
+  clean: false,
   external: ["electron", "better-sqlite3", "keytar", "pdf-parse", "mammoth"],
 });

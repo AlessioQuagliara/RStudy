@@ -16,6 +16,8 @@ import {
   ragQueryInputSchema,
   updateSettingsInputSchema,
   setApiKeyInputSchema,
+  generateLessonExercisesInputSchema,
+  generateLessonPresentationInputSchema,
 } from "./schemas";
 
 /**
@@ -55,6 +57,9 @@ export const ipcInputSchemas = {
   "ai:getCourseSummary": generateCourseSummaryInputSchema,
   "ai:getLessonAiOutput": generateLessonStudyPackInputSchema,
   "ai:testConnection": z.undefined(),
+
+  "studyAi:generateExercises": generateLessonExercisesInputSchema,
+  "studyAi:generatePresentation": generateLessonPresentationInputSchema,
 
   "rag:query": ragQueryInputSchema,
 

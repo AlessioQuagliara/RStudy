@@ -20,6 +20,10 @@ import type {
   UpdateSettingsInput,
   TestConnectionResult,
   BackupData,
+  GenerateLessonExercisesInput,
+  GenerateLessonPresentationInput,
+  ExerciseSetGenerationOutcome,
+  PresentationGenerationOutcome,
 } from "../shared/schemas";
 
 /**
@@ -50,10 +54,12 @@ const api = {
     listByCourse: (courseId: string) => invoke<Material[]>("materials:listByCourse", { courseId }),
     delete: (id: string) => invoke<{ ok: true }>("materials:delete", { id }),
     pickFiles: () => invoke<string[]>("materials:pickFiles"),
-    import: (input: ImportMaterialInput) => invoke<Array<Material | null>>("materials:import", input),
+    import: (input: ImportMaterialInput) =>
+      invoke<Array<Material | null>>("materials:import", input),
   },
   flashcards: {
-    listByCourse: (courseId: string) => invoke<Flashcard[]>("flashcards:listByCourse", { courseId }),
+    listByCourse: (courseId: string) =>
+      invoke<Flashcard[]>("flashcards:listByCourse", { courseId }),
     dueToday: () => invoke<Flashcard[]>("flashcards:dueToday"),
     create: (input: CreateFlashcardInput) => invoke<Flashcard>("flashcards:create", input),
     update: (input: UpdateFlashcardInput) => invoke<Flashcard | null>("flashcards:update", input),
@@ -69,10 +75,17 @@ const api = {
       ),
     generateCourseSummary: (courseId: string) =>
       invoke<CourseAiOutput>("ai:generateCourseSummary", { courseId }),
-    getCourseSummary: (courseId: string) => invoke<CourseAiOutput | null>("ai:getCourseSummary", { courseId }),
+    getCourseSummary: (courseId: string) =>
+      invoke<CourseAiOutput | null>("ai:getCourseSummary", { courseId }),
     getLessonAiOutput: (lessonId: string) =>
       invoke<LessonAiOutput | null>("ai:getLessonAiOutput", { lessonId }),
     testConnection: () => invoke<TestConnectionResult>("ai:testConnection"),
+  },
+  studyAi: {
+    generateExercises: (input: GenerateLessonExercisesInput) =>
+      invoke<ExerciseSetGenerationOutcome>("studyAi:generateExercises", input),
+    generatePresentation: (input: GenerateLessonPresentationInput) =>
+      invoke<PresentationGenerationOutcome>("studyAi:generatePresentation", input),
   },
   rag: {
     query: (courseId: string, question: string, activeLessonId?: string | null) =>

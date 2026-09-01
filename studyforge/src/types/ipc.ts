@@ -18,6 +18,10 @@ import type {
   AppSettings,
   UpdateSettingsInput,
   TestConnectionResult,
+  GenerateLessonExercisesInput,
+  GenerateLessonPresentationInput,
+  ExerciseSetGenerationOutcome,
+  PresentationGenerationOutcome,
 } from "@shared/schemas";
 
 /**
@@ -65,8 +69,20 @@ export interface StudyForgeApi {
     getLessonAiOutput: (lessonId: string) => Promise<LessonAiOutput | null>;
     testConnection: () => Promise<TestConnectionResult>;
   };
+  studyAi: {
+    generateExercises: (
+      input: GenerateLessonExercisesInput,
+    ) => Promise<ExerciseSetGenerationOutcome>;
+    generatePresentation: (
+      input: GenerateLessonPresentationInput,
+    ) => Promise<PresentationGenerationOutcome>;
+  };
   rag: {
-    query: (courseId: string, question: string, activeLessonId?: string | null) => Promise<RagQueryResult>;
+    query: (
+      courseId: string,
+      question: string,
+      activeLessonId?: string | null,
+    ) => Promise<RagQueryResult>;
   };
   settings: {
     get: () => Promise<AppSettings>;

@@ -5,6 +5,7 @@ import { registerLessonHandlers } from "./handlers/lessons";
 import { registerMaterialHandlers } from "./handlers/materials";
 import { registerFlashcardHandlers } from "./handlers/flashcards";
 import { registerAiHandlers } from "./handlers/ai";
+import { registerStudyAiHandlers } from "./handlers/studyAi";
 import { registerRagHandlers } from "./handlers/rag";
 import { registerSettingsHandlers } from "./handlers/settings";
 import { registerBackupHandlers } from "./handlers/backup";
@@ -18,6 +19,7 @@ export function registerIpcHandlers(ctx: IpcContext): void {
   registerMaterialHandlers(db, ctx);
   registerFlashcardHandlers(db, ctx);
   registerAiHandlers(db, ctx);
+  registerStudyAiHandlers(db, ctx);
   registerRagHandlers(db, ctx);
   registerSettingsHandlers(db, ctx);
   registerBackupHandlers(db, ctx);

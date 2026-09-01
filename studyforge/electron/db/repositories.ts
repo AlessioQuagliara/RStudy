@@ -1,4 +1,5 @@
-import { asc, desc, eq, isNull, lte, or } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, lte, or } from "drizzle-orm";
+import type { z } from "zod";
 import type { Db } from "./client";
 import { createId, nowIso } from "./id";
 import {
@@ -9,6 +10,7 @@ import {
   lessonAiOutputs,
   flashcards,
   courseAiOutputs,
+  lessonAiGenerations,
 } from "./schema";
 import type {
   CreateCourseInput,
@@ -19,7 +21,12 @@ import type {
   CreateFlashcardInput,
   UpdateFlashcardInput,
   Difficulty,
+  AiGenerationKind,
+  ExerciseSet,
+  Presentation,
+  LessonAiGeneration,
 } from "../shared/schemas";
+import { exerciseSetSchema, presentationSchema, lessonAiGenerationSchema } from "../shared/schemas";
 
 type DifficultyGrade = "easy" | "medium" | "hard";
 
@@ -111,7 +118,11 @@ export const LessonsRepo = {
       .run();
     return LessonsRepo.get(db, input.id);
   },
-  setAiStatus(db: Db, id: string, aiStatus: "idle" | "queued" | "processing" | "completed" | "failed") {
+  setAiStatus(
+    db: Db,
+    id: string,
+    aiStatus: "idle" | "queued" | "processing" | "completed" | "failed",
+  ) {
     db.update(lessons).set({ aiStatus, updatedAt: nowIso() }).where(eq(lessons.id, id)).run();
   },
   delete(db: Db, id: string) {
@@ -209,8 +220,7 @@ export const DocumentChunksRepo = {
 export const LessonAiOutputsRepo = {
   getByLesson(db: Db, lessonId: string) {
     return (
-      db.select().from(lessonAiOutputs).where(eq(lessonAiOutputs.lessonId, lessonId)).get() ??
-      null
+      db.select().from(lessonAiOutputs).where(eq(lessonAiOutputs.lessonId, lessonId)).get() ?? null
     );
   },
   upsert(
@@ -298,7 +308,9 @@ export const FlashcardsRepo = {
     return db
       .select()
       .from(flashcards)
-      .where(or(isNull(flashcards.nextReviewAt), lte(flashcards.nextReviewAt, todayEnd.toISOString())))
+      .where(
+        or(isNull(flashcards.nextReviewAt), lte(flashcards.nextReviewAt, todayEnd.toISOString())),
+      )
       .all();
   },
   create(db: Db, input: CreateFlashcardInput) {
@@ -385,5 +397,184 @@ export const FlashcardsRepo = {
       .where(eq(flashcards.id, id))
       .run();
     return db.select().from(flashcards).where(eq(flashcards.id, id)).get() ?? null;
+  },
+};
+
+// ---------- Lesson AI generations (esercizi/presentazione: cache + storico) ----------
+
+export interface SaveReadyGenerationInput<TPayload> {
+  status: "ready";
+  lessonId: string;
+  sourceContentHash: string;
+  model: string;
+  payload: TPayload;
+}
+
+export interface SaveFailedGenerationInput {
+  status: "failed";
+  lessonId: string;
+  sourceContentHash: string;
+  model: string;
+  schemaVersion: number;
+  /** Messaggio sanificato per l'utente: mai il dump grezzo del provider né segreti/API key. */
+  errorMessage: string;
+}
+
+export interface CachedGeneration<TPayload> {
+  row: LessonAiGeneration;
+  payload: TPayload;
+}
+
+type GenerationPayloadForKind<K extends AiGenerationKind> = K extends "exercise_set"
+  ? ExerciseSet
+  : Presentation;
+
+/**
+ * Inserisce una riga di generazione (successo o fallimento). Privata: le API
+ * pubbliche sono `saveExerciseSet`/`savePresentation`, che passano ciascuna
+ * il proprio schema Zod così il chiamante non deve mai indicare `kind` a
+ * mano né rischiare di abbinare payload e schema sbagliati.
+ * Ri-valida sempre il payload prima di serializzarlo: nessun contenuto che
+ * non rispetti il contratto condiviso può finire nel database.
+ */
+function insertGeneration<TPayload extends { version: number }>(
+  db: Db,
+  kind: AiGenerationKind,
+  payloadSchema: z.ZodType<TPayload>,
+  input: SaveReadyGenerationInput<TPayload> | SaveFailedGenerationInput,
+): LessonAiGeneration {
+  const base = {
+    id: createId(),
+    lessonId: input.lessonId,
+    kind,
+    sourceContentHash: input.sourceContentHash,
+    model: input.model,
+    createdAt: nowIso(),
+    updatedAt: nowIso(),
+  };
+
+  const row: LessonAiGeneration =
+    input.status === "ready"
+      ? {
+          ...base,
+          status: "ready",
+          schemaVersion: payloadSchema.parse(input.payload).version,
+          payloadJson: JSON.stringify(input.payload),
+          errorMessage: null,
+        }
+      : {
+          ...base,
+          status: "failed",
+          schemaVersion: input.schemaVersion,
+          payloadJson: null,
+          errorMessage: input.errorMessage,
+        };
+
+  db.insert(lessonAiGenerations).values(row).run();
+  return row;
+}
+
+export const LessonAiGenerationsRepo = {
+  saveExerciseSet(
+    db: Db,
+    input: SaveReadyGenerationInput<ExerciseSet> | SaveFailedGenerationInput,
+  ) {
+    return insertGeneration(db, "exercise_set", exerciseSetSchema, input);
+  },
+
+  savePresentation(
+    db: Db,
+    input: SaveReadyGenerationInput<Presentation> | SaveFailedGenerationInput,
+  ) {
+    return insertGeneration(db, "presentation", presentationSchema, input);
+  },
+
+  /**
+   * Ultima generazione "ready" per lezione+tipo+hash contenuto sorgente:
+   * se presente e valida, il chiamante evita di richiamare il provider AI.
+   * Un record con payload legacy/corrotto (JSON non valido o non conforme
+   * allo schema) viene trattato come cache-miss (torna null, non lancia)
+   * così un dato sporco nel DB non manda mai in crash l'app.
+   */
+  findCachedGeneration<K extends AiGenerationKind>(
+    db: Db,
+    params: { lessonId: string; kind: K; sourceContentHash: string },
+  ): CachedGeneration<GenerationPayloadForKind<K>> | null {
+    const row = db
+      .select()
+      .from(lessonAiGenerations)
+      .where(
+        and(
+          eq(lessonAiGenerations.lessonId, params.lessonId),
+          eq(lessonAiGenerations.kind, params.kind),
+          eq(lessonAiGenerations.sourceContentHash, params.sourceContentHash),
+          eq(lessonAiGenerations.status, "ready"),
+        ),
+      )
+      .orderBy(desc(lessonAiGenerations.createdAt))
+      .get();
+
+    if (!row) return null;
+
+    let parsedJson: unknown;
+    try {
+      parsedJson = row.payloadJson === null ? null : JSON.parse(row.payloadJson);
+    } catch {
+      console.warn(
+        `[LessonAiGenerationsRepo] payloadJson non è JSON valido per la generazione ${row.id}`,
+      );
+      return null;
+    }
+
+    const payloadSchema = params.kind === "exercise_set" ? exerciseSetSchema : presentationSchema;
+    const parsed = payloadSchema.safeParse(parsedJson);
+    if (!parsed.success) {
+      console.warn(
+        `[LessonAiGenerationsRepo] payload non conforme allo schema per la generazione ${row.id}`,
+      );
+      return null;
+    }
+
+    // Il ternario sopra sceglie lo schema a runtime in base a params.kind, quindi
+    // per TypeScript `parsed.data` resta tipato come ExerciseSet | Presentation:
+    // il tipo generico K non può essere "ristretto" da un controllo a runtime.
+    // Il cast è sicuro perché payloadSchema è stato scelto proprio da params.kind.
+    return { row, payload: parsed.data } as CachedGeneration<GenerationPayloadForKind<K>>;
+  },
+
+  /**
+   * Storico delle generazioni per una lezione (facoltativamente filtrato per
+   * tipo), più recenti prima. Ogni riga è validata con `lessonAiGenerationSchema`
+   * prima di essere restituita; righe non conformi vengono scartate con un
+   * warning invece di rompere l'intera lista.
+   */
+  listGenerationsForLesson(
+    db: Db,
+    lessonId: string,
+    kind?: AiGenerationKind,
+  ): LessonAiGeneration[] {
+    const rows = db
+      .select()
+      .from(lessonAiGenerations)
+      .where(
+        kind
+          ? and(eq(lessonAiGenerations.lessonId, lessonId), eq(lessonAiGenerations.kind, kind))
+          : eq(lessonAiGenerations.lessonId, lessonId),
+      )
+      .orderBy(desc(lessonAiGenerations.createdAt))
+      .all();
+
+    const validRows: LessonAiGeneration[] = [];
+    for (const row of rows) {
+      const parsed = lessonAiGenerationSchema.safeParse(row);
+      if (parsed.success) {
+        validRows.push(parsed.data);
+      } else {
+        console.warn(
+          `[LessonAiGenerationsRepo] riga generazione scartata (shape non valida): ${row.id}`,
+        );
+      }
+    }
+    return validRows;
   },
 };

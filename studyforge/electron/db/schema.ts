@@ -54,10 +54,7 @@ export const lessons = sqliteTable(
     createdAt: timestamps.createdAt,
     updatedAt: timestamps.updatedAt,
   },
-  (t) => [
-    index("lessons_course_id_idx").on(t.courseId),
-    index("lessons_status_idx").on(t.status),
-  ],
+  (t) => [index("lessons_course_id_idx").on(t.courseId), index("lessons_status_idx").on(t.status)],
 );
 
 export const materials = sqliteTable(
@@ -186,3 +183,50 @@ export const appSettings = sqliteTable("app_settings", {
   valueJson: text("value_json").notNull(),
   updatedAt: timestamps.updatedAt,
 });
+
+/**
+ * Cache/storico delle generazioni AI "strutturate" per lezione (set di
+ * esercizi, presentazione). A differenza di `lesson_ai_outputs` (1 riga per
+ * lezione, sempre sovrascritta) qui si tiene una riga per tentativo: questo
+ * permette sia lo storico dei tentativi falliti sia, tramite l'indice unico
+ * parziale sotto, di riusare senza rigenerare l'ultima generazione riuscita
+ * per la stessa combinazione lezione+tipo+contenuto sorgente (evita di
+ * sprecare token quando gli appunti non sono cambiati).
+ * `provider` non è persistito: l'app oggi supporta un solo provider
+ * (DeepSeek, hardcoded in electron/ai/deepseekClient.ts), non configurabile
+ * come opzione — non è un dato gestito, quindi non introduciamo la colonna.
+ */
+export const lessonAiGenerations = sqliteTable(
+  "lesson_ai_generations",
+  {
+    id: text("id").primaryKey(),
+    lessonId: text("lesson_id")
+      .notNull()
+      .references(() => lessons.id, { onDelete: "cascade" }),
+    kind: text("kind", { enum: ["exercise_set", "presentation"] }).notNull(),
+    // Hash deterministico del testo lezione normalizzato (electron/ai/contentHash.ts):
+    // chiave di cache, non un segreto.
+    sourceContentHash: text("source_content_hash").notNull(),
+    schemaVersion: integer("schema_version").notNull(),
+    model: text("model").notNull(),
+    status: text("status", { enum: ["ready", "failed"] }).notNull(),
+    // Popolato solo se status = "ready" (JSON di ExerciseSet | Presentation).
+    payloadJson: text("payload_json"),
+    // Popolato solo se status = "failed": messaggio sanificato per l'utente,
+    // mai il dump grezzo dell'errore del provider né segreti/API key.
+    errorMessage: text("error_message"),
+    createdAt: timestamps.createdAt,
+    updatedAt: timestamps.updatedAt,
+  },
+  (t) => [
+    index("lesson_ai_generations_lesson_id_idx").on(t.lessonId),
+    // Indice unico parziale: al più una riga "ready" per lezione+tipo+hash
+    // contenuto, così la ricerca della cache è O(1) via indice e non può
+    // esistere più di una generazione valida duplicata per la stessa
+    // combinazione. I tentativi falliti restano fuori dal vincolo e possono
+    // accumularsi liberamente come storico.
+    uniqueIndex("lesson_ai_generations_ready_cache_uidx")
+      .on(t.lessonId, t.kind, t.sourceContentHash)
+      .where(sql`${t.status} = 'ready'`),
+  ],
+);

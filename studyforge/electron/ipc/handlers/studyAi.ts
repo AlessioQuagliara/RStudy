@@ -9,7 +9,7 @@ import { safeHandle, type IpcContext } from "../safeHandle";
  * electron/ai/presentation.ts). Separati dagli handler `ai:*` esistenti
  * (electron/ipc/handlers/ai.ts, study pack/riassunto corso) perché espongono
  * un servizio distinto (AiStudyGenerator) con un proprio namespace preload
- * (`studyforge.studyAi`), non perché duplichino logica.
+ * (`rstudy.studyAi`), non perché duplichino logica.
  * L'input non contiene mai il testo della lezione (vedi
  * generateLessonExercisesInputSchema/generateLessonPresentationInputSchema in
  * electron/shared/schemas.ts): safeHandle valida solo lessonId+opzioni, gli

@@ -18,6 +18,8 @@ import type {
   AppSettings,
   UpdateSettingsInput,
   TestConnectionResult,
+  ModelStatus,
+  LicenseStatus,
   GenerateLessonExercisesInput,
   GenerateLessonPresentationInput,
   ExerciseSetGenerationOutcome,
@@ -25,11 +27,11 @@ import type {
 } from "@shared/schemas";
 
 /**
- * Forma dell'API esposta dal preload su `window.studyforge`. Duplica (invece
+ * Forma dell'API esposta dal preload su `window.rstudy`. Duplica (invece
  * di importare) la definizione di electron/preload/index.ts per tenere il
  * typecheck del renderer isolato dai moduli Node/Electron del main process.
  */
-export interface StudyForgeApi {
+export interface RStudyApi {
   courses: {
     list: () => Promise<Course[]>;
     get: (id: string) => Promise<Course | null>;
@@ -68,6 +70,8 @@ export interface StudyForgeApi {
     getCourseSummary: (courseId: string) => Promise<CourseAiOutput | null>;
     getLessonAiOutput: (lessonId: string) => Promise<LessonAiOutput | null>;
     testConnection: () => Promise<TestConnectionResult>;
+    getModelStatus: () => Promise<ModelStatus>;
+    downloadModel: () => Promise<{ ok: true }>;
   };
   studyAi: {
     generateExercises: (
@@ -87,9 +91,6 @@ export interface StudyForgeApi {
   settings: {
     get: () => Promise<AppSettings>;
     update: (input: UpdateSettingsInput) => Promise<AppSettings>;
-    setApiKey: (apiKey: string) => Promise<{ ok: true }>;
-    clearApiKey: () => Promise<{ ok: true }>;
-    getApiKeyStatus: () => Promise<{ configured: boolean }>;
     pickImportFolder: () => Promise<string | null>;
   };
   backup: {
@@ -100,10 +101,14 @@ export interface StudyForgeApi {
   app: {
     getVersion: () => Promise<string>;
   };
+  license: {
+    getStatus: () => Promise<LicenseStatus>;
+    activate: (licenseKey: string) => Promise<LicenseStatus>;
+  };
 }
 
 declare global {
   interface Window {
-    studyforge: StudyForgeApi;
+    rstudy: RStudyApi;
   }
 }

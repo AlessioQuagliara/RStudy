@@ -1,47 +1,44 @@
 import { useEffect, useState } from "react";
-import { KeyRound, FolderOpen, Download, Upload, PlugZap, ShieldCheck } from "lucide-react";
+import { Cpu, FolderOpen, Download, Upload, PlugZap, ShieldCheck, AlertTriangle, BadgeCheck } from "lucide-react";
 import { Topbar } from "@/components/layout/Topbar";
 import { Card } from "@/components/ui/Card";
 import { useUiStore } from "@/lib/uiStore";
 import {
-  useApiKeyStatus,
-  useClearApiKey,
+  useDownloadModel,
   useExportBackup,
   useImportBackup,
+  useModelStatus,
   usePickBackupFile,
   usePickImportFolder,
-  useSetApiKey,
   useSettings,
   useUpdateSettings,
 } from "@/features/settings/api";
-import { useTestDeepSeekConnection } from "@/features/courses/aiApi";
+import { useTestLocalAiConnection } from "@/features/courses/aiApi";
+import { useLicenseStatus } from "@/features/license/api";
 import { toast } from "@/lib/toastStore";
 import type { ThemeMode } from "@shared/schemas";
 
 export function SettingsPage() {
   const { data: settings } = useSettings();
-  const { data: apiKeyStatus } = useApiKeyStatus();
+  const { data: licenseStatus } = useLicenseStatus();
+  const { data: modelStatus } = useModelStatus();
   const updateSettings = useUpdateSettings();
-  const setApiKey = useSetApiKey();
-  const clearApiKey = useClearApiKey();
+  const downloadModel = useDownloadModel();
   const pickImportFolder = usePickImportFolder();
-  const testConnection = useTestDeepSeekConnection();
+  const testConnection = useTestLocalAiConnection();
   const exportBackup = useExportBackup();
   const pickBackupFile = usePickBackupFile();
   const importBackup = useImportBackup();
   const theme = useUiStore((s) => s.theme);
   const setTheme = useUiStore((s) => s.setTheme);
 
-  const [apiKeyInput, setApiKeyInput] = useState("");
-  const [model, setModel] = useState("");
-  const [baseUrl, setBaseUrl] = useState("");
+  const [modelUri, setModelUri] = useState("");
   const [temperature, setTemperature] = useState(0.3);
   const [maxTokens, setMaxTokens] = useState(4096);
 
   useEffect(() => {
     if (settings) {
-      setModel(settings.deepseekModel);
-      setBaseUrl(settings.deepseekBaseUrl);
+      setModelUri(settings.localModelUri);
       setTemperature(settings.temperature);
       setMaxTokens(settings.maxTokens);
     }
@@ -49,21 +46,24 @@ export function SettingsPage() {
 
   const saveModelSettings = async () => {
     try {
-      await updateSettings.mutateAsync({ deepseekModel: model, deepseekBaseUrl: baseUrl, temperature, maxTokens });
+      await updateSettings.mutateAsync({ localModelUri: modelUri, temperature, maxTokens });
       toast.success("Impostazioni AI salvate");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Errore nel salvataggio");
     }
   };
 
-  const handleSaveApiKey = async () => {
-    if (!apiKeyInput.trim()) return;
+  const handleDownloadModel = async () => {
     try {
-      await setApiKey.mutateAsync(apiKeyInput.trim());
-      setApiKeyInput("");
-      toast.success("Chiave API salvata nel Keychain macOS");
+      // L'URI corrente potrebbe essere stato modificato ma non ancora salvato:
+      // il download deve sempre usare l'URI effettivamente in Impostazioni.
+      if (settings && modelUri !== settings.localModelUri) {
+        await updateSettings.mutateAsync({ localModelUri: modelUri });
+      }
+      await downloadModel.mutateAsync();
+      toast.success("Download del modello avviato");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Errore nel salvataggio della chiave");
+      toast.error(error instanceof Error ? error.message : "Impossibile avviare il download");
     }
   };
 
@@ -89,58 +89,74 @@ export function SettingsPage() {
     }
   };
 
+  const downloadDisabled =
+    modelStatus?.state === "downloading" || modelStatus?.state === "ready" || downloadModel.isPending;
+
   return (
     <>
       <Topbar title="Impostazioni" />
 
       <Card span={6}>
         <h2 className="card-title">
-          <KeyRound className="size-4" /> API key DeepSeek
+          <Cpu className="size-4" /> AI locale
         </h2>
         <p className="text-base-content/60 text-sm">
-          {apiKeyStatus?.configured ? (
+          {modelStatus?.state === "ready" && (
             <span className="flex items-center gap-1 text-success">
-              <ShieldCheck className="size-4" /> Chiave salvata nel Keychain macOS
+              <ShieldCheck className="size-4" /> Modello pronto
             </span>
-          ) : (
-            "Nessuna chiave configurata. Le funzioni AI resteranno disattivate finché non ne aggiungi una."
+          )}
+          {modelStatus?.state === "downloading" && (
+            <span>
+              Download in corso… {Math.round((modelStatus.progress ?? 0) * 100)}%
+              <progress
+                className="progress progress-primary mt-1 w-full"
+                value={(modelStatus.progress ?? 0) * 100}
+                max={100}
+              />
+            </span>
+          )}
+          {modelStatus?.state === "not_downloaded" && (
+            "Nessun modello scaricato. Le funzioni AI resteranno disattivate finché non ne scarichi uno."
+          )}
+          {modelStatus?.state === "error" && (
+            <span className="flex items-center gap-1 text-error">
+              <AlertTriangle className="size-4" /> {modelStatus.error ?? "Download fallito."}
+            </span>
           )}
         </p>
-        <div className="join">
-          <input
-            type="password"
-            className="input input-bordered join-item grow"
-            placeholder="sk-..."
-            aria-label="API key DeepSeek"
-            value={apiKeyInput}
-            onChange={(e) => setApiKeyInput(e.target.value)}
-          />
-          <button type="button" className="btn btn-primary join-item" onClick={handleSaveApiKey} disabled={!apiKeyInput.trim()}>
-            Salva
-          </button>
-        </div>
         <div className="mt-2 flex gap-2">
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={handleDownloadModel}
+            disabled={downloadDisabled}
+          >
+            <Download className="size-4" /> Scarica modello
+          </button>
           <button type="button" className="btn btn-sm" onClick={handleTestConnection} disabled={testConnection.isPending}>
             <PlugZap className="size-4" /> Testa connessione
           </button>
-          {apiKeyStatus?.configured && (
-            <button type="button" className="btn btn-sm btn-ghost text-error" onClick={() => clearApiKey.mutate()}>
-              Rimuovi chiave
-            </button>
-          )}
         </div>
+        <p className="text-base-content/40 mt-2 text-xs">
+          L'inferenza è 100% locale: nessuna API key, nessun dato inviato in rete durante l'uso. Il modello
+          viene scaricato una sola volta e salvato nella cartella dati dell'app.
+        </p>
       </Card>
 
       <Card span={6}>
         <h2 className="card-title">Modello e parametri</h2>
         <label className="form-control">
-          <span className="label-text mb-1 text-xs">Model name</span>
-          <input className="input input-bordered input-sm" value={model} onChange={(e) => setModel(e.target.value)} />
+          <span className="label-text mb-1 text-xs">URI modello (formato node-llama-cpp / Hugging Face)</span>
+          <input
+            className="input input-bordered input-sm"
+            value={modelUri}
+            onChange={(e) => setModelUri(e.target.value)}
+          />
         </label>
-        <label className="form-control">
-          <span className="label-text mb-1 text-xs">Base URL</span>
-          <input className="input input-bordered input-sm" value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} />
-        </label>
+        <p className="text-base-content/40 text-xs">
+          Cambiare l'URI dopo aver già scaricato un modello richiede un nuovo download.
+        </p>
         <div className="grid grid-cols-2 gap-3">
           <label className="form-control">
             <span className="label-text mb-1 text-xs">Temperatura ({temperature.toFixed(1)})</span>
@@ -182,6 +198,27 @@ export function SettingsPage() {
       </Card>
 
       <Card span={6}>
+        <h2 className="card-title">
+          <BadgeCheck className="size-4" /> Licenza
+        </h2>
+        {licenseStatus?.activated ? (
+          <>
+            <p className="flex items-center gap-1 text-sm text-success">
+              <ShieldCheck className="size-4" /> App attivata
+            </p>
+            <p className="text-base-content/60 text-sm">
+              Acquistata il {new Date(licenseStatus.purchasedAt!).toLocaleDateString("it-IT")}.{" "}
+              {licenseStatus.updatesIncluded
+                ? `Aggiornamenti gratuiti inclusi fino al ${new Date(licenseStatus.updatesValidUntil!).toLocaleDateString("it-IT")}.`
+                : "Il periodo di aggiornamenti gratuiti inclusi nella licenza è scaduto: le funzioni dell'app restano comunque attive."}
+            </p>
+          </>
+        ) : (
+          <p className="text-base-content/60 text-sm">Nessuna licenza attivata.</p>
+        )}
+      </Card>
+
+      <Card span={6}>
         <h2 className="card-title">Aspetto</h2>
         <div className="join">
           {(["light", "dark", "system"] as ThemeMode[]).map((mode) => (
@@ -203,8 +240,9 @@ export function SettingsPage() {
       <Card span={12}>
         <h2 className="card-title">Backup</h2>
         <p className="text-base-content/60 text-sm">
-          Il backup esporta corsi, lezioni, materiali (metadati), flashcard e output AI in un file JSON. La API key
-          DeepSeek NON viene mai inclusa nel backup: resta esclusivamente nel Keychain macOS.
+          Il backup esporta corsi, lezioni, materiali (metadati), flashcard e output AI in un file JSON. Il
+          modello AI scaricato NON viene mai incluso nel backup: resta solo il riferimento (URI/percorso) in
+          Impostazioni, e va ri-scaricato su una nuova installazione.
         </p>
         <div className="flex gap-2">
           <button type="button" className="btn btn-sm" onClick={handleExport}>

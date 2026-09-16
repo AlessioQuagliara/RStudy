@@ -1,5 +1,9 @@
-appId: com.alessioquagliara.studyforge
-productName: StudyForge
+appId: com.alessioquagliara.rstudy
+productName: RStudy
+# Icona sorgente unica (1024x1024, generata da assets/img/logo-mark.svg):
+# electron-builder deriva automaticamente .icns (mac) e .ico (win) da questo
+# PNG in fase di build, niente asset platform-specifici da mantenere a mano.
+icon: build/icon.png
 directories:
   output: release
 files:
@@ -10,6 +14,12 @@ files:
 extraResources:
   - from: drizzle
     to: drizzle
+  # Contiene la API key Paddle (PADDLE_API): finisce dentro l'app distribuita,
+  # vedi il commento di sicurezza in electron/services/paddleClient.ts. Deve
+  # esistere al momento della build (pnpm dist:*), altrimenti electron-builder
+  # fallisce — crea .env da .env.example prima di buildare.
+  - from: .env
+    to: .env
 asarUnpack:
   - "**/*.node"
 mac:
@@ -21,3 +31,20 @@ mac:
       arch: [arm64]
   hardenedRuntime: true
   gatekeeperAssess: false
+win:
+  target:
+    - target: nsis
+      arch: [x64, arm64]
+  artifactName: "${productName}-Setup-${version}-${arch}.${ext}"
+linux:
+  category: Education
+  target:
+    - target: AppImage
+      arch: [x64, arm64]
+    - target: deb
+      arch: [x64, arm64]
+  artifactName: "${productName}-${version}-${arch}.${ext}"
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true

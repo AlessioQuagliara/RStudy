@@ -250,9 +250,10 @@ export const ragQueryResultSchema = z.object({
 export type RagQueryResult = z.infer<typeof ragQueryResultSchema>;
 
 export const appSettingsSchema = z.object({
-  deepseekBaseUrl: z.string().url(),
-  deepseekModel: z.string().min(1),
-  deepseekEmbeddingModel: z.string().nullable(),
+  /** URI del modello GGUF da scaricare (formato `createModelDownloader` di node-llama-cpp, es. "hf:<user>/<repo>:<quant>"). */
+  localModelUri: z.string().min(1),
+  /** Percorso assoluto del file .gguf già scaricato, null se non ancora presente su disco. */
+  localModelPath: z.string().nullable(),
   temperature: z.number().min(0).max(2),
   maxTokens: z.number().int().min(256).max(16000),
   language: z.literal("it"),
@@ -264,8 +265,36 @@ export type AppSettings = z.infer<typeof appSettingsSchema>;
 export const updateSettingsInputSchema = appSettingsSchema.partial();
 export type UpdateSettingsInput = z.infer<typeof updateSettingsInputSchema>;
 
-export const setApiKeyInputSchema = z.object({ apiKey: z.string().min(10).max(500) });
-export type SetApiKeyInput = z.infer<typeof setApiKeyInputSchema>;
+/** Stato del download/caricamento del modello AI locale, esposto via `ai:getModelStatus`. */
+export const modelStatusSchema = z.object({
+  state: z.enum(["not_downloaded", "downloading", "ready", "error"]),
+  progress: z.number().min(0).max(1).nullable(),
+  error: z.string().nullable(),
+  modelUri: z.string(),
+});
+export type ModelStatus = z.infer<typeof modelStatusSchema>;
+
+/** Input di `license:activate`: la chiave inserita dall'utente (in pratica l'ID transazione Paddle, es. "txn_..."). */
+export const activateLicenseInputSchema = z.object({
+  licenseKey: z.string().min(1).max(200),
+});
+export type ActivateLicenseInput = z.infer<typeof activateLicenseInputSchema>;
+
+/**
+ * Stato della licenza, esposto via `license:getStatus` e ritornato da
+ * `license:activate`. `updatesIncluded` è calcolato lato main (confronto tra
+ * la data di rilascio della build corrente e `updatesValidUntil`), il
+ * renderer non deve mai ricalcolarlo.
+ */
+export const licenseStatusSchema = z.object({
+  activated: z.boolean(),
+  licenseKey: z.string().nullable(),
+  purchasedAt: z.string().nullable(),
+  activatedAt: z.string().nullable(),
+  updatesValidUntil: z.string().nullable(),
+  updatesIncluded: z.boolean(),
+});
+export type LicenseStatus = z.infer<typeof licenseStatusSchema>;
 
 export const testConnectionResultSchema = z.object({
   ok: z.boolean(),
@@ -509,7 +538,7 @@ export type GenerateLessonPresentationInput = z.input<typeof generateLessonPrese
 // un'istanza `Error` non garantita serializzabile.
 
 export const aiGenerationErrorCodeSchema = z.enum([
-  // Nessuna API key AI configurata: non è stato nemmeno tentato un contatto col provider.
+  // Nessun modello AI locale scaricato/pronto: non è stato nemmeno tentato un contatto col provider.
   "not_configured",
   // La lezione richiesta (lessonId) non esiste (più): nessun contatto col provider.
   "not_found",

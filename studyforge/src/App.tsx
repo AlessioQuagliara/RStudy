@@ -6,8 +6,15 @@ import { CourseDetailPage } from "@/features/courses/CourseDetailPage";
 import { LessonPage } from "@/features/lessons/LessonPage";
 import { FlashcardsPage } from "@/features/flashcards/FlashcardsPage";
 import { SettingsPage } from "@/features/settings/SettingsPage";
+import { ActivationScreen } from "@/features/license/ActivationScreen";
+import { useLicenseStatus } from "@/features/license/api";
 
 export default function App() {
+  const { data: licenseStatus, isLoading } = useLicenseStatus();
+
+  if (isLoading) return <div className="bg-base-200 min-h-screen" />;
+  if (!licenseStatus?.activated) return <ActivationScreen />;
+
   return (
     <AppShell>
       <Routes>

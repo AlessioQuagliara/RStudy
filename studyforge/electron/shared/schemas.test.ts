@@ -306,7 +306,7 @@ describe("exerciseSetGenerationResultSchema (envelope IPC)", () => {
   it("valida un risultato di errore con codice ed è serializzabile in JSON senza perdita", () => {
     const parsed = exerciseSetGenerationResultSchema.parse({
       status: "error",
-      error: { code: "provider_error", message: "DeepSeek non raggiungibile" },
+      error: { code: "provider_error", message: "Modello AI locale non raggiungibile" },
     });
     const roundTripped = JSON.parse(JSON.stringify(parsed));
     expect(roundTripped).toEqual(parsed);
@@ -397,7 +397,7 @@ describe("exerciseSetGenerationOutcomeSchema / presentationGenerationOutcomeSche
   it("valida un errore con fromCache:false e resta serializzabile in JSON senza perdita", () => {
     const parsed = presentationGenerationOutcomeSchema.parse({
       status: "error",
-      error: { code: "not_configured", message: "Nessuna API key AI configurata." },
+      error: { code: "not_configured", message: "Nessun modello AI locale scaricato." },
       fromCache: false,
     });
     const roundTripped = JSON.parse(JSON.stringify(parsed));

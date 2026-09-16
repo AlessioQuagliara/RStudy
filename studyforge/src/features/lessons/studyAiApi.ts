@@ -8,7 +8,7 @@ import type {
 } from "@shared/schemas";
 
 /**
- * Hook per `window.studyforge.studyAi.*` (electron/ipc/handlers/studyAi.ts):
+ * Hook per `window.rstudy.studyAi.*` (electron/ipc/handlers/studyAi.ts):
  * separati da src/features/lessons/aiApi.ts (study pack/riassunto corso) per
  * rispecchiare la stessa separazione già fatta nel main process (namespace
  * preload `studyAi` distinto da `ai`). Nessuna query/cache locale: il

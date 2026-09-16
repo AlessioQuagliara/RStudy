@@ -28,13 +28,20 @@ import {
 } from "../shared/schemas";
 
 /**
- * Sottoinsieme minimo di DeepSeekClient di cui l'adapter ha bisogno: dipendere
+ * Sottoinsieme minimo di LocalAiClient di cui l'adapter ha bisogno: dipendere
  * da questa interfaccia invece che dalla classe concreta permette di testare
- * la logica di parsing/errore con un fake, senza chiamate di rete vere
- * (DeepSeekClient la implementa già strutturalmente, nessun adattamento richiesto).
+ * la logica di parsing/errore con un fake, senza caricare un modello vero
+ * (LocalAiClient la implementa già strutturalmente, nessun adattamento
+ * richiesto). Il secondo parametro opzionale `schema` è lo ZodSchema atteso
+ * per la risposta: il client lo usa (via zod-to-json-schema) per rafforzare
+ * il prompt con un JSON Schema testuale, non come vincolo strutturale rigido
+ * — vedi il commento su GENERIC_JSON_OBJECT_SCHEMA in electron/ai/localAiClient.ts.
  */
 export interface ChatJsonClient {
-  chatJSON(messages: Array<{ role: "system" | "user"; content: string }>): Promise<string>;
+  chatJSON(
+    messages: Array<{ role: "system" | "user"; content: string }>,
+    schema?: z.ZodTypeAny,
+  ): Promise<string>;
 }
 
 type GenerationOutcome<TData> =
@@ -42,14 +49,16 @@ type GenerationOutcome<TData> =
   | { status: "error"; error: { code: AiGenerationErrorCode; message: string } };
 
 /**
- * Adapter OpenAI-compatible di AiStudyGenerator: costruisce i prompt
- * (electron/ai/prompts.ts), chiama il client via `chatJSON` (JSON mode),
- * e NON si fida mai della risposta grezza — la valida sempre con Zod, prima
- * contro la forma "solo contenuto" richiesta al modello, poi contro lo
- * schema condiviso completo (electron/shared/schemas.ts) dopo aver stampato
- * noi i metadati (version/sourceLessonId/generatedAt). Funziona con DeepSeek
- * o qualunque altro provider che esponga un endpoint chat-completions
- * OpenAI-compatible: nessuna assunzione specifica a DeepSeek qui dentro.
+ * Adapter di AiStudyGenerator: costruisce i prompt (electron/ai/prompts.ts),
+ * chiama il client via `chatJSON` (JSON mode), e NON si fida mai della
+ * risposta grezza — la valida sempre con Zod, prima contro la forma "solo
+ * contenuto" richiesta al modello, poi contro lo schema condiviso completo
+ * (electron/shared/schemas.ts) dopo aver stampato noi i metadati
+ * (version/sourceLessonId/generatedAt). Il nome "OpenAiCompatible" è storico
+ * (l'app usava un endpoint chat-completions in stile OpenAI): oggi il client
+ * concreto è LocalAiClient (inferenza locale via node-llama-cpp), ma questa
+ * classe dipende solo dall'interfaccia minima ChatJsonClient, nessuna
+ * assunzione specifica al provider qui dentro.
  */
 export class OpenAiCompatibleStudyGenerator implements AiStudyGenerator {
   constructor(
@@ -110,10 +119,13 @@ export class OpenAiCompatibleStudyGenerator implements AiStudyGenerator {
   ): Promise<GenerationOutcome<TFull>> {
     const startedAt = Date.now();
     try {
-      const raw = await this.client.chatJSON([
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ]);
+      const raw = await this.client.chatJSON(
+        [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        modelSchema,
+      );
       const modelContent = parseModelJson(raw, modelSchema);
       const full = fullSchema.parse(buildFull(modelContent));
       console.log(
@@ -130,12 +142,17 @@ export class OpenAiCompatibleStudyGenerator implements AiStudyGenerator {
 }
 
 /**
- * Traduce qualunque eccezione (rete, timeout/abort, HTTP non ok, JSON non
- * valido, schema non conforme) in un messaggio sicuro per l'utente e un
- * codice classificato. Non logga mai il messaggio grezzo dell'errore né il
- * contenuto della richiesta/risposta: solo metadati (kind, durata, model,
- * ed eventualmente lo status HTTP già estratto dal messaggio sanificato di
- * DeepSeekClient, che a sua volta non include mai body/segreti).
+ * Traduce qualunque eccezione (motore di inferenza locale non disponibile,
+ * modello non caricato, JSON non valido, schema non conforme) in un
+ * messaggio sicuro per l'utente e un codice classificato. Non logga mai il
+ * messaggio grezzo dell'errore né il contenuto della richiesta/risposta:
+ * solo metadati (kind, durata, model). Non c'è più un endpoint HTTP remoto
+ * da classificare per status code: gli errori "infrastrutturali" arrivano
+ * ora dal motore node-llama-cpp (classi come InsufficientMemoryError,
+ * UnsupportedError) o dai messaggi propri di electron/ai/localAiClient.ts.
+ * `rate_limited` resta nello schema condiviso (electron/shared/schemas.ts)
+ * ma non è più prodotto qui: non esiste un provider remoto che possa
+ * limitare le richieste per un modello che gira in locale.
  */
 function toSafeGenerationError(
   error: unknown,
@@ -148,34 +165,31 @@ function toSafeGenerationError(
     logClassifiedError(kind, "timeout", durationMs, model);
     return {
       code: "timeout",
-      message: "Il provider AI non ha risposto in tempo. Riprova tra qualche istante.",
+      message: "Il modello AI locale non ha risposto in tempo. Riprova tra qualche istante.",
     };
   }
 
   const message = error instanceof Error ? error.message : "";
 
-  if (/HTTP 429/.test(message)) {
-    logClassifiedError(kind, "rate_limited", durationMs, model);
-    return {
-      code: "rate_limited",
-      message:
-        "Il provider AI ha limitato le richieste (troppo frequenti). Riprova tra qualche minuto.",
-    };
-  }
-
-  if (/non è JSON valido|non conforme allo schema/.test(message)) {
+  if (/non è JSON valido|non conforme allo schema|risposta del modello ai locale vuota/i.test(message)) {
     logClassifiedError(kind, "invalid_response", durationMs, model);
     return {
       code: "invalid_response",
-      message: "Il provider AI ha restituito una risposta non valida. Riprova.",
+      message: "Il modello AI locale ha restituito una risposta non valida. Riprova.",
     };
   }
 
-  if (/^DeepSeek ha risposto con HTTP \d+$/.test(message)) {
+  const engineErrorClassName = error instanceof Error ? error.constructor.name : "";
+  const isEngineError =
+    ["InsufficientMemoryError", "UnsupportedError", "NoBinaryFoundError", "DisposedError"].includes(
+      engineErrorClassName,
+    ) || /contesto del modello ai locale non disponibile|inferenza ai locale fallita/i.test(message);
+  if (isEngineError) {
     logClassifiedError(kind, "provider_error", durationMs, model);
     return {
       code: "provider_error",
-      message: "Il provider AI non è raggiungibile al momento. Riprova più tardi.",
+      message:
+        "Il motore di inferenza AI locale non è disponibile al momento. Riprova o verifica il modello in Impostazioni.",
     };
   }
 

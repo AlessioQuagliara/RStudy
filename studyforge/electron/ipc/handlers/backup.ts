@@ -10,9 +10,9 @@ import { safeHandle, type IpcContext } from "../safeHandle";
 export function registerBackupHandlers(db: Db, ctx: IpcContext): void {
   safeHandle("backup:export", ctx, async () => {
     const backup = buildBackup(db);
-    const defaultPath = path.join(getBackupsDir(), `studyforge-backup-${Date.now()}.json`);
+    const defaultPath = path.join(getBackupsDir(), `rstudy-backup-${Date.now()}.json`);
     const result = await dialog.showSaveDialog({
-      title: "Esporta backup StudyForge",
+      title: "Esporta backup RStudy",
       defaultPath,
       filters: [{ name: "JSON", extensions: ["json"] }],
     });
@@ -23,7 +23,7 @@ export function registerBackupHandlers(db: Db, ctx: IpcContext): void {
 
   safeHandle("backup:pickImportFile", ctx, async () => {
     const result = await dialog.showOpenDialog({
-      title: "Importa backup StudyForge",
+      title: "Importa backup RStudy",
       properties: ["openFile"],
       filters: [{ name: "JSON", extensions: ["json"] }],
     });

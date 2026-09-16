@@ -3,7 +3,7 @@ import { DocumentChunksRepo, LessonsRepo } from "../db/repositories";
 import { CosineVectorStore, type VectorRecord } from "./vectorStore";
 import type { EmbeddingProvider } from "./embeddingProvider";
 import type { RagQueryResult } from "../shared/schemas";
-import { DeepSeekClient } from "../ai/deepseekClient";
+import type { LocalAiClient } from "../ai/localAiClient";
 
 const TOP_K = 6;
 const LESSON_PRIORITY_BOOST = 0.08;
@@ -11,7 +11,7 @@ const LESSON_PRIORITY_BOOST = 0.08;
 export interface RagServiceDeps {
   db: Db;
   embeddingProvider: EmbeddingProvider;
-  deepSeekClient: DeepSeekClient | null;
+  localAiClient: LocalAiClient | null;
 }
 
 /**
@@ -85,10 +85,10 @@ export class RagService {
       lessonId: (r.metadata.lessonId as string | null) ?? null,
     }));
 
-    if (!this.deps.deepSeekClient) {
+    if (!this.deps.localAiClient) {
       return {
         answer:
-          "Ho trovato passaggi rilevanti nel materiale del corso, ma la chiave API DeepSeek non è configurata: consulta le fonti qui sotto.",
+          "Ho trovato passaggi rilevanti nel materiale del corso, ma il modello AI locale non è ancora scaricato: vai in Impostazioni.",
         citations,
         insufficientContext: false,
       };
@@ -98,7 +98,7 @@ export class RagService {
       .map((r, i) => `[Fonte ${i + 1}: ${String(r.metadata.sourceLabel)}]\n${String(r.metadata.content)}`)
       .join("\n\n---\n\n");
 
-    const answer = await this.deps.deepSeekClient.answerWithContext({ question, context });
+    const answer = await this.deps.localAiClient.answerWithContext({ question, context });
 
     return { answer, citations, insufficientContext: false };
   }

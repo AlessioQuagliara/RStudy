@@ -8,7 +8,7 @@ import { CoursesRepo, LessonsRepo, FlashcardsRepo } from "./repositories";
  * app appena installata.
  */
 function seed() {
-  const dbTarget = process.env.STUDYFORGE_DB_PATH ?? path.resolve(process.cwd(), "studyforge.sqlite3");
+  const dbTarget = process.env.RSTUDY_DB_PATH ?? path.resolve(process.cwd(), "rstudy.sqlite3");
   const migrationsFolder = path.resolve(process.cwd(), "drizzle");
   const db = runMigrations(dbTarget, migrationsFolder);
 

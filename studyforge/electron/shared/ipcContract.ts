@@ -15,9 +15,9 @@ import {
   generateCourseSummaryInputSchema,
   ragQueryInputSchema,
   updateSettingsInputSchema,
-  setApiKeyInputSchema,
   generateLessonExercisesInputSchema,
   generateLessonPresentationInputSchema,
+  activateLicenseInputSchema,
 } from "./schemas";
 
 /**
@@ -57,6 +57,8 @@ export const ipcInputSchemas = {
   "ai:getCourseSummary": generateCourseSummaryInputSchema,
   "ai:getLessonAiOutput": generateLessonStudyPackInputSchema,
   "ai:testConnection": z.undefined(),
+  "ai:getModelStatus": z.undefined(),
+  "ai:downloadModel": z.undefined(),
 
   "studyAi:generateExercises": generateLessonExercisesInputSchema,
   "studyAi:generatePresentation": generateLessonPresentationInputSchema,
@@ -65,14 +67,14 @@ export const ipcInputSchemas = {
 
   "settings:get": z.undefined(),
   "settings:update": updateSettingsInputSchema,
-  "settings:setApiKey": setApiKeyInputSchema,
-  "settings:clearApiKey": z.undefined(),
-  "settings:getApiKeyStatus": z.undefined(),
   "settings:pickImportFolder": z.undefined(),
 
   "backup:export": z.undefined(),
   "backup:pickImportFile": z.undefined(),
   "backup:import": z.object({ filePath: z.string().min(1) }),
+
+  "license:getStatus": z.undefined(),
+  "license:activate": activateLicenseInputSchema,
 
   "app:getVersion": z.undefined(),
 } as const;

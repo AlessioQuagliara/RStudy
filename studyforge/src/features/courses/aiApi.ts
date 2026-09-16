@@ -23,13 +23,14 @@ export function useCourseChat(courseId: string) {
   });
 }
 
-export function useTestDeepSeekConnection() {
+export function useTestLocalAiConnection() {
   return useMutation({ mutationFn: () => getIpc().ai.testConnection() });
 }
 
 export function useIsAiConfigured() {
   return useQuery({
-    queryKey: ["settings", "api-key-status"],
-    queryFn: () => getIpc().settings.getApiKeyStatus(),
+    queryKey: ["ai", "model-status"],
+    queryFn: () => getIpc().ai.getModelStatus(),
+    select: (status) => status.state === "ready",
   });
 }

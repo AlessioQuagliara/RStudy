@@ -1,11 +1,21 @@
 import { app, BrowserWindow, session, shell } from "electron";
 import path from "node:path";
+import dotenv from "dotenv";
 import { runMigrations } from "../db/migrate";
 import { getDbPath } from "../services/paths";
 import { registerIpcHandlers } from "../ipc/registerHandlers";
 import { applyContentSecurityPolicy, buildAllowedOrigins } from "./security";
 
 const isDev = !app.isPackaged;
+
+// In dev, dist/main/index.js vive in studyforge/dist/main/ → .env è a due
+// livelli sopra. In produzione, `.env` è incluso come extraResource
+// (electron-builder.yml) accanto a `drizzle/`, quindi vive in resourcesPath.
+dotenv.config({
+  path: app.isPackaged
+    ? path.join(process.resourcesPath, ".env")
+    : path.join(__dirname, "../../.env"),
+});
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -30,7 +40,7 @@ function createWindow(): BrowserWindow {
     height: 900,
     minWidth: 1024,
     minHeight: 700,
-    title: "StudyForge",
+    title: "RStudy",
     backgroundColor: "#171e2c",
     show: false,
     webPreferences: {

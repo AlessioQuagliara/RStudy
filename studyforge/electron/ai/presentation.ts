@@ -80,7 +80,7 @@ async function performGeneration(
           status: "error",
           error: {
             code: "not_configured",
-            message: "Nessuna API key AI configurata. Vai in Impostazioni per aggiungerla.",
+            message: "Nessun modello AI locale scaricato. Vai in Impostazioni per scaricarlo.",
           },
         },
         false,

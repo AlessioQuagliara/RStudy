@@ -1,6 +1,6 @@
 import type { Db } from "../db/client";
 import { CoursesRepo, LessonsRepo, LessonAiOutputsRepo, CourseAiOutputsRepo, DocumentChunksRepo } from "../db/repositories";
-import { DeepSeekClient } from "./deepseekClient";
+import type { ChatJsonClient } from "./openAiCompatibleStudyGenerator";
 import { COURSE_SUMMARY_SYSTEM_PROMPT, buildCourseSummaryUserPrompt } from "./prompts";
 import { courseSummaryResponseSchema, parseModelJson } from "./schemas";
 
@@ -10,7 +10,7 @@ import { courseSummaryResponseSchema, parseModelJson } from "./schemas";
  * il materiale RAG più rilevante. Il piano di studio è "a blocchi" quando
  * manca la data d'esame: non vengono mai calcolate date assolute inventate.
  */
-export async function generateCourseSummary(db: Db, client: DeepSeekClient, courseId: string) {
+export async function generateCourseSummary(db: Db, client: ChatJsonClient, courseId: string) {
   const course = CoursesRepo.get(db, courseId);
   if (!course) throw new Error("Corso non trovato");
 
@@ -41,10 +41,13 @@ export async function generateCourseSummary(db: Db, client: DeepSeekClient, cour
     ragContext: ragChunks || undefined,
   });
 
-  const raw = await client.chatJSON([
-    { role: "system", content: COURSE_SUMMARY_SYSTEM_PROMPT },
-    { role: "user", content: userPrompt },
-  ]);
+  const raw = await client.chatJSON(
+    [
+      { role: "system", content: COURSE_SUMMARY_SYSTEM_PROMPT },
+      { role: "user", content: userPrompt },
+    ],
+    courseSummaryResponseSchema,
+  );
 
   const result = parseModelJson(raw, courseSummaryResponseSchema);
 

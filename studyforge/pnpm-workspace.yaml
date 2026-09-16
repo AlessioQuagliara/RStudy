@@ -3,4 +3,4 @@ allowBuilds:
   electron: true
   electron-winstaller: true
   esbuild: true
-  keytar: true
+  node-llama-cpp: true

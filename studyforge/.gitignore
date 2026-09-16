@@ -3,7 +3,10 @@ dist/
 release/
 *.local
 .DS_Store
-studyforge.sqlite3
-studyforge.sqlite3-*
+rstudy.sqlite3
+rstudy.sqlite3-*
 *.log
 .vite/
+.env
+.env.*
+!.env.example

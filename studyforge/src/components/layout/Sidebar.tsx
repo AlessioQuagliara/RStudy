@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, GraduationCap, Layers, Settings, Sparkles } from "lucide-react";
+import { LayoutDashboard, GraduationCap, Layers, Settings } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const NAV_ITEMS = [
@@ -15,8 +15,8 @@ export function Sidebar() {
       <label htmlFor="app-drawer" className="drawer-overlay" aria-label="Chiudi menu"></label>
       <nav className="bg-base-200 flex min-h-screen w-64 flex-col gap-2 px-2 pt-6">
         <div className="mx-3 mb-2 flex items-center gap-2 font-semibold">
-          <Sparkles className="size-5 text-primary" aria-hidden="true" />
-          <span>StudyForge</span>
+          <img src="/logo-mark.svg" alt="" className="size-6 rounded-md" aria-hidden="true" />
+          <span>RStudy</span>
         </div>
         <ul className="menu w-full grow">
           {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (

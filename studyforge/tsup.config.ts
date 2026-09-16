@@ -26,5 +26,5 @@ export default defineConfig({
   // preload/index.js, nomi fissi non hashati): non pulire prima non lascia
   // residui stantii da ripulire, a differenza dei chunk hashati di vite.
   clean: false,
-  external: ["electron", "better-sqlite3", "keytar", "pdf-parse", "mammoth"],
+  external: ["electron", "better-sqlite3", "node-llama-cpp", "pdf-parse", "mammoth"],
 });

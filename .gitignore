@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+.DS_Store
+*.swp
+*.swo
+
+# Template premium acquistati (licenza non redistribuibile): usati come
+# riferimento di design per web/, mai committati in un repo pubblico.
+/html-dashboard@2/
+/saas-landingpage-html@2/

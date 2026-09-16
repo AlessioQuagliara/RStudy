@@ -139,9 +139,9 @@ describe("OpenAiCompatibleStudyGenerator.generateExerciseSet", () => {
     }
   });
 
-  it("rate limit (HTTP 429) -> errore rate_limited", async () => {
+  it("motore di inferenza locale non disponibile -> errore provider_error", async () => {
     const client = new FakeChatJsonClient(() =>
-      Promise.reject(new Error("DeepSeek ha risposto con HTTP 429")),
+      Promise.reject(new Error("Contesto del modello AI locale non disponibile.")),
     );
     const generator = new OpenAiCompatibleStudyGenerator(client, "fake-model");
 
@@ -149,13 +149,14 @@ describe("OpenAiCompatibleStudyGenerator.generateExerciseSet", () => {
 
     expect(result.status).toBe("error");
     if (result.status === "error") {
-      expect(result.error.code).toBe("rate_limited");
+      expect(result.error.code).toBe("provider_error");
     }
   });
 
-  it("errore HTTP generico del provider -> errore provider_error", async () => {
+  it("errore di classe nota del motore locale (es. memoria insufficiente) -> errore provider_error", async () => {
+    class InsufficientMemoryError extends Error {}
     const client = new FakeChatJsonClient(() =>
-      Promise.reject(new Error("DeepSeek ha risposto con HTTP 503")),
+      Promise.reject(new InsufficientMemoryError("not enough memory to load the model")),
     );
     const generator = new OpenAiCompatibleStudyGenerator(client, "fake-model");
 

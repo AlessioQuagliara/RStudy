@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>StudyForge — trasforma i tuoi appunti in esercizi e presentazioni</title>
-<meta name="description" content="StudyForge trasforma i tuoi appunti universitari in esercizi interattivi e presentazioni per studiare in modo attivo. App desktop in arrivo per macOS e Windows, dati sempre locali.">
+<title>RStudy — Study fast, study more</title>
+<meta name="description" content="RStudy trasforma i tuoi appunti universitari in esercizi interattivi e presentazioni per studiare in modo attivo. Study fast, study more. App desktop per macOS, Windows e Linux, AI locale, dati sempre locali.">
 <meta name="color-scheme" content="dark">
-<!-- Open Graph / social preview: nessuna og:image reale ancora disponibile (nessun asset grafico nel repo).
-     TODO: quando esiste un logo/hero image reale, aggiungere <meta property="og:image" content="..."> con URL assoluto https. -->
-<meta property="og:title" content="StudyForge — studio attivo dai tuoi appunti">
-<meta property="og:description" content="Appunti universitari trasformati in esercizi interattivi e presentazioni. In arrivo per macOS e Windows.">
+<meta property="og:title" content="RStudy — Study fast, study more">
+<meta property="og:description" content="Appunti universitari trasformati in esercizi interattivi e presentazioni. AI locale, nessun dato che lascia il tuo computer. Per macOS, Windows e Linux.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://alessioquagliara.github.io/alessioquagliara-study-camp/">
+<meta property="og:image" content="https://alessioquagliara.github.io/alessioquagliara-study-camp/assets/img/logo-mark-512.png">
 <meta property="og:locale" content="it_IT">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="StudyForge — studio attivo dai tuoi appunti">
-<meta name="twitter:description" content="Appunti universitari trasformati in esercizi interattivi e presentazioni. In arrivo per macOS e Windows.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230b0f1a'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='%237c8cff'%3E◆%3C/text%3E%3C/svg%3E">
+<meta name="twitter:title" content="RStudy — Study fast, study more">
+<meta name="twitter:description" content="Appunti universitari trasformati in esercizi interattivi e presentazioni. AI locale, per macOS, Windows e Linux.">
+<link rel="icon" type="image/svg+xml" href="assets/img/logo-mark.svg">
+<link rel="apple-touch-icon" href="assets/img/logo-mark-180.png">
 <style>
   :root{
     --bg:#0b0f1a; --bg-alt:#0f1526; --card:#121a2e; --border:#212c47;
@@ -38,12 +38,13 @@
     position:sticky; top:0; z-index:10; backdrop-filter:blur(10px);
     background:rgba(11,15,26,0.75); border-bottom:1px solid var(--border);
   }
+  /* Evita che i link di navigazione (#prezzo, #download, ecc.) scrollino la
+     sezione target sotto l'header sticky: senza questo, "scroll-behavior:
+     smooth" più l'header fisso tagliano il titolo della sezione. */
+  section[id]{ scroll-margin-top:84px }
   .nav-inner{display:flex; align-items:center; justify-content:space-between; padding:16px 24px; max-width:1100px; margin:0 auto}
   .brand{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.02em}
-  .brand-mark{
-    display:grid; place-items:center; width:32px; height:32px; border-radius:9px;
-    background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#0b0f1a; font-weight:800;
-  }
+  .brand-mark{ width:32px; height:32px; border-radius:9px; display:block }
   .nav-links{display:flex; gap:28px; font-size:14px; color:var(--muted)}
   .nav-links a:hover{color:var(--text)}
   .btn{
@@ -61,7 +62,8 @@
   }
   .pill.soon{border-color:rgba(124,140,255,.4); color:var(--accent)}
   .hero{padding:96px 0 64px; text-align:center}
-  .hero h1{font-size:clamp(2.2rem,5vw,3.6rem); line-height:1.08; margin:26px 0 18px; letter-spacing:-.02em}
+  .hero .tagline{color:var(--accent-2); font-weight:700; font-size:13px; letter-spacing:.12em; text-transform:uppercase; margin:22px 0 0}
+  .hero h1{font-size:clamp(2.2rem,5vw,3.6rem); line-height:1.08; margin:10px 0 18px; letter-spacing:-.02em}
   .hero h1 .accent{background:linear-gradient(135deg,var(--accent),var(--accent-2)); -webkit-background-clip:text; background-clip:text; color:transparent}
   .hero p.lead{max-width:640px; margin:0 auto 34px; color:var(--muted); font-size:1.08rem}
   .hero-actions{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-bottom:20px}
@@ -128,12 +130,19 @@
     padding:7px 14px; border-radius:999px; font-size:12.5px;
   }
 
-  /* Compatibilità desktop: nessun bottone che simuli un download reale */
-  .platforms{display:grid; grid-template-columns:1fr 1fr; gap:18px; max-width:620px; margin:0 auto 28px}
-  @media (max-width:560px){ .platforms{grid-template-columns:1fr} }
-  .platform-card{border:1px solid var(--border); border-radius:var(--radius); background:var(--card); padding:28px; text-align:center}
+  .platforms{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; max-width:820px; margin:0 auto 28px}
+  @media (max-width:760px){ .platforms{grid-template-columns:1fr} }
+  .platform-card{border:1px solid var(--border); border-radius:var(--radius); background:var(--card); padding:28px; text-align:center; position:relative; transition:border-color .15s ease, transform .15s ease}
   .platform-card .glyph{font-size:30px; margin-bottom:10px}
-  .platform-card h3{margin:0 0 10px; font-size:15px}
+  .platform-card h3{margin:0 0 6px; font-size:15px}
+  .platform-card p.hint{margin:0 0 14px; color:var(--muted); font-size:12px; min-height:32px}
+  .platform-card.recommended{border-color:var(--accent); transform:translateY(-4px); box-shadow:0 20px 40px -24px rgba(124,140,255,.5)}
+  .platform-card .recommended-tag{
+    position:absolute; top:-11px; left:50%; transform:translateX(-50%); white-space:nowrap;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#0b0f1a; font-size:11px; font-weight:800;
+    padding:4px 12px; border-radius:999px;
+  }
+  .btn-sm{padding:9px 16px; font-size:13px}
 
   /* Prezzo */
   .price-card{max-width:380px; margin:0 auto; border:1px solid var(--border); border-radius:var(--radius); background:var(--card); padding:34px; text-align:center}
@@ -169,30 +178,32 @@
 
 <header class="nav">
   <div class="nav-inner">
-    <div class="brand"><span class="brand-mark" aria-hidden="true">◆</span> StudyForge</div>
+    <div class="brand"><img class="brand-mark" src="assets/img/logo-mark.svg" alt="" width="32" height="32"> RStudy</div>
     <nav class="nav-links" aria-label="Sezioni della pagina">
       <a href="#funzionalita">Funzionalità</a>
       <a href="#come-funziona">Come funziona</a>
       <a href="#prezzo">Prezzo</a>
+      <a href="#download">Download</a>
       <a href="#privacy">Privacy</a>
     </nav>
-    <a class="btn btn-primary" href="#beta">Unisciti alla beta</a>
+    <a class="btn btn-primary" href="#prezzo">Acquista</a>
   </div>
 </header>
 
 <main>
   <section class="hero wrap">
-    <span class="pill">✦ App desktop per macOS e Windows · in arrivo</span>
+    <span class="pill">✦ App desktop per macOS, Windows e Linux · AI locale</span>
+    <p class="tagline">Study fast, study more</p>
     <h1>I tuoi appunti diventano <span class="accent">esercizi e presentazioni</span></h1>
     <p class="lead">
-      StudyForge trasforma i tuoi appunti universitari in esercizi interattivi e presentazioni per studiare in modo
+      RStudy trasforma i tuoi appunti universitari in esercizi interattivi e presentazioni per studiare in modo
       attivo. Pensato per materie tecniche: formule, codice e teoria, non solo testo.
     </p>
     <div class="hero-actions">
-      <a class="btn btn-primary" href="#beta">Unisciti alla beta</a>
+      <a class="btn btn-primary" href="#prezzo">Acquista RStudy</a>
       <a class="btn btn-ghost" href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/tree/main/studyforge">Vedi il codice</a>
     </div>
-    <p class="hero-note">Beta in arrivo · i tuoi appunti restano sul tuo computer · progettato per rendere il ripasso più attivo</p>
+    <p class="hero-note">Licenza one-time, nessun abbonamento · AI generativa eseguita in locale (llama.cpp) · macOS, Windows e Linux</p>
 
     <div class="mock" aria-hidden="true">
       <div class="mock-label">Illustrazione — non uno screenshot dell'app</div>
@@ -282,56 +293,84 @@
       </div>
       <div class="card">
         <div class="icon" aria-hidden="true">🔒</div>
-        <h3>Dati locali e controllo dell'utente</h3>
-        <p>Appunti e materiali restano sul tuo dispositivo. Decidi tu quando inviare del testo all'AI per generare qualcosa.</p>
+        <h3>AI locale, zero cloud</h3>
+        <p>Le generazioni girano sul tuo computer con llama.cpp: nessun appunto lascia mai il dispositivo, anche offline.</p>
       </div>
-    </div>
-  </section>
-
-  <section id="compatibilita" class="wrap">
-    <div class="section-head">
-      <span class="pill soon">Disponibilità</span>
-      <h2>In arrivo su macOS e Windows</h2>
-      <p>StudyForge è in fase di sviluppo. I download ufficiali non sono ancora pubblicati: iscriviti alla beta per essere avvisato/a al lancio.</p>
-    </div>
-    <div class="platforms">
-      <div class="platform-card">
-        <div class="glyph" aria-hidden="true">🍎</div>
-        <h3>macOS</h3>
-        <span class="pill soon">In arrivo</span>
-      </div>
-      <div class="platform-card">
-        <div class="glyph" aria-hidden="true">🪟</div>
-        <h3>Windows</h3>
-        <span class="pill soon">In arrivo</span>
-      </div>
-    </div>
-    <!-- TODO: quando saranno pubblicate le GitHub Releases con installer reali,
-         sostituire i due pill "In arrivo" sopra con veri pulsanti di download
-         (es. <a class="btn btn-primary" href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/releases/latest">Scarica per macOS</a>). -->
-    <div class="hero-actions">
-      <a class="btn btn-primary" href="#beta">Unisciti alla beta</a>
     </div>
   </section>
 
   <section id="prezzo" class="wrap">
     <div class="section-head">
-      <span class="pill soon">Prezzo · in arrivo</span>
-      <h2>Un piano semplice, pensato per studenti</h2>
-      <p>Il pagamento non è ancora attivo: qui sotto trovi il piano previsto al lancio.</p>
+      <span class="pill">Licenza one-time</span>
+      <h2>Un solo pagamento, per sempre</h2>
+      <p>Nessun abbonamento: paghi una volta, la licenza non scade. Include 1 anno di aggiornamenti gratuiti.</p>
     </div>
     <div class="price-card">
-      <h3>Student</h3>
-      <!-- TODO: aggiornare il prezzo qui se cambia prima del lancio -->
-      <p class="amount">4,99 € <span class="per">/ mese</span></p>
+      <h3>RStudy</h3>
+      <!-- Prezzo mostrato a scopo informativo: l'importo realmente addebitato
+           è quello configurato sul Price ID in Paddle Dashboard, non questo testo. -->
+      <p class="amount">39,00 € <span class="per">una tantum</span></p>
       <ul>
-        <li>Appunti, corsi e materiali senza limiti</li>
-        <li>Quota mensile di generazioni AI inclusa (esercizi e presentazioni) — non generazioni illimitate</li>
-        <li>Quiz progressivi e presentazioni generate dagli appunti</li>
+        <li>Licenza perpetua: nessun rinnovo, nessun abbonamento</li>
+        <li>1 anno di aggiornamenti gratuiti inclusi dall'acquisto</li>
+        <li>AI locale illimitata (llama.cpp) — nessuna quota, nessun costo per generazione</li>
+        <li>Appunti, corsi, quiz e presentazioni senza limiti</li>
         <li>Dati sempre locali sul tuo dispositivo</li>
       </ul>
-      <a class="btn btn-primary" href="#beta">Unisciti alla beta</a>
-      <p class="price-note">Nessun addebito oggi: il checkout non è ancora attivo.</p>
+      <button type="button" class="btn btn-primary" id="buy-button">Acquista RStudy</button>
+      <p class="price-note">Pagamento sicuro gestito da Paddle. Ricevi la chiave di licenza subito dopo l'acquisto, via email e su questa pagina.</p>
+    </div>
+  </section>
+
+  <section id="download" class="wrap">
+    <div class="section-head">
+      <span class="pill soon" id="download-pill">Disponibile dopo l'acquisto</span>
+      <h2>Scarica RStudy</h2>
+    </div>
+
+    <div id="download-locked">
+      <p style="text-align:center; color:var(--muted); max-width:480px; margin:0 auto 20px">
+        I link di download si sbloccano subito dopo l'acquisto qui sopra, insieme alla tua chiave di licenza.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#prezzo">Acquista RStudy</a>
+      </div>
+    </div>
+
+    <div id="download-unlocked" hidden>
+      <div class="price-card" style="max-width:560px; margin-bottom:32px">
+        <h3>✓ Pagamento completato</h3>
+        <p class="text-muted" style="color:var(--muted); font-size:13.5px">
+          Copia e conserva questa chiave: ti serve per attivare l'app al primo avvio. Te l'abbiamo inviata anche via email con la ricevuta Paddle.
+        </p>
+        <div style="display:flex; width:100%; margin-top:14px; flex-wrap:wrap; gap:8px">
+          <input id="license-key-output" readonly aria-label="Chiave di licenza"
+                 style="flex:1 1 220px; min-width:0; font-family:monospace; font-size:13px; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:var(--bg-alt); color:var(--text)">
+          <button type="button" class="btn btn-primary" id="copy-license-btn" style="flex:0 0 auto">Copia</button>
+        </div>
+      </div>
+
+      <p id="download-lead" style="text-align:center; color:var(--muted)">Rilevamento del sistema operativo in corso…</p>
+      <div class="platforms" id="platforms">
+        <div class="platform-card" data-os="mac">
+          <div class="glyph" aria-hidden="true">🍎</div>
+          <h3>macOS</h3>
+          <p class="hint">Apple Silicon (M1/M2/M3/M4) · file .dmg</p>
+          <a class="btn btn-primary btn-sm" href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/releases">Scarica per macOS</a>
+        </div>
+        <div class="platform-card" data-os="win">
+          <div class="glyph" aria-hidden="true">🪟</div>
+          <h3>Windows</h3>
+          <p class="hint">Windows 10/11 · installer .exe</p>
+          <a class="btn btn-primary btn-sm" href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/releases">Scarica per Windows</a>
+        </div>
+        <div class="platform-card" data-os="linux">
+          <div class="glyph" aria-hidden="true">🐧</div>
+          <h3>Linux</h3>
+          <p class="hint">AppImage o pacchetto .deb</p>
+          <a class="btn btn-primary btn-sm" href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/releases">Scarica per Linux</a>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -357,8 +396,8 @@
         <h3>🔒 Locale per progetto</h3>
         <ul>
           <li>Appunti, corsi e materiali sono salvati localmente sul tuo dispositivo.</li>
-          <li>Il testo viene inviato al provider AI solo quando avvii tu una generazione (esercizi o presentazione): nessun invio automatico o in background.</li>
-          <li>Nessuna telemetria invasiva: l'app funziona offline, tranne le richieste AI che avvii tu.</li>
+          <li>Le generazioni AI (esercizi, presentazioni, riassunti) girano in locale con llama.cpp: nessun appunto viene inviato a servizi esterni.</li>
+          <li>Nessuna telemetria invasiva: l'app funziona interamente offline, modello AI incluso.</li>
         </ul>
       </div>
       <div>
@@ -366,7 +405,7 @@
         <ul>
           <li><code>contextIsolation</code> e <code>sandbox</code> attivi, nessun accesso diretto a Node dal renderer.</li>
           <li>API IPC granulare e tipizzata, con validazione di ogni payload nel processo main.</li>
-          <li>La chiave del provider AI non viene mai salvata nel database né scritta nei log.</li>
+          <li>Nessuna chiave API da configurare: il modello AI locale non richiede credenziali né connessione a internet.</li>
         </ul>
       </div>
     </div>
@@ -374,13 +413,11 @@
 
   <section id="beta" class="wrap">
     <div class="cta">
-      <h2>Vuoi essere tra i primi a provarlo?</h2>
-      <p>StudyForge è in sviluppo attivo. Lasciaci un messaggio su GitHub per essere avvisato/a quando la beta sarà disponibile — non è richiesto alcun pagamento.</p>
+      <h2>Domande prima di acquistare?</h2>
+      <p>Problemi con l'attivazione, dubbi sulla licenza o richieste particolari: scrivici su GitHub, rispondiamo direttamente lì.</p>
       <div class="hero-actions">
-        <!-- Meccanismo di waitlist attuale: una issue precompilata su GitHub (nessun backend/servizio terzo).
-             TODO: sostituire con un form/servizio dedicato quando disponibile, mantenendo comunque
-             un'alternativa funzionante senza backend. -->
-        <a class="btn btn-primary" href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/issues/new?title=Voglio%20unirmi%20alla%20beta%20di%20StudyForge&amp;body=Ciao!%20Vorrei%20essere%20avvisato%2Fa%20quando%20la%20beta%20di%20StudyForge%20sar%C3%A0%20disponibile.">Unisciti alla beta su GitHub</a>
+        <!-- Canale di supporto attuale: una issue precompilata su GitHub (nessun backend/servizio terzo). -->
+        <a class="btn btn-primary" href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/issues/new?title=Domanda%20su%20RStudy&amp;body=Ciao!%20Ho%20una%20domanda%20su%20RStudy%3A">Contattaci su GitHub</a>
         <a class="btn btn-ghost" href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/tree/main/studyforge">Vedi il codice</a>
       </div>
     </div>
@@ -389,7 +426,7 @@
 
 <footer class="wrap">
   <div class="footer-inner">
-    <span>StudyForge — sviluppato da Alessio Quagliara</span>
+    <span>RStudy — sviluppato da Alessio Quagliara</span>
     <div class="footer-links">
       <a href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp">Repository</a>
       <a href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/issues">Issue</a>
@@ -398,5 +435,134 @@
   </div>
 </footer>
 
+<!--
+  Paddle Checkout (Billing v2). Token e price ID qui sotto sono REALI ma di
+  ambiente Sandbox (creati via API Paddle: prodotto "RStudy", prezzo one-time
+  39,00 EUR) — bastano per testare l'intero flusso di checkout con carte di
+  test Paddle, ma non fanno addebiti veri. Prima di andare live:
+  - Crea un client-side token Live in Dashboard Paddle → Developer Tools →
+    Authentication (o via API come questo: POST /client-tokens) e sostituiscilo
+    qui (inizia con "live_").
+  - Ricrea prodotto+prezzo nell'ambiente Live (le risorse Sandbox non esistono
+    in produzione) e sostituisci PADDLE_PRICE_ID.
+  - Rimuovi (o cambia in "production") Paddle.Environment.set("sandbox").
+-->
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+<script>
+(function () {
+  var PADDLE_CLIENT_TOKEN = "test_5fa6e0b78f4dd44abdf4adef408";
+  var PADDLE_PRICE_ID = "pri_01m2navwm0187xakt2y9gsaybs";
+  var STORAGE_KEY = "rstudy_license_key";
+
+  Paddle.Environment.set("sandbox");
+  Paddle.Initialize({
+    token: PADDLE_CLIENT_TOKEN,
+    eventCallback: function (event) {
+      if (event.name === "checkout.completed") {
+        var transactionId = event.data && event.data.transaction_id;
+        if (transactionId) unlockDownloads(transactionId);
+      }
+    },
+  });
+
+  var buyButton = document.getElementById("buy-button");
+  if (buyButton) {
+    buyButton.addEventListener("click", function () {
+      Paddle.Checkout.open({ items: [{ priceId: PADDLE_PRICE_ID, quantity: 1 }] });
+    });
+  }
+
+  function unlockDownloads(licenseKey) {
+    try {
+      localStorage.setItem(STORAGE_KEY, licenseKey);
+    } catch (e) {
+      /* localStorage non disponibile (es. cookie bloccati): la chiave resta comunque visibile a schermo. */
+    }
+    document.getElementById("download-locked").hidden = true;
+    document.getElementById("download-unlocked").hidden = false;
+    var pill = document.getElementById("download-pill");
+    if (pill) pill.textContent = "Sbloccato";
+    var output = document.getElementById("license-key-output");
+    if (output) output.value = licenseKey;
+    document.getElementById("download").scrollIntoView({ behavior: "smooth" });
+  }
+
+  // Chiave già presente da una visita precedente in questo browser (non è una
+  // vera verifica: solo una comodità per non dover ripetere il checkout).
+  try {
+    var savedKey = localStorage.getItem(STORAGE_KEY);
+    if (savedKey) unlockDownloads(savedKey);
+  } catch (e) {
+    /* localStorage non disponibile: nessun recupero automatico, non blocca il resto della pagina. */
+  }
+
+  var copyBtn = document.getElementById("copy-license-btn");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", function () {
+      var output = document.getElementById("license-key-output");
+      if (!output || !output.value) return;
+      var flash = function (label) {
+        var original = "Copia";
+        copyBtn.textContent = label;
+        setTimeout(function () {
+          copyBtn.textContent = original;
+        }, 1500);
+      };
+      // Selezionare sempre il testo: se l'API Clipboard fallisce o è
+      // indisponibile (permessi, contesto non sicuro), l'utente può comunque
+      // copiare a mano con Cmd/Ctrl+C perché il testo è già selezionato.
+      output.select();
+      output.setSelectionRange(0, output.value.length);
+      if (!navigator.clipboard || !navigator.clipboard.writeText) {
+        flash("Selezionata — usa Cmd/Ctrl+C");
+        return;
+      }
+      navigator.clipboard.writeText(output.value).then(
+        function () {
+          flash("Copiata ✓");
+        },
+        function () {
+          flash("Selezionata — usa Cmd/Ctrl+C");
+        },
+      );
+    });
+  }
+})();
+</script>
+
+<script>
+(function () {
+  function detectOs() {
+    var platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || "";
+    var ua = navigator.userAgent || "";
+    var probe = (platform + " " + ua).toLowerCase();
+    if (probe.indexOf("mac") !== -1 || probe.indexOf("iphone") !== -1 || probe.indexOf("ipad") !== -1) return "mac";
+    if (probe.indexOf("win") !== -1) return "win";
+    if (probe.indexOf("linux") !== -1 || probe.indexOf("x11") !== -1) return "linux";
+    return null;
+  }
+
+  var labels = { mac: "macOS", win: "Windows", linux: "Linux" };
+  var os = detectOs();
+  var lead = document.getElementById("download-lead");
+  var cards = document.querySelectorAll("#platforms .platform-card");
+
+  cards.forEach(function (card) {
+    if (card.dataset.os === os) {
+      card.classList.add("recommended");
+      var tag = document.createElement("span");
+      tag.className = "recommended-tag";
+      tag.textContent = "Consigliato per te";
+      card.prepend(tag);
+    }
+  });
+
+  if (lead) {
+    lead.textContent = os
+      ? "Abbiamo rilevato " + labels[os] + ": ecco il pacchetto consigliato per il tuo sistema."
+      : "Scegli il pacchetto per il tuo sistema operativo qui sotto.";
+  }
+})();
+</script>
 </body>
 </html>

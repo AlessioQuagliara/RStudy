@@ -7,9 +7,8 @@ import { appSettingsSchema, type AppSettings, type UpdateSettingsInput } from ".
 const SETTINGS_KEY = "app_settings";
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  deepseekBaseUrl: "https://api.deepseek.com",
-  deepseekModel: "deepseek-chat",
-  deepseekEmbeddingModel: null,
+  localModelUri: "hf:Qwen/Qwen2.5-3B-Instruct-GGUF:Q4_K_M",
+  localModelPath: null,
   temperature: 0.3,
   maxTokens: 4096,
   language: "it",

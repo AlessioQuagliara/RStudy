@@ -58,9 +58,10 @@ export const courseSummaryResponseSchema = z.object({
 export type CourseSummaryResponse = z.infer<typeof courseSummaryResponseSchema>;
 
 /**
- * Estrae e valida un JSON dalla risposta grezza del modello. DeepSeek in JSON
- * mode dovrebbe restituire JSON puro, ma il parsing resta difensivo nel caso
- * il modello aggiunga testo o blocchi markdown attorno.
+ * Estrae e valida un JSON dalla risposta grezza del modello. La grammar JSON
+ * (electron/ai/localAiClient.ts) dovrebbe già forzare un output sintatticamente
+ * valido, ma il parsing resta difensivo nel caso il modello aggiunga testo o
+ * blocchi markdown attorno.
  */
 export function parseModelJson<T>(raw: string, schema: z.ZodType<T>): T {
   const stripped = raw

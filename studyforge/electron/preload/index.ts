@@ -19,6 +19,8 @@ import type {
   AppSettings,
   UpdateSettingsInput,
   TestConnectionResult,
+  ModelStatus,
+  LicenseStatus,
   BackupData,
   GenerateLessonExercisesInput,
   GenerateLessonPresentationInput,
@@ -80,6 +82,8 @@ const api = {
     getLessonAiOutput: (lessonId: string) =>
       invoke<LessonAiOutput | null>("ai:getLessonAiOutput", { lessonId }),
     testConnection: () => invoke<TestConnectionResult>("ai:testConnection"),
+    getModelStatus: () => invoke<ModelStatus>("ai:getModelStatus"),
+    downloadModel: () => invoke<{ ok: true }>("ai:downloadModel"),
   },
   studyAi: {
     generateExercises: (input: GenerateLessonExercisesInput) =>
@@ -94,9 +98,6 @@ const api = {
   settings: {
     get: () => invoke<AppSettings>("settings:get"),
     update: (input: UpdateSettingsInput) => invoke<AppSettings>("settings:update", input),
-    setApiKey: (apiKey: string) => invoke<{ ok: true }>("settings:setApiKey", { apiKey }),
-    clearApiKey: () => invoke<{ ok: true }>("settings:clearApiKey"),
-    getApiKeyStatus: () => invoke<{ configured: boolean }>("settings:getApiKeyStatus"),
     pickImportFolder: () => invoke<string | null>("settings:pickImportFolder"),
   },
   backup: {
@@ -107,9 +108,13 @@ const api = {
   app: {
     getVersion: () => invoke<string>("app:getVersion"),
   },
+  license: {
+    getStatus: () => invoke<LicenseStatus>("license:getStatus"),
+    activate: (licenseKey: string) => invoke<LicenseStatus>("license:activate", { licenseKey }),
+  },
 };
 
-export type StudyForgeApi = typeof api;
+export type RStudyApi = typeof api;
 export type { LessonAiOutput, BackupData };
 
-contextBridge.exposeInMainWorld("studyforge", api);
+contextBridge.exposeInMainWorld("rstudy", api);

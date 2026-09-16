@@ -125,7 +125,7 @@ describe("LessonAiGenerationsRepo", () => {
       status: "ready",
       lessonId,
       sourceContentHash: "hash-a",
-      model: "deepseek-chat",
+      model: "local-model-test",
       payload: VALID_EXERCISE_SET,
     });
 
@@ -138,7 +138,7 @@ describe("LessonAiGenerationsRepo", () => {
     expect(cached).not.toBeNull();
     expect(cached?.payload.exercises).toHaveLength(3);
     expect(cached?.row.schemaVersion).toBe(1);
-    expect(cached?.row.model).toBe("deepseek-chat");
+    expect(cached?.row.model).toBe("local-model-test");
   });
 
   it("findCachedGeneration è un cache-miss (null) se l'hash del contenuto è cambiato", () => {
@@ -146,7 +146,7 @@ describe("LessonAiGenerationsRepo", () => {
       status: "ready",
       lessonId,
       sourceContentHash: "hash-a",
-      model: "deepseek-chat",
+      model: "local-model-test",
       payload: VALID_EXERCISE_SET,
     });
 
@@ -163,7 +163,7 @@ describe("LessonAiGenerationsRepo", () => {
       status: "failed",
       lessonId,
       sourceContentHash: "hash-a",
-      model: "deepseek-chat",
+      model: "local-model-test",
       schemaVersion: 1,
       errorMessage: "Timeout durante la generazione",
     });
@@ -181,7 +181,7 @@ describe("LessonAiGenerationsRepo", () => {
       status: "failed",
       lessonId,
       sourceContentHash: "hash-a",
-      model: "deepseek-chat",
+      model: "local-model-test",
       schemaVersion: 1,
       errorMessage: "Il provider AI non è raggiungibile",
     });
@@ -195,7 +195,7 @@ describe("LessonAiGenerationsRepo", () => {
       status: "failed",
       lessonId,
       sourceContentHash: "hash-a",
-      model: "deepseek-chat",
+      model: "local-model-test",
       schemaVersion: 1,
       errorMessage: "Errore 1",
     });
@@ -203,7 +203,7 @@ describe("LessonAiGenerationsRepo", () => {
       status: "failed",
       lessonId,
       sourceContentHash: "hash-a",
-      model: "deepseek-chat",
+      model: "local-model-test",
       schemaVersion: 1,
       errorMessage: "Errore 2",
     });
@@ -217,7 +217,7 @@ describe("LessonAiGenerationsRepo", () => {
       status: "ready",
       lessonId,
       sourceContentHash: "hash-a",
-      model: "deepseek-chat",
+      model: "local-model-test",
       payload: VALID_EXERCISE_SET,
     });
 
@@ -226,7 +226,7 @@ describe("LessonAiGenerationsRepo", () => {
         status: "ready",
         lessonId,
         sourceContentHash: "hash-a",
-        model: "deepseek-chat",
+        model: "local-model-test",
         payload: VALID_EXERCISE_SET,
       }),
     ).toThrow();
@@ -237,7 +237,7 @@ describe("LessonAiGenerationsRepo", () => {
       status: "ready",
       lessonId,
       sourceContentHash: "hash-c",
-      model: "deepseek-chat",
+      model: "local-model-test",
       payload: VALID_PRESENTATION,
     });
 
@@ -263,7 +263,7 @@ describe("LessonAiGenerationsRepo", () => {
       status: "ready",
       lessonId,
       sourceContentHash: "hash-a",
-      model: "deepseek-chat",
+      model: "local-model-test",
       payload: VALID_EXERCISE_SET,
     });
 
@@ -291,7 +291,7 @@ describe("LessonAiGenerationsRepo", () => {
       status: "ready",
       lessonId,
       sourceContentHash: "hash-a",
-      model: "deepseek-chat",
+      model: "local-model-test",
       payload: VALID_EXERCISE_SET,
     });
 
@@ -315,7 +315,7 @@ describe("LessonAiGenerationsRepo", () => {
       status: "ready",
       lessonId,
       sourceContentHash: "hash-a",
-      model: "deepseek-chat",
+      model: "local-model-test",
       payload: VALID_EXERCISE_SET,
     });
 
@@ -323,7 +323,7 @@ describe("LessonAiGenerationsRepo", () => {
       .prepare(
         `INSERT INTO lesson_ai_generations
            (id, lesson_id, kind, source_content_hash, schema_version, model, status, payload_json, error_message, created_at, updated_at)
-         VALUES (?, ?, 'exercise_set', 'hash-corrotto', 1, 'deepseek-chat', 'stato-inventato', NULL, NULL, datetime('now'), datetime('now'))`,
+         VALUES (?, ?, 'exercise_set', 'hash-corrotto', 1, 'local-model-test', 'stato-inventato', NULL, NULL, datetime('now'), datetime('now'))`,
       )
       .run("corrupt-row-id", lessonId);
 
@@ -337,14 +337,14 @@ describe("LessonAiGenerationsRepo", () => {
       status: "ready",
       lessonId,
       sourceContentHash: "hash-a",
-      model: "deepseek-chat",
+      model: "local-model-test",
       payload: VALID_EXERCISE_SET,
     });
     LessonAiGenerationsRepo.savePresentation(db, {
       status: "ready",
       lessonId,
       sourceContentHash: "hash-c",
-      model: "deepseek-chat",
+      model: "local-model-test",
       payload: VALID_PRESENTATION,
     });
 

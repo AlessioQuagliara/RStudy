@@ -185,6 +185,24 @@ export const appSettings = sqliteTable("app_settings", {
 });
 
 /**
+ * Una sola riga per installazione (id fisso "current", stesso pattern di
+ * app_settings). La licenza è perpetua (one-time): `updatesValidUntil` è
+ * precalcolato all'attivazione (purchasedAt + 1 anno) così le verifiche
+ * successive (electron/services/licenseService.ts) sono un semplice
+ * confronto di date, senza richiamare Paddle ad ogni avvio.
+ */
+export const license = sqliteTable("license", {
+  id: text("id").primaryKey(),
+  licenseKey: text("license_key").notNull(),
+  paddleTransactionId: text("paddle_transaction_id").notNull(),
+  purchasedAt: text("purchased_at").notNull(),
+  activatedAt: text("activated_at").notNull(),
+  updatesValidUntil: text("updates_valid_until").notNull(),
+  createdAt: timestamps.createdAt,
+  updatedAt: timestamps.updatedAt,
+});
+
+/**
  * Cache/storico delle generazioni AI "strutturate" per lezione (set di
  * esercizi, presentazione). A differenza di `lesson_ai_outputs` (1 riga per
  * lezione, sempre sovrascritta) qui si tiene una riga per tentativo: questo
@@ -193,8 +211,9 @@ export const appSettings = sqliteTable("app_settings", {
  * per la stessa combinazione lezione+tipo+contenuto sorgente (evita di
  * sprecare token quando gli appunti non sono cambiati).
  * `provider` non è persistito: l'app oggi supporta un solo provider
- * (DeepSeek, hardcoded in electron/ai/deepseekClient.ts), non configurabile
- * come opzione — non è un dato gestito, quindi non introduciamo la colonna.
+ * (inferenza locale via node-llama-cpp, electron/ai/localAiClient.ts), non
+ * configurabile come opzione — non è un dato gestito, quindi non
+ * introduciamo la colonna.
  */
 export const lessonAiGenerations = sqliteTable(
   "lesson_ai_generations",

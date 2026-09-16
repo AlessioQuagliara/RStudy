@@ -1,6 +1,6 @@
 import type { Db } from "../db/client";
 import { CoursesRepo, LessonsRepo, LessonAiOutputsRepo, FlashcardsRepo, DocumentChunksRepo } from "../db/repositories";
-import { DeepSeekClient } from "./deepseekClient";
+import type { ChatJsonClient } from "./openAiCompatibleStudyGenerator";
 import { LESSON_STUDY_PACK_SYSTEM_PROMPT, buildLessonStudyPackUserPrompt, PROMPT_VERSION } from "./prompts";
 import { lessonStudyPackSchema, parseModelJson } from "./schemas";
 
@@ -17,7 +17,7 @@ export interface GenerateLessonStudyPackResult {
  */
 export async function generateLessonStudyPack(
   db: Db,
-  client: DeepSeekClient,
+  client: ChatJsonClient,
   model: string,
   lessonId: string,
 ): Promise<GenerateLessonStudyPackResult> {
@@ -44,10 +44,13 @@ export async function generateLessonStudyPack(
       ragContext: relatedChunks || undefined,
     });
 
-    const raw = await client.chatJSON([
-      { role: "system", content: LESSON_STUDY_PACK_SYSTEM_PROMPT },
-      { role: "user", content: userPrompt },
-    ]);
+    const raw = await client.chatJSON(
+      [
+        { role: "system", content: LESSON_STUDY_PACK_SYSTEM_PROMPT },
+        { role: "user", content: userPrompt },
+      ],
+      lessonStudyPackSchema,
+    );
 
     const pack = parseModelJson(raw, lessonStudyPackSchema);
 

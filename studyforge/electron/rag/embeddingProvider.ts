@@ -1,8 +1,7 @@
 /**
  * Interfaccia indipendente dal provider: la UI e il RagService non sanno mai
- * se l'embedding arriva da DeepSeek o da un fallback locale. Per aggiungere
- * un provider alternativo (OpenAI, Voyage, locale...) basta implementare
- * questa interfaccia, senza toccare RagService o la UI.
+ * come viene calcolato l'embedding. Per aggiungere un provider alternativo
+ * basta implementare questa interfaccia, senza toccare RagService o la UI.
  */
 export interface EmbeddingProvider {
   readonly name: string;
@@ -13,9 +12,10 @@ export interface EmbeddingProvider {
 const LOCAL_DIMENSIONS = 256;
 
 /**
- * Fallback offline: hashing trigram -> bag-of-features normalizzato.
- * Non è semanticamente potente quanto un vero modello, ma non richiede rete
- * né API key e garantisce che la ricerca RAG funzioni sempre, anche offline.
+ * Unico provider di embedding dell'app: hashing trigram -> bag-of-features
+ * normalizzato. Non è semanticamente potente quanto un vero modello, ma non
+ * richiede rete né un modello aggiuntivo da scaricare/caricare in memoria, e
+ * garantisce che la ricerca RAG funzioni sempre, anche offline.
  */
 export class LocalHashEmbeddingProvider implements EmbeddingProvider {
   readonly name = "local-hash";
@@ -47,39 +47,4 @@ function hashString(input: string): number {
     hash = Math.imul(hash, 16777619);
   }
   return Math.abs(hash);
-}
-
-/**
- * Adapter verso l'endpoint embeddings OpenAI-compatible di DeepSeek.
- * Se DeepSeek non espone (o non è configurato) un modello di embedding,
- * il chiamante deve usare LocalHashEmbeddingProvider come fallback.
- */
-export class DeepSeekEmbeddingProvider implements EmbeddingProvider {
-  readonly name = "deepseek";
-  readonly dimensions: number;
-
-  constructor(
-    private readonly baseUrl: string,
-    private readonly apiKey: string,
-    private readonly model: string,
-    dimensions = 1024,
-  ) {
-    this.dimensions = dimensions;
-  }
-
-  async embed(texts: string[]): Promise<number[][]> {
-    const response = await fetch(`${this.baseUrl.replace(/\/$/, "")}/v1/embeddings`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({ model: this.model, input: texts }),
-    });
-    if (!response.ok) {
-      throw new Error(`Embedding request fallita: HTTP ${response.status}`);
-    }
-    const json = (await response.json()) as { data: Array<{ embedding: number[] }> };
-    return json.data.map((d) => d.embedding);
-  }
 }

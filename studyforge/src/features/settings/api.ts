@@ -14,23 +14,19 @@ export function useUpdateSettings() {
   });
 }
 
-export function useApiKeyStatus() {
-  return useQuery({ queryKey: ["settings", "api-key-status"], queryFn: () => getIpc().settings.getApiKeyStatus() });
-}
-
-export function useSetApiKey() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (apiKey: string) => getIpc().settings.setApiKey(apiKey),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["settings", "api-key-status"] }),
+export function useModelStatus() {
+  return useQuery({
+    queryKey: ["ai", "model-status"],
+    queryFn: () => getIpc().ai.getModelStatus(),
+    refetchInterval: (query) => (query.state.data?.state === "downloading" ? 800 : false),
   });
 }
 
-export function useClearApiKey() {
+export function useDownloadModel() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => getIpc().settings.clearApiKey(),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["settings", "api-key-status"] }),
+    mutationFn: () => getIpc().ai.downloadModel(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["ai", "model-status"] }),
   });
 }
 

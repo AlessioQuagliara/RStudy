@@ -1,72 +1,57 @@
 import type { Db } from "../db/client";
 import { getSettings } from "../services/settingsService";
-import { getDeepSeekApiKey } from "../services/secretStore";
-import { DeepSeekClient } from "./deepseekClient";
-import {
-  DeepSeekEmbeddingProvider,
-  LocalHashEmbeddingProvider,
-  type EmbeddingProvider,
-} from "../rag/embeddingProvider";
+import { getModelStatus, getLocalModelPath } from "../services/localModelService";
+import { LocalAiClient } from "./localAiClient";
+import { LocalHashEmbeddingProvider, type EmbeddingProvider } from "../rag/embeddingProvider";
 import { OpenAiCompatibleStudyGenerator } from "./openAiCompatibleStudyGenerator";
 import type { AiStudyGenerator } from "./studyGenerator";
 
-export async function createDeepSeekClient(db: Db): Promise<DeepSeekClient> {
-  const settings = getSettings(db);
-  const apiKey = await getDeepSeekApiKey();
-  if (!apiKey) {
-    throw new Error("Nessuna API key DeepSeek configurata. Vai in Impostazioni per aggiungerla.");
+export async function createLocalAiClient(db: Db): Promise<LocalAiClient> {
+  const status = getModelStatus(db);
+  if (status.state !== "ready") {
+    throw new Error("Nessun modello AI locale pronto. Vai in Impostazioni per scaricarlo.");
   }
-  return new DeepSeekClient({
-    apiKey,
-    baseUrl: settings.deepseekBaseUrl,
-    model: settings.deepseekModel,
+  const modelPath = getLocalModelPath(db);
+  if (!modelPath) {
+    throw new Error("Nessun modello AI locale pronto. Vai in Impostazioni per scaricarlo.");
+  }
+
+  const settings = getSettings(db);
+  return new LocalAiClient({
+    modelPath,
     temperature: settings.temperature,
     maxTokens: settings.maxTokens,
   });
 }
 
-export async function tryCreateDeepSeekClient(db: Db): Promise<DeepSeekClient | null> {
+export async function tryCreateLocalAiClient(db: Db): Promise<LocalAiClient | null> {
   try {
-    return await createDeepSeekClient(db);
+    return await createLocalAiClient(db);
   } catch {
     return null;
   }
 }
 
 /**
- * Sceglie l'EmbeddingProvider in base alla configurazione: se è impostato un
- * modello di embedding DeepSeek e la API key è presente, usa DeepSeek;
- * altrimenti ricade sul provider locale offline-friendly.
+ * L'app usa un solo provider di embedding: l'hashing locale offline
+ * (electron/rag/embeddingProvider.ts::LocalHashEmbeddingProvider). Non c'è
+ * più un provider di embedding remoto da scegliere: nessuna configurazione
+ * necessaria, funziona sempre, anche offline.
  */
-export async function createEmbeddingProvider(db: Db): Promise<EmbeddingProvider> {
-  const settings = getSettings(db);
-  const apiKey = await getDeepSeekApiKey();
-  if (settings.deepseekEmbeddingModel && apiKey) {
-    return new DeepSeekEmbeddingProvider(
-      settings.deepseekBaseUrl,
-      apiKey,
-      settings.deepseekEmbeddingModel,
-    );
-  }
+export async function createEmbeddingProvider(_db: Db): Promise<EmbeddingProvider> {
   return new LocalHashEmbeddingProvider();
 }
 
-// Override facoltativi via variabile d'ambiente per il generatore di
+// Override facoltativo via variabile d'ambiente per il generatore di
 // esercizi/presentazioni: SOLO fallback per sviluppo/CI (es. eseguire la
-// generazione fuori dall'app Electron pacchettizzata, dove il Keychain
-// macOS/le Impostazioni utente non sono disponibili o comode). Il percorso
-// "reale" dell'app resta Impostazioni (baseUrl/model, tabella SQLite
-// app_settings, electron/services/settingsService.ts) + Keychain (apiKey,
-// electron/services/secretStore.ts): il progetto non ha mai usato variabili
-// d'ambiente per segreti (l'unico precedente, STUDYFORGE_DB_PATH in
-// electron/db/migrate.ts, è il percorso del file DB nei test/script, non un
-// segreto). Per questo `createDeepSeekClient`/`tryCreateDeepSeekClient` sopra
-// restano invariati: solo il NUOVO generatore supporta l'override, per non
-// introdurre un comportamento diverso e non richiesto nelle funzionalità AI
-// già esistenti (study pack, riassunto corso).
-const ENV_AI_API_KEY = "STUDYFORGE_AI_API_KEY";
-const ENV_AI_BASE_URL = "STUDYFORGE_AI_BASE_URL";
-const ENV_AI_MODEL = "STUDYFORGE_AI_MODEL";
+// generazione fuori dall'app Electron pacchettizzata, dove le Impostazioni
+// utente/il DB SQLite non sono disponibili o comodi). Il percorso "reale"
+// dell'app resta Impostazioni (localModelUri/localModelPath, tabella SQLite
+// app_settings, electron/services/settingsService.ts). Con l'AI locale non
+// esistono più segreti da iniettare via env (niente più API key/base URL):
+// resta solo un override del path del file .gguf, utile per puntare a un
+// modello già presente su disco durante i test senza passare dal download UI.
+const ENV_AI_MODEL_PATH = "RSTUDY_AI_MODEL_PATH";
 
 function readEnvOverride(name: string): string | null {
   const value = process.env[name];
@@ -82,26 +67,22 @@ export interface StudyGeneratorHandle {
 
 /**
  * Assembla l'AiStudyGenerator per esercizi/presentazioni, oppure `null` se
- * non c'è alcuna API key configurata (né in Keychain né via override env):
+ * non c'è alcun modello AI locale pronto (né scaricato né via override env):
  * il chiamante (electron/ai/exerciseSet.ts, electron/ai/presentation.ts)
  * usa `null` per restituire un errore "not_configured" invece di lanciare.
  */
 export async function tryCreateStudyGenerator(db: Db): Promise<StudyGeneratorHandle | null> {
   const settings = getSettings(db);
-  const storedApiKey = await getDeepSeekApiKey();
-  const apiKey = readEnvOverride(ENV_AI_API_KEY) ?? storedApiKey;
-  if (!apiKey) return null;
+  const envModelPath = readEnvOverride(ENV_AI_MODEL_PATH);
+  const modelPath = envModelPath ?? getLocalModelPath(db);
+  if (!modelPath) return null;
 
-  const baseUrl = readEnvOverride(ENV_AI_BASE_URL) ?? settings.deepseekBaseUrl;
-  const model = readEnvOverride(ENV_AI_MODEL) ?? settings.deepseekModel;
-
-  const client = new DeepSeekClient({
-    apiKey,
-    baseUrl,
-    model,
+  const client = new LocalAiClient({
+    modelPath,
     temperature: settings.temperature,
     maxTokens: settings.maxTokens,
   });
 
+  const model = settings.localModelUri;
   return { generator: new OpenAiCompatibleStudyGenerator(client, model), model };
 }

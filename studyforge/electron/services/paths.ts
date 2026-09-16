@@ -4,14 +4,14 @@ import fs from "node:fs";
 
 /**
  * Tutte le posizioni su disco usate dall'app vivono sotto userData:
- * ~/Library/Application Support/StudyForge su macOS.
+ * ~/Library/Application Support/RStudy su macOS.
  */
 export function getUserDataDir(): string {
   return app.getPath("userData");
 }
 
 export function getDbPath(): string {
-  return path.join(getUserDataDir(), "studyforge.sqlite3");
+  return path.join(getUserDataDir(), "rstudy.sqlite3");
 }
 
 export function getMaterialsDir(): string {

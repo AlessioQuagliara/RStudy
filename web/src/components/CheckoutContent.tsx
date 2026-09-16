@@ -29,7 +29,7 @@ function detectOs(): Os {
   return null;
 }
 
-const RELEASES_URL = "https://github.com/AlessioQuagliara/alessioquagliara-study-camp/releases";
+const RELEASES_URL = "https://github.com/AlessioQuagliara/RStudy/releases";
 
 export function CheckoutContent({ locale }: { locale: Locale }) {
   const t = dict[locale].checkout;

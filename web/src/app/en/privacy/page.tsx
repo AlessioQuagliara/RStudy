@@ -16,7 +16,7 @@ export default function PrivacyPageEn() {
         <h2>Data controller</h2>
         <p>
           [Alessio Quagliara] — contact: open a report on{" "}
-          <a href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/issues">GitHub Issues</a>{" "}
+          <a href="https://github.com/AlessioQuagliara/RStudy/issues">GitHub Issues</a>{" "}
           noting it&apos;s a privacy request. [Insert a dedicated email address and, if applicable, business
           name/address here.]
         </p>

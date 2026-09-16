@@ -10,13 +10,13 @@ export function Footer({ locale }: { locale: Locale }) {
         <span className="text-base-content/70">{t.tagline}</span>
         <div className="flex gap-5">
           <a
-            href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp"
+            href="https://github.com/AlessioQuagliara/RStudy"
             className="hover:text-primary text-base-content/70"
           >
             {t.repo}
           </a>
           <a
-            href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/issues"
+            href="https://github.com/AlessioQuagliara/RStudy/issues"
             className="hover:text-primary text-base-content/70"
           >
             {t.issues}

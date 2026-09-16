@@ -44,7 +44,7 @@ pnpm build        # build statica + copia automatica in ../docs (vedi sotto)
    GitHub Pages legge i file dal branch, non builda nulla lui stesso).
 3. La pagina resta su `https://<utente>.github.io/<repo>/` — invariato.
 
-`web/next.config.ts` ha `basePath`/`assetPrefix` impostati su `/alessioquagliara-study-camp` (il nome di questo
+`web/next.config.ts` ha `basePath`/`assetPrefix` impostati su `/RStudy` (il nome di questo
 repo): se colleghi un dominio personalizzato in futuro (file `web/public/CNAME`), rimuovi quel blocco — con un
 dominio proprio il sito vive alla radice.
 

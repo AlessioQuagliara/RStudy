@@ -42,7 +42,7 @@ export default function TermsPageIt() {
         <p>
           Offriamo un rimborso completo entro <strong>14 giorni</strong> dall&apos;acquisto se RStudy non
           soddisfa le tue aspettative, richiedibile aprendo una segnalazione su{" "}
-          <a href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/issues">GitHub Issues</a> con
+          <a href="https://github.com/AlessioQuagliara/RStudy/issues">GitHub Issues</a> con
           l&apos;ID della transazione Paddle. I rimborsi vengono elaborati da Paddle secondo le loro procedure
           standard.
         </p>
@@ -60,7 +60,7 @@ export default function TermsPageIt() {
         <h2>Contatti</h2>
         <p>
           Per domande sui termini, apri una segnalazione su{" "}
-          <a href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/issues">GitHub Issues</a>.
+          <a href="https://github.com/AlessioQuagliara/RStudy/issues">GitHub Issues</a>.
         </p>
       </article>
     </PageShell>

@@ -23,7 +23,7 @@ export default function PrivacyPageIt() {
         <h2>Titolare del trattamento</h2>
         <p>
           [Alessio Quagliara] — contatto: apri una segnalazione su{" "}
-          <a href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/issues">GitHub Issues</a>{" "}
+          <a href="https://github.com/AlessioQuagliara/RStudy/issues">GitHub Issues</a>{" "}
           indicando che si tratta di una richiesta privacy. [Inserisci qui indirizzo email dedicato e, se
           applicabile, indirizzo/ragione sociale.]
         </p>

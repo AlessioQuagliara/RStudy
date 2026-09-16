@@ -42,7 +42,7 @@ export default function TermsPageEn() {
         <p>
           We offer a full refund within <strong>14 days</strong> of purchase if RStudy doesn&apos;t meet your
           expectations — request one by opening a report on{" "}
-          <a href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/issues">GitHub Issues</a> with
+          <a href="https://github.com/AlessioQuagliara/RStudy/issues">GitHub Issues</a> with
           your Paddle transaction ID. Refunds are processed by Paddle according to their standard procedures.
         </p>
 
@@ -59,7 +59,7 @@ export default function TermsPageEn() {
         <h2>Contact</h2>
         <p>
           For questions about these terms, open a report on{" "}
-          <a href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/issues">GitHub Issues</a>.
+          <a href="https://github.com/AlessioQuagliara/RStudy/issues">GitHub Issues</a>.
         </p>
       </article>
     </PageShell>

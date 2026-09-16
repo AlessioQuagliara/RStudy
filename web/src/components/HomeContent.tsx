@@ -39,7 +39,7 @@ export function HomeContent({ locale }: { locale: Locale }) {
               <ArrowRight className="size-4" />
             </Link>
             <a
-              href="https://github.com/AlessioQuagliara/alessioquagliara-study-camp/tree/main/studyforge"
+              href="https://github.com/AlessioQuagliara/RStudy/tree/main/studyforge"
               className="btn btn-outline"
             >
               {t.hero.ctaSecondary}

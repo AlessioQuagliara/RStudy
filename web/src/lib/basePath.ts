@@ -4,7 +4,7 @@
  * puro che referenzia un file di `public/` no (vedi doc Next.js su basePath
  * + next/image) — da qui l'uso esplicito ovunque serva un asset statico.
  */
-export const BASE_PATH = "/alessioquagliara-study-camp";
+export const BASE_PATH = "/RStudy";
 
 export function withBasePath(path: string): string {
   return `${BASE_PATH}${path.startsWith("/") ? path : `/${path}`}`;

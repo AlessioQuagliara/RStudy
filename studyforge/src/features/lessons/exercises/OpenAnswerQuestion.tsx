@@ -1,4 +1,5 @@
 import type { OpenAnswerExercise } from "@shared/schemas";
+import { QuestionMarkdown } from "../shared/QuestionMarkdown";
 
 /**
  * Risposta libera: confronto puramente testuale (electron/features/lessons/
@@ -40,9 +41,12 @@ export function OpenAnswerQuestion({
         ignorate): non è una valutazione semantica del significato.
       </p>
       {verified && correct === false && (
-        <p className="text-base-content/70 text-sm">
-          Risposta accettata: <span className="font-medium">{exercise.acceptedAnswers[0]}</span>
-        </p>
+        <div className="text-base-content/70 flex items-baseline gap-1 text-sm">
+          <span>Risposta accettata:</span>
+          <span className="font-medium">
+            <QuestionMarkdown>{exercise.acceptedAnswers[0] ?? ""}</QuestionMarkdown>
+          </span>
+        </div>
       )}
     </div>
   );

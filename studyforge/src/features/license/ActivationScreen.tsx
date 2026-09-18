@@ -29,7 +29,7 @@ export function ActivationScreen() {
       <div className="card bg-base-100 w-full max-w-md shadow-xl">
         <div className="card-body">
           <div className="mb-2 flex items-center gap-2">
-            <img src="/logo-mark.svg" alt="" className="size-8 rounded-md" />
+            <img src="./logo-mark.svg" alt="" className="size-8 rounded-md" />
             <h1 className="text-lg font-semibold">Attiva RStudy</h1>
           </div>
           <p className="text-base-content/60 text-sm">

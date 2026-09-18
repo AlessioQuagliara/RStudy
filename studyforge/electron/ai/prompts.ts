@@ -1,11 +1,12 @@
-export const PROMPT_VERSION = "1.1.0";
+export const PROMPT_VERSION = "1.2.0";
 
 const MERMAID_SYNTAX_RULES = `Regole per mermaid_diagram (fondamentale, causa errori di rendering se non rispettate):
-- Codice Mermaid puro e valido, preferisci "mindmap" o "flowchart TD".
+- Usa SEMPRE "flowchart TB" (mai "mindmap": l'indentazione rigida che richiede causa più spesso errori di rendering, ed è meno chiara per lo studio di un flowchart con relazioni esplicite tra i concetti).
+- Nodi con id brevi (A, B, C...) e testo racchiuso tra parentesi tonde, es. A(Concetto) --> B(Concetto correlato). Frecce etichettate solo dove la relazione non è ovvia, es. A -->|causa| B.
 - SENZA blocchi markdown (niente \`\`\`) attorno.
-- NON usare mai i caratteri < > (es. per notazioni tipo "<tipo> * <nome>"): in Mermaid vengono interpretati come tag HTML e rompono il parsing. Se devi indicare un tipo generico usa parole o parentesi tonde, es. "puntatore a tipo".
+- NON usare mai i caratteri < > (es. per notazioni tipo "<tipo> * <nome>"): in Mermaid vengono interpretati come tag HTML e rompono il parsing. Se devi indicare un tipo generico usa parole, es. "puntatore a tipo".
 - Evita parentesi quadre [ ], graffe { } e virgolette " dentro i testi dei nodi (hanno significato speciale in Mermaid); usa solo lettere, numeri, spazi e punteggiatura semplice (. , : -).
-- Ogni riga di un nodo mindmap deve avere un'indentazione coerente (2 spazi per livello) e testo breve (poche parole).`;
+- Testo dei nodi breve (poche parole): un diagramma da ripasso veloce, non un paragrafo per nodo.`;
 
 export const LESSON_STUDY_PACK_SYSTEM_PROMPT = `Sei un assistente didattico che aiuta uno studente universitario italiano a studiare in modo attivo.
 Genera SOLO contenuto basato sugli appunti e sul contesto forniti: non inventare concetti assenti dal testo.

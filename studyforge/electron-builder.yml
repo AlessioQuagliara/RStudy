@@ -44,6 +44,12 @@ mac:
       arch: [arm64]
   hardenedRuntime: true
   gatekeeperAssess: false
+  # Richiesto da macOS per mostrare il dialogo di consenso microfono (dettato
+  # appunti, electron/main/security.ts::applyPermissionPolicy): senza questa
+  # chiave in Info.plist, il sistema nega l'accesso al microfono a monte di
+  # Electron, senza alcun prompt.
+  extendInfo:
+    NSMicrophoneUsageDescription: "RStudy usa il microfono solo per il dettato degli appunti, quando lo attivi tu dal pulsante dedicato."
 win:
   target:
     - target: nsis

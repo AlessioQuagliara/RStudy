@@ -21,6 +21,8 @@ import type {
   ModelStatus,
   LicenseStatus,
   UpdateStatus,
+  TranscribeAudioInput,
+  TranscribeAudioResult,
   GenerateLessonExercisesInput,
   GenerateLessonPresentationInput,
   ExerciseSetGenerationOutcome,
@@ -73,6 +75,7 @@ export interface RStudyApi {
     testConnection: () => Promise<TestConnectionResult>;
     getModelStatus: () => Promise<ModelStatus>;
     downloadModel: () => Promise<{ ok: true }>;
+    transcribeAudio: (input: TranscribeAudioInput) => Promise<TranscribeAudioResult>;
   };
   studyAi: {
     generateExercises: (

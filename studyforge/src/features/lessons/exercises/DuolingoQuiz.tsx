@@ -330,7 +330,9 @@ export function DuolingoQuiz({
               <p className="text-base-content/70 text-xs">{currentAttempt.codingResult.message}</p>
             )}
 
-            <p className="text-base-content/80 text-sm">{currentExercise.explanation}</p>
+            <div className="text-base-content/80 text-sm">
+              <QuestionMarkdown>{currentExercise.explanation}</QuestionMarkdown>
+            </div>
 
             {currentExercise.type === "coding_challenge" && currentAttempt.codingResult?.status === "needs_review" && (
               <div>

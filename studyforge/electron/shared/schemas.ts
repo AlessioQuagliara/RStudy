@@ -270,6 +270,17 @@ export const appSettingsSchema = z.object({
   cloudBaseUrl: z.string().nullable(),
   /** Nome del modello da passare al provider cloud (campo "model" della request). */
   cloudModel: z.string().nullable(),
+  /**
+   * Chiave API per la trascrizione vocale (dettato appunti, electron/ai/transcriptionClient.ts):
+   * provider separato dal cloudApiKey della chat, perché un endpoint chat-completions
+   * OpenAI-compatible generico (Dashscope, DeepSeek...) non implementa necessariamente
+   * anche /audio/transcriptions. Stessa disciplina di privacy: mai bundlata, mai nei backup.
+   */
+  transcriptionApiKey: z.string().nullable(),
+  /** Base URL dell'endpoint di trascrizione OpenAI-compatible (default: OpenAI stesso, unico provider verificato per /audio/transcriptions). */
+  transcriptionBaseUrl: z.string().nullable(),
+  /** Nome del modello di trascrizione (default "whisper-1"). */
+  transcriptionModel: z.string().nullable(),
 });
 export type AppSettings = z.infer<typeof appSettingsSchema>;
 
@@ -328,6 +339,30 @@ export const testConnectionResultSchema = z.object({
   message: z.string(),
 });
 export type TestConnectionResult = z.infer<typeof testConnectionResultSchema>;
+
+/**
+ * Input di `ai:transcribeAudio`: audio registrato nel renderer via
+ * MediaRecorder (formato nativo Chromium, webm/opus), codificato base64 per
+ * restare coerente con la validazione Zod uniforme di safeHandle (vedi
+ * electron/ipc/safeHandle.ts) invece di introdurre un caso speciale binario
+ * nel contratto IPC. Un segmento di dettato tipico (pochi minuti) resta
+ * comunque piccolo in questa forma: nessun bisogno di streaming/chunking.
+ */
+export const transcribeAudioInputSchema = z.object({
+  audioBase64: z.string().min(1),
+  mimeType: z.string().min(1),
+});
+export type TranscribeAudioInput = z.infer<typeof transcribeAudioInputSchema>;
+
+export const transcribeAudioResultSchema = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("success"), text: z.string() }),
+  z.object({
+    status: z.literal("error"),
+    code: z.enum(["not_configured", "provider_error", "timeout", "unknown"]),
+    message: z.string(),
+  }),
+]);
+export type TranscribeAudioResult = z.infer<typeof transcribeAudioResultSchema>;
 
 export const backupDataSchema = z.object({
   version: z.literal(1),

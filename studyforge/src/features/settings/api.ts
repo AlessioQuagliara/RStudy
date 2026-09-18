@@ -72,5 +72,12 @@ export function useCheckForUpdates() {
 }
 
 export function useQuitAndInstallUpdate() {
-  return useMutation({ mutationFn: () => getIpc().updates.quitAndInstall() });
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => getIpc().updates.quitAndInstall(),
+    // Se fallisce, updaterService.ts porta lo stato a "error" lato main:
+    // invalida la query così la card in Impostazioni mostra subito il
+    // motivo reale invece di lasciare il pulsante apparentemente inerte.
+    onError: () => queryClient.invalidateQueries({ queryKey: ["updates", "status"] }),
+  });
 }

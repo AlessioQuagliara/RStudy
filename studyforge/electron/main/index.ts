@@ -5,7 +5,7 @@ import { runMigrations } from "../db/migrate";
 import { getDbPath } from "../services/paths";
 import { registerIpcHandlers } from "../ipc/registerHandlers";
 import { initUpdater, checkForUpdates } from "../services/updaterService";
-import { applyContentSecurityPolicy, buildAllowedOrigins } from "./security";
+import { applyContentSecurityPolicy, applyPermissionPolicy, buildAllowedOrigins } from "./security";
 
 const isDev = !app.isPackaged;
 
@@ -101,6 +101,7 @@ function createWindow(): BrowserWindow {
 
 app.whenReady().then(() => {
   applyContentSecurityPolicy(session.defaultSession, isDev);
+  applyPermissionPolicy(session.defaultSession);
 
   const migrationsFolder = app.isPackaged
     ? path.join(process.resourcesPath, "drizzle")

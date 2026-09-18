@@ -18,6 +18,7 @@ import {
   generateLessonExercisesInputSchema,
   generateLessonPresentationInputSchema,
   activateLicenseInputSchema,
+  transcribeAudioInputSchema,
 } from "./schemas";
 
 /**
@@ -59,6 +60,7 @@ export const ipcInputSchemas = {
   "ai:testConnection": z.undefined(),
   "ai:getModelStatus": z.undefined(),
   "ai:downloadModel": z.undefined(),
+  "ai:transcribeAudio": transcribeAudioInputSchema,
 
   "studyAi:generateExercises": generateLessonExercisesInputSchema,
   "studyAi:generatePresentation": generateLessonPresentationInputSchema,

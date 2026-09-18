@@ -23,6 +23,8 @@ import type {
   LicenseStatus,
   BackupData,
   UpdateStatus,
+  TranscribeAudioInput,
+  TranscribeAudioResult,
   GenerateLessonExercisesInput,
   GenerateLessonPresentationInput,
   ExerciseSetGenerationOutcome,
@@ -85,6 +87,8 @@ const api = {
     testConnection: () => invoke<TestConnectionResult>("ai:testConnection"),
     getModelStatus: () => invoke<ModelStatus>("ai:getModelStatus"),
     downloadModel: () => invoke<{ ok: true }>("ai:downloadModel"),
+    transcribeAudio: (input: TranscribeAudioInput) =>
+      invoke<TranscribeAudioResult>("ai:transcribeAudio", input),
   },
   studyAi: {
     generateExercises: (input: GenerateLessonExercisesInput) =>

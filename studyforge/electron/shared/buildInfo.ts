@@ -8,4 +8,4 @@
  * di queste dimensioni non giustifica la complessità di iniettarla a build
  * time via CI, un valore aggiornato a mano ad ogni tag è sufficiente.
  */
-export const APP_RELEASE_DATE = "2026-09-16";
+export const APP_RELEASE_DATE = "2026-09-18";

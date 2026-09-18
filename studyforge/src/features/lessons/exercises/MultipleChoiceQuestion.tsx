@@ -1,6 +1,7 @@
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { MultipleChoiceExercise } from "@shared/schemas";
+import { QuestionMarkdown } from "../shared/QuestionMarkdown";
 
 /**
  * 4 opzioni selezionabili. Prima della verifica: selezione singola tramite
@@ -45,7 +46,9 @@ export function MultipleChoiceQuestion({
           >
             {showAsCorrect && <Check className="size-4 shrink-0" aria-hidden="true" />}
             {showAsWrong && <X className="size-4 shrink-0" aria-hidden="true" />}
-            <span>{option}</span>
+            <span className="[&_p]:m-0">
+              <QuestionMarkdown>{option}</QuestionMarkdown>
+            </span>
           </button>
         );
       })}

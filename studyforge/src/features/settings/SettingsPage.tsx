@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Cpu, Cloud, FolderOpen, Download, Upload, PlugZap, ShieldCheck, AlertTriangle, BadgeCheck, RefreshCw } from "lucide-react";
+import { Cpu, Cloud, FolderOpen, Download, Upload, PlugZap, ShieldCheck, AlertTriangle, BadgeCheck, RefreshCw, Mic } from "lucide-react";
 import { Topbar } from "@/components/layout/Topbar";
 import { Card } from "@/components/ui/Card";
 import { useUiStore } from "@/lib/uiStore";
@@ -47,6 +47,9 @@ export function SettingsPage() {
   const [cloudApiKey, setCloudApiKey] = useState("");
   const [cloudBaseUrl, setCloudBaseUrl] = useState("");
   const [cloudModel, setCloudModel] = useState("");
+  const [transcriptionApiKey, setTranscriptionApiKey] = useState("");
+  const [transcriptionBaseUrl, setTranscriptionBaseUrl] = useState("");
+  const [transcriptionModel, setTranscriptionModel] = useState("");
 
   useEffect(() => {
     if (settings) {
@@ -57,6 +60,9 @@ export function SettingsPage() {
       setCloudApiKey(settings.cloudApiKey ?? "");
       setCloudBaseUrl(settings.cloudBaseUrl ?? "");
       setCloudModel(settings.cloudModel ?? "");
+      setTranscriptionApiKey(settings.transcriptionApiKey ?? "");
+      setTranscriptionBaseUrl(settings.transcriptionBaseUrl ?? "");
+      setTranscriptionModel(settings.transcriptionModel ?? "");
     }
   }, [settings]);
 
@@ -78,6 +84,19 @@ export function SettingsPage() {
         cloudModel: cloudModel.trim() || null,
       });
       toast.success("Provider AI salvato");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Errore nel salvataggio");
+    }
+  };
+
+  const saveTranscriptionSettings = async () => {
+    try {
+      await updateSettings.mutateAsync({
+        transcriptionApiKey: transcriptionApiKey.trim() || null,
+        transcriptionBaseUrl: transcriptionBaseUrl.trim() || null,
+        transcriptionModel: transcriptionModel.trim() || null,
+      });
+      toast.success("Impostazioni dettato salvate");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Errore nel salvataggio");
     }
@@ -195,6 +214,53 @@ export function SettingsPage() {
             <PlugZap className="size-4" /> Testa connessione
           </button>
         </div>
+      </Card>
+
+      <Card span={6}>
+        <h2 className="card-title">
+          <Mic className="size-4" /> Dettato appunti
+        </h2>
+        <p className="text-base-content/60 text-sm">
+          Il pulsante microfono nell'editor lezione registra e trascrive tramite un endpoint di trascrizione
+          OpenAI-compatible (testato con OpenAI Whisper) — separato dal provider AI di generazione qui sopra,
+          perché non tutti i provider chat sanno anche trascrivere audio.
+        </p>
+        <label className="form-control">
+          <span className="label-text mb-1 text-xs">Chiave API</span>
+          <input
+            type="password"
+            className="input input-bordered input-sm"
+            value={transcriptionApiKey}
+            onChange={(e) => setTranscriptionApiKey(e.target.value)}
+            placeholder="Incolla qui la tua chiave API"
+            autoComplete="off"
+          />
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="form-control">
+            <span className="label-text mb-1 text-xs">Base URL</span>
+            <input
+              className="input input-bordered input-sm"
+              value={transcriptionBaseUrl}
+              onChange={(e) => setTranscriptionBaseUrl(e.target.value)}
+            />
+          </label>
+          <label className="form-control">
+            <span className="label-text mb-1 text-xs">Modello</span>
+            <input
+              className="input input-bordered input-sm"
+              value={transcriptionModel}
+              onChange={(e) => setTranscriptionModel(e.target.value)}
+            />
+          </label>
+        </div>
+        <p className="text-base-content/40 text-xs">
+          Senza chiave configurata il pulsante microfono resta visibile ma segnala l'errore invece di registrare.
+          L'audio registrato va direttamente dal tuo dispositivo al provider configurato, mai salvato su disco.
+        </p>
+        <button type="button" className="btn btn-primary btn-sm mt-2 self-start" onClick={saveTranscriptionSettings}>
+          Salva impostazioni dettato
+        </button>
       </Card>
 
       <Card span={6}>
@@ -368,7 +434,13 @@ export function SettingsPage() {
             <button
               type="button"
               className="btn btn-primary btn-sm"
-              onClick={() => quitAndInstallUpdate.mutate()}
+              onClick={() =>
+                quitAndInstallUpdate.mutate(undefined, {
+                  onError: (error) =>
+                    toast.error(error instanceof Error ? error.message : "Installazione aggiornamento fallita."),
+                })
+              }
+              disabled={quitAndInstallUpdate.isPending}
             >
               Riavvia e installa
             </button>

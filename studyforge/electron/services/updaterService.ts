@@ -89,7 +89,25 @@ export function checkForUpdates(): void {
   });
 }
 
-/** Riavvia l'app e installa l'aggiornamento già scaricato. Da chiamare solo quando lo stato è "downloaded". */
+/**
+ * Riavvia l'app e installa l'aggiornamento già scaricato. Da chiamare solo
+ * quando lo stato è "downloaded". Su macOS l'installazione self-update di
+ * Squirrel.Mac richiede che l'app sia firmata E lanciata da una posizione
+ * scrivibile stabile (tipicamente /Applications, non da un .dmg montato o
+ * da `release/mac-arm64/` in locale): se una di queste condizioni manca,
+ * l'errore arriva qui in modo sincrono o tramite l'evento "error" di
+ * autoUpdater (già gestito in wireListeners) — in entrambi i casi lo stato
+ * torna "error" invece di restare silenzioso, così il pulsante "Riavvia e
+ * installa" in Impostazioni può mostrare il motivo reale invece di sembrare
+ * che non abbia fatto nulla.
+ */
 export function quitAndInstall(): void {
-  autoUpdater.quitAndInstall();
+  try {
+    autoUpdater.quitAndInstall();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Installazione aggiornamento fallita.";
+    console.warn("[UpdaterService] quitAndInstall fallito:", message);
+    state = { kind: "error", message };
+    throw error instanceof Error ? error : new Error(message);
+  }
 }

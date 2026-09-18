@@ -31,6 +31,7 @@ import {
   Heading2,
 } from "lucide-react";
 import { Callout } from "@/features/lessons/tiptap/calloutExtension";
+import { DictationButton } from "@/features/lessons/shared/DictationButton";
 
 export function LessonEditor({
   initialContent,
@@ -137,6 +138,8 @@ export function LessonEditor({
         >
           <TableIcon className="size-4" />
         </ToolbarButton>
+        <div className="divider divider-horizontal mx-0" />
+        <DictationButton editor={editor} />
         <div className="divider divider-horizontal mx-0" />
         <ToolbarButton active={false} onClick={() => editor.chain().focus().undo().run()} label="Annulla">
           <Undo2 className="size-4" />

@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { LayoutDashboard, GraduationCap, Layers, Settings } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { ChangelogPanel } from "@/components/layout/ChangelogPanel";
 
 const NAV_ITEMS = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -15,7 +16,7 @@ export function Sidebar() {
       <label htmlFor="app-drawer" className="drawer-overlay" aria-label="Chiudi menu"></label>
       <nav className="bg-base-200 flex min-h-screen w-64 flex-col gap-2 px-2 pt-6">
         <div className="mx-3 mb-2 flex items-center gap-2 font-semibold">
-          <img src="/logo-mark.svg" alt="" className="size-6 rounded-md" aria-hidden="true" />
+          <img src="./logo-mark.svg" alt="" className="size-6 rounded-md" aria-hidden="true" />
           <span>RStudy</span>
         </div>
         <ul className="menu w-full grow">
@@ -32,6 +33,7 @@ export function Sidebar() {
             </li>
           ))}
         </ul>
+        <ChangelogPanel />
         <p className="text-base-content/40 mx-3 mb-4 text-xs">Locale-first · macOS</p>
       </nav>
     </aside>

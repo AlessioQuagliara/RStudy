@@ -249,16 +249,27 @@ export const ragQueryResultSchema = z.object({
 });
 export type RagQueryResult = z.infer<typeof ragQueryResultSchema>;
 
+/** Provider usato per le generazioni AI (study pack, esercizi, presentazioni, RAG): "local" = node-llama-cpp offline, "cloud" = endpoint OpenAI-compatible remoto (electron/ai/cloudAiClient.ts). */
+export const aiProviderSchema = z.enum(["local", "cloud"]);
+export type AiProvider = z.infer<typeof aiProviderSchema>;
+
 export const appSettingsSchema = z.object({
   /** URI del modello GGUF da scaricare (formato `createModelDownloader` di node-llama-cpp, es. "hf:<user>/<repo>:<quant>"). */
   localModelUri: z.string().min(1),
   /** Percorso assoluto del file .gguf già scaricato, null se non ancora presente su disco. */
   localModelPath: z.string().nullable(),
-  temperature: z.number().min(0).max(2),
+  temperature: z.number().min(0).max(1),
   maxTokens: z.number().int().min(256).max(16000),
   language: z.literal("it"),
   theme: themeModeSchema,
   importFolder: z.string().nullable(),
+  aiProvider: aiProviderSchema,
+  /** Chiave API del provider cloud, inserita dall'utente in Impostazioni: mai bundlata nella build, resta solo nel DB locale dell'utente (a differenza delle chiavi Paddle, vedi .env.example). */
+  cloudApiKey: z.string().nullable(),
+  /** Base URL dell'endpoint chat-completions OpenAI-compatible (es. Dashscope). */
+  cloudBaseUrl: z.string().nullable(),
+  /** Nome del modello da passare al provider cloud (campo "model" della request). */
+  cloudModel: z.string().nullable(),
 });
 export type AppSettings = z.infer<typeof appSettingsSchema>;
 
@@ -273,6 +284,22 @@ export const modelStatusSchema = z.object({
   modelUri: z.string(),
 });
 export type ModelStatus = z.infer<typeof modelStatusSchema>;
+
+/**
+ * Stato del controllo/download aggiornamenti dell'app, esposto via
+ * `updates:getStatus` (electron/services/updaterService.ts, wrapper su
+ * electron-updater). "idle" = non ancora controllato in questa sessione;
+ * "not_available" = controllato, sei già sulla versione più recente;
+ * "downloaded" = update scaricato, pronto per `updates:quitAndInstall`.
+ */
+export const updateStatusSchema = z.object({
+  state: z.enum(["idle", "checking", "downloading", "downloaded", "not_available", "error"]),
+  currentVersion: z.string(),
+  latestVersion: z.string().nullable(),
+  progressPercent: z.number().min(0).max(100).nullable(),
+  error: z.string().nullable(),
+});
+export type UpdateStatus = z.infer<typeof updateStatusSchema>;
 
 /** Input di `license:activate`: la chiave inserita dall'utente (in pratica l'ID transazione Paddle, es. "txn_..."). */
 export const activateLicenseInputSchema = z.object({
@@ -333,6 +360,16 @@ export const supportedCodeLanguageSchema = z.enum([
   "python",
   "c",
   "cpp",
+  "java",
+  "csharp",
+  "go",
+  "rust",
+  "sql",
+  "bash",
+  "html",
+  "css",
+  "php",
+  "ruby",
 ]);
 export type SupportedCodeLanguage = z.infer<typeof supportedCodeLanguageSchema>;
 

@@ -22,7 +22,7 @@ loader.config({ monaco });
 // dipendere dal worker (e dai relativi rischi di CSP worker-src/blob: su
 // file://) restando comunque pienamente funzionante — la tokenizzazione per
 // l'evidenziazione sintattica non passa mai da un worker per nessuna delle
-// lingue usate qui (javascript, typescript, python, c, cpp).
+// lingue usate qui (vedi MONACO_LANGUAGE_BY_EXERCISE_LANGUAGE sotto).
 typescript.typescriptDefaults.setDiagnosticsOptions({
   noSemanticValidation: true,
   noSyntaxValidation: true,
@@ -38,6 +38,16 @@ const MONACO_LANGUAGE_BY_EXERCISE_LANGUAGE: Record<SupportedCodeLanguage, string
   python: "python",
   c: "c",
   cpp: "cpp",
+  java: "java",
+  csharp: "csharp",
+  go: "go",
+  rust: "rust",
+  sql: "sql",
+  bash: "shell",
+  html: "html",
+  css: "css",
+  php: "php",
+  ruby: "ruby",
 };
 
 /**

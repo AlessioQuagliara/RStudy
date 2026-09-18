@@ -26,5 +26,13 @@ export default defineConfig({
   // preload/index.js, nomi fissi non hashati): non pulire prima non lascia
   // residui stantii da ripulire, a differenza dei chunk hashati di vite.
   clean: false,
-  external: ["electron", "better-sqlite3", "node-llama-cpp", "pdf-parse", "mammoth"],
+  // electron-updater esterno come better-sqlite3/node-llama-cpp: internamente
+  // risolve percorsi relativi al proprio package directory (es. binari per
+  // gli update differenziali NSIS su Windows) che si romperebbero se
+  // inlineati in un unico file bundle a una profondità diversa da
+  // node_modules/electron-updater. electron-builder include comunque
+  // l'intero albero delle dipendenze di produzione in node_modules
+  // indipendentemente dall'array `files` sopra (stesso motivo per cui
+  // better-sqlite3/node-llama-cpp funzionano da pacchetto installato).
+  external: ["electron", "better-sqlite3", "node-llama-cpp", "pdf-parse", "mammoth", "electron-updater"],
 });

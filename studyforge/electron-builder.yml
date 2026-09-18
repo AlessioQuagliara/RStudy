@@ -6,6 +6,19 @@ productName: RStudy
 icon: build/icon.png
 directories:
   output: release
+# Target di pubblicazione per l'auto-update (electron-updater, vedi
+# electron/services/updaterService.ts): pubblica gli installer + i file di
+# metadati (latest.yml/latest-mac.yml/latest-linux.yml) come GitHub Release
+# taggata "v<version>" sul repo pubblico. Serve un token con permesso
+# "contents: write" nella variabile d'ambiente GH_TOKEN al momento della
+# build (`GH_TOKEN=... pnpm release:mac`); senza GH_TOKEN electron-builder
+# builda normalmente ma non pubblica nulla. NB: repo condiviso con altri
+# progetti (web, landing page, ecc.) — le release GitHub restano comunque un
+# elenco unico per l'intero repo, non solo per RStudy desktop.
+publish:
+  provider: github
+  owner: AlessioQuagliara
+  repo: RStudy
 files:
   - dist/main/**/*
   - dist/preload/**/*

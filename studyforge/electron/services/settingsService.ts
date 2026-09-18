@@ -14,6 +14,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
   language: "it",
   theme: "system",
   importFolder: null,
+  aiProvider: "local",
+  cloudApiKey: null,
+  cloudBaseUrl: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+  cloudModel: "qwen3.8-flash",
 };
 
 export function getSettings(db: Db): AppSettings {
@@ -21,6 +25,14 @@ export function getSettings(db: Db): AppSettings {
   if (!row) return DEFAULT_SETTINGS;
   try {
     const parsed = JSON.parse(row.valueJson);
+    // Difensivo per righe salvate quando `temperature` arrivava fino a 2
+    // (il vecchio limite dello slider produceva output pressoché casuale):
+    // riportarla dentro il range corrente invece di far fallire l'intero
+    // parse Zod, che scarterebbe anche `localModelPath` e farebbe perdere
+    // all'utente il riferimento al modello già scaricato.
+    if (typeof parsed.temperature === "number") {
+      parsed.temperature = Math.min(Math.max(parsed.temperature, 0), 1);
+    }
     return appSettingsSchema.parse({ ...DEFAULT_SETTINGS, ...parsed });
   } catch {
     return DEFAULT_SETTINGS;

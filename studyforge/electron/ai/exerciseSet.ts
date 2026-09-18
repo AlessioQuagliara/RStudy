@@ -90,7 +90,7 @@ async function performGeneration(
           status: "error",
           error: {
             code: "not_configured",
-            message: "Nessun modello AI locale scaricato. Vai in Impostazioni per scaricarlo.",
+            message: "Nessun modello AI configurato: scarica un modello locale o configura un provider cloud in Impostazioni.",
           },
         },
         false,

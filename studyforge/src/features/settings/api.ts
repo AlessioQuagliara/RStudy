@@ -49,3 +49,28 @@ export function usePickBackupFile() {
 export function useImportBackup() {
   return useMutation({ mutationFn: (filePath: string) => getIpc().backup.import(filePath) });
 }
+
+export function useAppVersion() {
+  return useQuery({ queryKey: ["app", "version"], queryFn: () => getIpc().app.getVersion() });
+}
+
+export function useUpdateStatus() {
+  return useQuery({
+    queryKey: ["updates", "status"],
+    queryFn: () => getIpc().updates.getStatus(),
+    refetchInterval: (query) =>
+      query.state.data?.state === "checking" || query.state.data?.state === "downloading" ? 800 : false,
+  });
+}
+
+export function useCheckForUpdates() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => getIpc().updates.check(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["updates", "status"] }),
+  });
+}
+
+export function useQuitAndInstallUpdate() {
+  return useMutation({ mutationFn: () => getIpc().updates.quitAndInstall() });
+}

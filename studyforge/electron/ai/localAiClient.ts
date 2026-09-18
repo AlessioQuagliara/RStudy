@@ -1,16 +1,11 @@
 import type { z } from "zod";
-import { zodToJsonSchema } from "zod-to-json-schema";
 import type { Llama, LlamaContext, LlamaGrammar, LlamaModel } from "node-llama-cpp";
+import { flattenSystemPrompt, flattenUserPrompt, type AiChatClient, type ChatMessage } from "./chatPrompt";
 
 export interface LocalAiClientOptions {
   modelPath: string;
   temperature: number;
   maxTokens: number;
-}
-
-interface ChatMessage {
-  role: "system" | "user";
-  content: string;
 }
 
 /**
@@ -95,7 +90,7 @@ async function getGenericJsonGrammar(): Promise<LlamaGrammar> {
  * prompt/risposte, solo metadati (durata, modalità), stessa disciplina di
  * privacy del client precedente.
  */
-export class LocalAiClient {
+export class LocalAiClient implements AiChatClient {
   constructor(private readonly options: LocalAiClientOptions) {}
 
   async testConnection(): Promise<{ ok: boolean; message: string }> {
@@ -127,11 +122,8 @@ export class LocalAiClient {
   ): Promise<string> {
     return enqueue(async () => {
       const startedAt = Date.now();
-      const systemPrompt = messages
-        .filter((m) => m.role === "system")
-        .map((m) => m.content)
-        .join("\n\n");
-      const userPrompt = buildUserPrompt(messages, opts.schema);
+      const systemPrompt = flattenSystemPrompt(messages);
+      const userPrompt = flattenUserPrompt(messages, opts.schema);
 
       try {
         const context = await getSharedContext(this.options.modelPath);
@@ -183,15 +175,4 @@ export class LocalAiClient {
     ]);
     return content.trim();
   }
-}
-
-function buildUserPrompt(messages: ChatMessage[], schema?: z.ZodTypeAny): string {
-  const userContent = messages
-    .filter((m) => m.role === "user")
-    .map((m) => m.content)
-    .join("\n\n");
-  if (!schema) return userContent;
-
-  const jsonSchema = zodToJsonSchema(schema);
-  return `${userContent}\n\nRispondi ESCLUSIVAMENTE con un JSON conforme a questo JSON Schema (nessun testo fuori dal JSON):\n${JSON.stringify(jsonSchema)}`;
 }

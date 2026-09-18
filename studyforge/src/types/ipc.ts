@@ -20,6 +20,7 @@ import type {
   TestConnectionResult,
   ModelStatus,
   LicenseStatus,
+  UpdateStatus,
   GenerateLessonExercisesInput,
   GenerateLessonPresentationInput,
   ExerciseSetGenerationOutcome,
@@ -104,6 +105,11 @@ export interface RStudyApi {
   license: {
     getStatus: () => Promise<LicenseStatus>;
     activate: (licenseKey: string) => Promise<LicenseStatus>;
+  };
+  updates: {
+    getStatus: () => Promise<UpdateStatus>;
+    check: () => Promise<{ ok: true }>;
+    quitAndInstall: () => Promise<{ ok: true }>;
   };
 }
 

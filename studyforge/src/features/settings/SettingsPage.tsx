@@ -1,27 +1,33 @@
 import { useEffect, useState } from "react";
-import { Cpu, FolderOpen, Download, Upload, PlugZap, ShieldCheck, AlertTriangle, BadgeCheck } from "lucide-react";
+import { Cpu, Cloud, FolderOpen, Download, Upload, PlugZap, ShieldCheck, AlertTriangle, BadgeCheck, RefreshCw } from "lucide-react";
 import { Topbar } from "@/components/layout/Topbar";
 import { Card } from "@/components/ui/Card";
 import { useUiStore } from "@/lib/uiStore";
 import {
+  useAppVersion,
+  useCheckForUpdates,
   useDownloadModel,
   useExportBackup,
   useImportBackup,
   useModelStatus,
   usePickBackupFile,
   usePickImportFolder,
+  useQuitAndInstallUpdate,
   useSettings,
   useUpdateSettings,
+  useUpdateStatus,
 } from "@/features/settings/api";
 import { useTestLocalAiConnection } from "@/features/courses/aiApi";
 import { useLicenseStatus } from "@/features/license/api";
 import { toast } from "@/lib/toastStore";
-import type { ThemeMode } from "@shared/schemas";
+import type { AiProvider, ThemeMode } from "@shared/schemas";
 
 export function SettingsPage() {
   const { data: settings } = useSettings();
   const { data: licenseStatus } = useLicenseStatus();
   const { data: modelStatus } = useModelStatus();
+  const { data: appVersion } = useAppVersion();
+  const { data: updateStatus } = useUpdateStatus();
   const updateSettings = useUpdateSettings();
   const downloadModel = useDownloadModel();
   const pickImportFolder = usePickImportFolder();
@@ -29,18 +35,28 @@ export function SettingsPage() {
   const exportBackup = useExportBackup();
   const pickBackupFile = usePickBackupFile();
   const importBackup = useImportBackup();
+  const checkForUpdates = useCheckForUpdates();
+  const quitAndInstallUpdate = useQuitAndInstallUpdate();
   const theme = useUiStore((s) => s.theme);
   const setTheme = useUiStore((s) => s.setTheme);
 
   const [modelUri, setModelUri] = useState("");
   const [temperature, setTemperature] = useState(0.3);
   const [maxTokens, setMaxTokens] = useState(4096);
+  const [aiProvider, setAiProvider] = useState<AiProvider>("local");
+  const [cloudApiKey, setCloudApiKey] = useState("");
+  const [cloudBaseUrl, setCloudBaseUrl] = useState("");
+  const [cloudModel, setCloudModel] = useState("");
 
   useEffect(() => {
     if (settings) {
       setModelUri(settings.localModelUri);
       setTemperature(settings.temperature);
       setMaxTokens(settings.maxTokens);
+      setAiProvider(settings.aiProvider);
+      setCloudApiKey(settings.cloudApiKey ?? "");
+      setCloudBaseUrl(settings.cloudBaseUrl ?? "");
+      setCloudModel(settings.cloudModel ?? "");
     }
   }, [settings]);
 
@@ -48,6 +64,20 @@ export function SettingsPage() {
     try {
       await updateSettings.mutateAsync({ localModelUri: modelUri, temperature, maxTokens });
       toast.success("Impostazioni AI salvate");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Errore nel salvataggio");
+    }
+  };
+
+  const saveProviderSettings = async () => {
+    try {
+      await updateSettings.mutateAsync({
+        aiProvider,
+        cloudApiKey: cloudApiKey.trim() || null,
+        cloudBaseUrl: cloudBaseUrl.trim() || null,
+        cloudModel: cloudModel.trim() || null,
+      });
+      toast.success("Provider AI salvato");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Errore nel salvataggio");
     }
@@ -96,9 +126,80 @@ export function SettingsPage() {
     <>
       <Topbar title="Impostazioni" />
 
+      <Card span={12}>
+        <h2 className="card-title">Provider AI</h2>
+        <p className="text-base-content/60 text-sm">
+          Scegli come generare study pack, esercizi, presentazioni e risposte RAG. Il locale gira offline senza
+          API key, il cloud è generalmente più affidabile su lezioni lunghe ma invia gli appunti al provider
+          scelto e richiede una chiave API a tuo carico.
+        </p>
+        <div className="join mt-2">
+          <button
+            type="button"
+            className={`btn btn-sm join-item ${aiProvider === "local" ? "btn-active" : ""}`}
+            onClick={() => setAiProvider("local")}
+          >
+            <Cpu className="size-4" /> Locale
+          </button>
+          <button
+            type="button"
+            className={`btn btn-sm join-item ${aiProvider === "cloud" ? "btn-active" : ""}`}
+            onClick={() => setAiProvider("cloud")}
+          >
+            <Cloud className="size-4" /> Cloud
+          </button>
+        </div>
+        {aiProvider === "cloud" && (
+          <div className="mt-3 flex flex-col gap-3">
+            <label className="form-control">
+              <span className="label-text mb-1 text-xs">Chiave API</span>
+              <input
+                type="password"
+                className="input input-bordered input-sm"
+                value={cloudApiKey}
+                onChange={(e) => setCloudApiKey(e.target.value)}
+                placeholder="Incolla qui la tua chiave API"
+                autoComplete="off"
+              />
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="form-control">
+                <span className="label-text mb-1 text-xs">Base URL (endpoint OpenAI-compatible)</span>
+                <input
+                  className="input input-bordered input-sm"
+                  value={cloudBaseUrl}
+                  onChange={(e) => setCloudBaseUrl(e.target.value)}
+                />
+              </label>
+              <label className="form-control">
+                <span className="label-text mb-1 text-xs">Modello</span>
+                <input
+                  className="input input-bordered input-sm"
+                  value={cloudModel}
+                  onChange={(e) => setCloudModel(e.target.value)}
+                />
+              </label>
+            </div>
+            <p className="text-base-content/40 text-xs">
+              La chiave resta solo su questo computer (DB locale dell'app), non viene mai inclusa nei backup
+              esportati né inviata ad Anthropic/RStudy: va direttamente dal tuo dispositivo al provider
+              configurato qui sopra.
+            </p>
+          </div>
+        )}
+        <div className="mt-3 flex gap-2">
+          <button type="button" className="btn btn-primary btn-sm" onClick={saveProviderSettings}>
+            Salva provider
+          </button>
+          <button type="button" className="btn btn-sm" onClick={handleTestConnection} disabled={testConnection.isPending}>
+            <PlugZap className="size-4" /> Testa connessione
+          </button>
+        </div>
+      </Card>
+
       <Card span={6}>
         <h2 className="card-title">
-          <Cpu className="size-4" /> AI locale
+          <Cpu className="size-4" /> Modello locale
         </h2>
         <p className="text-base-content/60 text-sm">
           {modelStatus?.state === "ready" && (
@@ -134,13 +235,11 @@ export function SettingsPage() {
           >
             <Download className="size-4" /> Scarica modello
           </button>
-          <button type="button" className="btn btn-sm" onClick={handleTestConnection} disabled={testConnection.isPending}>
-            <PlugZap className="size-4" /> Testa connessione
-          </button>
         </div>
         <p className="text-base-content/40 mt-2 text-xs">
-          L'inferenza è 100% locale: nessuna API key, nessun dato inviato in rete durante l'uso. Il modello
-          viene scaricato una sola volta e salvato nella cartella dati dell'app.
+          L'inferenza locale è 100% offline: nessuna API key, nessun dato inviato in rete. Il modello viene
+          scaricato una sola volta e salvato nella cartella dati dell'app. Usato solo se il provider AI qui
+          sopra è impostato su "Locale".
         </p>
       </Card>
 
@@ -163,7 +262,7 @@ export function SettingsPage() {
             <input
               type="range"
               min={0}
-              max={2}
+              max={1}
               step={0.1}
               className="range range-sm"
               value={temperature}
@@ -216,6 +315,65 @@ export function SettingsPage() {
         ) : (
           <p className="text-base-content/60 text-sm">Nessuna licenza attivata.</p>
         )}
+      </Card>
+
+      <Card span={6}>
+        <h2 className="card-title">
+          <RefreshCw className="size-4" /> Aggiornamenti
+        </h2>
+        <p className="text-base-content/60 text-sm">
+          Versione installata: {appVersion ?? "…"}
+          {updateStatus?.latestVersion && updateStatus.state !== "not_available" && (
+            <> · disponibile: {updateStatus.latestVersion}</>
+          )}
+        </p>
+        <p className="text-sm">
+          {updateStatus?.state === "checking" && <span className="text-base-content/60">Controllo in corso…</span>}
+          {updateStatus?.state === "downloading" && (
+            <span>
+              Download aggiornamento… {updateStatus.progressPercent ?? 0}%
+              <progress
+                className="progress progress-primary mt-1 w-full"
+                value={updateStatus.progressPercent ?? 0}
+                max={100}
+              />
+            </span>
+          )}
+          {updateStatus?.state === "downloaded" && (
+            <span className="flex items-center gap-1 text-success">
+              <ShieldCheck className="size-4" /> Aggiornamento scaricato, pronto per l'installazione.
+            </span>
+          )}
+          {updateStatus?.state === "not_available" && (
+            <span className="flex items-center gap-1 text-success">
+              <ShieldCheck className="size-4" /> Hai già la versione più recente.
+            </span>
+          )}
+          {updateStatus?.state === "error" && (
+            <span className="flex items-center gap-1 text-base-content/60">
+              <AlertTriangle className="size-4" /> {updateStatus.error}
+            </span>
+          )}
+        </p>
+        <div className="mt-2 flex gap-2">
+          <button
+            type="button"
+            className="btn btn-sm"
+            onClick={() => checkForUpdates.mutate()}
+            disabled={updateStatus?.state === "checking" || updateStatus?.state === "downloading"}
+          >
+            <RefreshCw className="size-4" /> Controlla aggiornamenti
+          </button>
+          {updateStatus?.state === "downloaded" && (
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => quitAndInstallUpdate.mutate()}
+            >
+              Riavvia e installa
+            </button>
+          )}
+        </div>
       </Card>
 
       <Card span={6}>

@@ -77,6 +77,10 @@ export const ipcInputSchemas = {
   "license:activate": activateLicenseInputSchema,
 
   "app:getVersion": z.undefined(),
+
+  "updates:getStatus": z.undefined(),
+  "updates:check": z.undefined(),
+  "updates:quitAndInstall": z.undefined(),
 } as const;
 
 export type IpcChannel = keyof typeof ipcInputSchemas;

@@ -32,11 +32,20 @@ export function buildLessonStudyPackUserPrompt(input: {
   notesPlainText: string;
   ragContext?: string;
 }): string {
+  // Stesso troncamento deterministico di buildExerciseSetUserPrompt/
+  // buildPresentationUserPrompt (vedi MAX_SOURCE_TEXT_CHARS_FOR_PROMPT sotto):
+  // senza questo, appunti molto lunghi finivano interi nel prompt, il che
+  // destabilizza l'output di un modello locale piccolo (osservato in test:
+  // JSON troncato/malformato) oltre ad allungare inutilmente l'inferenza.
+  const { text: notesText, truncated } = truncateSourceTextForPrompt(input.notesPlainText);
   const parts = [
     `Corso: ${input.courseTitle}`,
     input.courseIntroduction ? `Introduzione al corso: ${input.courseIntroduction}` : null,
     `Lezione ${input.lessonNumber}: ${input.lessonTitle}`,
-    `Appunti della lezione:\n${input.notesPlainText || "(nessun appunto testuale presente)"}`,
+    `Appunti della lezione:\n${notesText || "(nessun appunto testuale presente)"}`,
+    truncated
+      ? "[Nota: gli appunti sono stati troncati per lunghezza eccessiva; alcuni argomenti finali potrebbero non essere coperti. Non inventare per compensare la parte mancante.]"
+      : null,
     input.ragContext ? `Materiale di supporto correlato:\n${input.ragContext}` : null,
     "Genera lo study pack in italiano seguendo esattamente lo schema JSON richiesto.",
   ];
@@ -101,7 +110,7 @@ export const EXERCISE_SET_SYSTEM_PROMPT = `Sei un assistente didattico che crea 
 Usa ESCLUSIVAMENTE i concetti presenti nel testo fornito dall'utente: non introdurre argomenti, fatti, esempi o codice che non siano deducibili da esso. Se il testo è scarno, genera comunque il numero di esercizi richiesto ma mantienili semplici e aderenti al poco materiale disponibile, senza inventare per compensare.
 Ordina gli esercizi per difficoltà crescente (difficulty da 1 a 5, il primo esercizio deve avere difficulty bassa).
 Per ogni esercizio "multiple_choice" fornisci esattamente 4 opzioni plausibili e chiaramente distinte tra loro (nessun duplicato, nessuna ambiguità), di cui una sola corretta: correctAnswer deve corrispondere ESATTAMENTE, carattere per carattere, al testo di una delle opzioni.
-Per "coding_challenge" usa solo uno di questi linguaggi: javascript, typescript, python, c, cpp.
+Per "coding_challenge" usa solo uno di questi linguaggi, scegliendo quello più coerente con l'argomento della lezione: javascript, typescript, python, c, cpp, java, csharp, go, rust, sql, bash, html, css, php, ruby.
 Non generare né includere markup HTML in nessun campo: solo testo semplice, Markdown leggero e LaTeX tra $...$ o $$...$$ dove utile per formule.
 Rispondi ESCLUSIVAMENTE con un oggetto JSON valido, senza testo prima o dopo, senza blocchi di codice markdown, con questa forma esatta:
 {
@@ -142,6 +151,7 @@ Usa ESCLUSIVAMENTE i concetti presenti nel testo fornito dall'utente: non introd
 Struttura la presentazione con 6-12 slide (meno solo se il testo sorgente è molto breve), in questo ordine tipico: una slide "title" iniziale, alcune slide "content" per i concetti principali (una slide per concetto, non ammassare tutto), eventuali slide "code" solo se il testo contiene codice o pseudocodice rilevante, e una slide "summary" finale di ripasso; usa "quiz" con parsimonia, al massimo una, solo per una domanda di autoverifica finale se ha senso.
 Ogni slide deve avere bullet point brevi (poche parole ciascuno, mai frasi lunghe): è materiale da ripasso veloce, non un testo continuo da leggere.
 Non generare né includere markup HTML in nessun campo: solo testo semplice/Markdown leggero nei bullet e nei titoli. Le slide sono dati strutturati (array di bullet), non un'unica stringa formattata.
+Per il campo "language" di codeBlocks usa solo uno di questi valori, scegliendo quello più coerente con l'argomento della lezione: javascript, typescript, python, c, cpp, java, csharp, go, rust, sql, bash, html, css, php, ruby.
 Rispondi ESCLUSIVAMENTE con un oggetto JSON valido, senza testo prima o dopo, senza blocchi di codice markdown, con questa forma esatta:
 {
   "title": "string",

@@ -7,7 +7,7 @@ import { getMaterialsDir } from "../../services/paths";
 import { extractTextFromFile } from "../../rag/documentParser";
 import { chunkText } from "../../rag/chunker";
 import { RagService, resolveMaterialSourceLabel } from "../../rag/ragService";
-import { createEmbeddingProvider, tryCreateLocalAiClient } from "../../ai/factory";
+import { createEmbeddingProvider, tryCreateAiClient } from "../../ai/factory";
 import { safeHandle, type IpcContext } from "../safeHandle";
 
 const MIME_BY_EXT: Record<string, string> = {
@@ -50,8 +50,8 @@ export function registerMaterialHandlers(db: Db, ctx: IpcContext): void {
   safeHandle("materials:import", ctx, async (input) => {
     const materialsDir = getMaterialsDir();
     const embeddingProvider = await createEmbeddingProvider(db);
-    const localAiClient = await tryCreateLocalAiClient(db);
-    const rag = new RagService({ db, embeddingProvider, localAiClient });
+    const aiClient = await tryCreateAiClient(db);
+    const rag = new RagService({ db, embeddingProvider, aiClient });
 
     const created = [];
     for (const sourcePath of input.filePaths) {

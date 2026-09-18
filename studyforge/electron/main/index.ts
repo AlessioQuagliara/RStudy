@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { runMigrations } from "../db/migrate";
 import { getDbPath } from "../services/paths";
 import { registerIpcHandlers } from "../ipc/registerHandlers";
+import { initUpdater, checkForUpdates } from "../services/updaterService";
 import { applyContentSecurityPolicy, buildAllowedOrigins } from "./security";
 
 const isDev = !app.isPackaged;
@@ -110,6 +111,13 @@ app.whenReady().then(() => {
   registerIpcHandlers({
     getAllowedOrigins: () => buildAllowedOrigins(isDev),
   });
+
+  // Controllo aggiornamenti silenzioso all'avvio (solo su build pacchettizzata,
+  // vedi checkForUpdates in electron/services/updaterService.ts): scarica in
+  // background senza interrompere l'utente, l'installazione resta comunque
+  // un'azione esplicita da Impostazioni (updates:quitAndInstall).
+  initUpdater();
+  checkForUpdates();
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {

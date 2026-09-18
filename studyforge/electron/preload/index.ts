@@ -22,6 +22,7 @@ import type {
   ModelStatus,
   LicenseStatus,
   BackupData,
+  UpdateStatus,
   GenerateLessonExercisesInput,
   GenerateLessonPresentationInput,
   ExerciseSetGenerationOutcome,
@@ -111,6 +112,11 @@ const api = {
   license: {
     getStatus: () => invoke<LicenseStatus>("license:getStatus"),
     activate: (licenseKey: string) => invoke<LicenseStatus>("license:activate", { licenseKey }),
+  },
+  updates: {
+    getStatus: () => invoke<UpdateStatus>("updates:getStatus"),
+    check: () => invoke<{ ok: true }>("updates:check"),
+    quitAndInstall: () => invoke<{ ok: true }>("updates:quitAndInstall"),
   },
 };
 

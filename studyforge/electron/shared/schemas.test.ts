@@ -95,7 +95,7 @@ describe("exerciseSchema", () => {
   });
 
   it("rifiuta un linguaggio non supportato per coding_challenge", () => {
-    const invalid = { ...VALID_CODING_CHALLENGE, language: "rust" };
+    const invalid = { ...VALID_CODING_CHALLENGE, language: "cobol" };
     expect(exerciseSchema.safeParse(invalid).success).toBe(false);
   });
 

@@ -1,12 +1,47 @@
 import type { Db } from "../db/client";
+import type { AppSettings } from "../shared/schemas";
 import { getSettings } from "../services/settingsService";
 import { getModelStatus, getLocalModelPath } from "../services/localModelService";
 import { LocalAiClient } from "./localAiClient";
+import { CloudAiClient } from "./cloudAiClient";
+import type { AiChatClient } from "./chatPrompt";
 import { LocalHashEmbeddingProvider, type EmbeddingProvider } from "../rag/embeddingProvider";
 import { OpenAiCompatibleStudyGenerator } from "./openAiCompatibleStudyGenerator";
 import type { AiStudyGenerator } from "./studyGenerator";
 
-export async function createLocalAiClient(db: Db): Promise<LocalAiClient> {
+/**
+ * Override facoltativo via variabile d'ambiente per la chiave API cloud:
+ * comodo in sviluppo/CI per non dover passare dalla UI Impostazioni, stesso
+ * ruolo di RSTUDY_AI_MODEL_PATH per il path del modello locale (vedi sotto).
+ * In produzione la chiave resta quella incollata dall'utente in
+ * Impostazioni (settings.cloudApiKey, tabella SQLite app_settings): non
+ * viene mai bundlata nella build, a differenza delle chiavi Paddle (vedi
+ * .env.example) che sono condivise da tutti gli utenti verso un backend
+ * comune — qui ogni utente usa (e paga) la propria chiave.
+ */
+const ENV_CLOUD_API_KEY = "RSTUDY_CLOUD_API_KEY";
+
+function buildCloudAiClient(settings: AppSettings): CloudAiClient {
+  const apiKey = readEnvOverride(ENV_CLOUD_API_KEY) ?? settings.cloudApiKey;
+  if (!apiKey) {
+    throw new Error("Nessuna chiave API cloud configurata. Vai in Impostazioni per inserirla.");
+  }
+  if (!settings.cloudBaseUrl) {
+    throw new Error("Nessun endpoint AI cloud configurato. Vai in Impostazioni.");
+  }
+  if (!settings.cloudModel) {
+    throw new Error("Nessun modello AI cloud configurato. Vai in Impostazioni.");
+  }
+  return new CloudAiClient({
+    apiKey,
+    baseUrl: settings.cloudBaseUrl,
+    model: settings.cloudModel,
+    temperature: settings.temperature,
+    maxTokens: settings.maxTokens,
+  });
+}
+
+function buildLocalAiClient(db: Db, settings: AppSettings): LocalAiClient {
   const status = getModelStatus(db);
   if (status.state !== "ready") {
     throw new Error("Nessun modello AI locale pronto. Vai in Impostazioni per scaricarlo.");
@@ -15,8 +50,6 @@ export async function createLocalAiClient(db: Db): Promise<LocalAiClient> {
   if (!modelPath) {
     throw new Error("Nessun modello AI locale pronto. Vai in Impostazioni per scaricarlo.");
   }
-
-  const settings = getSettings(db);
   return new LocalAiClient({
     modelPath,
     temperature: settings.temperature,
@@ -24,9 +57,21 @@ export async function createLocalAiClient(db: Db): Promise<LocalAiClient> {
   });
 }
 
-export async function tryCreateLocalAiClient(db: Db): Promise<LocalAiClient | null> {
+/**
+ * Sceglie ed istanzia il client AI (chat/RAG) in base a `settings.aiProvider`:
+ * "local" (default, node-llama-cpp offline) o "cloud" (endpoint
+ * chat-completions OpenAI-compatible, electron/ai/cloudAiClient.ts). Unico
+ * punto di scelta del provider: il resto dell'app dipende solo
+ * dall'interfaccia AiChatClient, mai dalle classi concrete.
+ */
+export async function createAiClient(db: Db): Promise<AiChatClient> {
+  const settings = getSettings(db);
+  return settings.aiProvider === "cloud" ? buildCloudAiClient(settings) : buildLocalAiClient(db, settings);
+}
+
+export async function tryCreateAiClient(db: Db): Promise<AiChatClient | null> {
   try {
-    return await createLocalAiClient(db);
+    return await createAiClient(db);
   } catch {
     return null;
   }
@@ -42,15 +87,15 @@ export async function createEmbeddingProvider(_db: Db): Promise<EmbeddingProvide
   return new LocalHashEmbeddingProvider();
 }
 
-// Override facoltativo via variabile d'ambiente per il generatore di
-// esercizi/presentazioni: SOLO fallback per sviluppo/CI (es. eseguire la
-// generazione fuori dall'app Electron pacchettizzata, dove le Impostazioni
-// utente/il DB SQLite non sono disponibili o comodi). Il percorso "reale"
-// dell'app resta Impostazioni (localModelUri/localModelPath, tabella SQLite
-// app_settings, electron/services/settingsService.ts). Con l'AI locale non
-// esistono più segreti da iniettare via env (niente più API key/base URL):
-// resta solo un override del path del file .gguf, utile per puntare a un
-// modello già presente su disco durante i test senza passare dal download UI.
+// Override facoltativo via variabile d'ambiente per il path del modello
+// locale usato dal generatore di esercizi/presentazioni: SOLO fallback per
+// sviluppo/CI (es. eseguire la generazione fuori dall'app Electron
+// pacchettizzata, dove le Impostazioni utente/il DB SQLite non sono
+// disponibili o comodi). Il percorso "reale" dell'app resta Impostazioni
+// (localModelUri/localModelPath, tabella SQLite app_settings,
+// electron/services/settingsService.ts). Si applica solo quando il provider
+// selezionato è "local"; per "cloud" l'override equivalente è
+// ENV_CLOUD_API_KEY più sopra.
 const ENV_AI_MODEL_PATH = "RSTUDY_AI_MODEL_PATH";
 
 function readEnvOverride(name: string): string | null {
@@ -67,12 +112,24 @@ export interface StudyGeneratorHandle {
 
 /**
  * Assembla l'AiStudyGenerator per esercizi/presentazioni, oppure `null` se
- * non c'è alcun modello AI locale pronto (né scaricato né via override env):
- * il chiamante (electron/ai/exerciseSet.ts, electron/ai/presentation.ts)
- * usa `null` per restituire un errore "not_configured" invece di lanciare.
+ * il provider selezionato non è pronto (locale: nessun modello scaricato né
+ * via override env; cloud: nessuna chiave/endpoint/modello configurati): il
+ * chiamante (electron/ai/exerciseSet.ts, electron/ai/presentation.ts) usa
+ * `null` per restituire un errore "not_configured" invece di lanciare.
  */
 export async function tryCreateStudyGenerator(db: Db): Promise<StudyGeneratorHandle | null> {
   const settings = getSettings(db);
+
+  if (settings.aiProvider === "cloud") {
+    try {
+      const client = buildCloudAiClient(settings);
+      const model = settings.cloudModel!;
+      return { generator: new OpenAiCompatibleStudyGenerator(client, model), model };
+    } catch {
+      return null;
+    }
+  }
+
   const envModelPath = readEnvOverride(ENV_AI_MODEL_PATH);
   const modelPath = envModelPath ?? getLocalModelPath(db);
   if (!modelPath) return null;

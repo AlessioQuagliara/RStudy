@@ -3,7 +3,7 @@ import { DocumentChunksRepo, LessonsRepo } from "../db/repositories";
 import { CosineVectorStore, type VectorRecord } from "./vectorStore";
 import type { EmbeddingProvider } from "./embeddingProvider";
 import type { RagQueryResult } from "../shared/schemas";
-import type { LocalAiClient } from "../ai/localAiClient";
+import type { AiChatClient } from "../ai/chatPrompt";
 
 const TOP_K = 6;
 const LESSON_PRIORITY_BOOST = 0.08;
@@ -11,7 +11,7 @@ const LESSON_PRIORITY_BOOST = 0.08;
 export interface RagServiceDeps {
   db: Db;
   embeddingProvider: EmbeddingProvider;
-  localAiClient: LocalAiClient | null;
+  aiClient: AiChatClient | null;
 }
 
 /**
@@ -85,10 +85,10 @@ export class RagService {
       lessonId: (r.metadata.lessonId as string | null) ?? null,
     }));
 
-    if (!this.deps.localAiClient) {
+    if (!this.deps.aiClient) {
       return {
         answer:
-          "Ho trovato passaggi rilevanti nel materiale del corso, ma il modello AI locale non è ancora scaricato: vai in Impostazioni.",
+          "Ho trovato passaggi rilevanti nel materiale del corso, ma il modello AI non è ancora pronto: vai in Impostazioni.",
         citations,
         insufficientContext: false,
       };
@@ -98,7 +98,7 @@ export class RagService {
       .map((r, i) => `[Fonte ${i + 1}: ${String(r.metadata.sourceLabel)}]\n${String(r.metadata.content)}`)
       .join("\n\n---\n\n");
 
-    const answer = await this.deps.localAiClient.answerWithContext({ question, context });
+    const answer = await this.deps.aiClient.answerWithContext({ question, context });
 
     return { answer, citations, insufficientContext: false };
   }

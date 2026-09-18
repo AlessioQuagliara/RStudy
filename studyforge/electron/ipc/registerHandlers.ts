@@ -10,6 +10,7 @@ import { registerRagHandlers } from "./handlers/rag";
 import { registerSettingsHandlers } from "./handlers/settings";
 import { registerBackupHandlers } from "./handlers/backup";
 import { registerLicenseHandlers } from "./handlers/license";
+import { registerUpdateHandlers } from "./handlers/updates";
 import { safeHandle, type IpcContext } from "./safeHandle";
 
 export function registerIpcHandlers(ctx: IpcContext): void {
@@ -25,6 +26,7 @@ export function registerIpcHandlers(ctx: IpcContext): void {
   registerSettingsHandlers(db, ctx);
   registerBackupHandlers(db, ctx);
   registerLicenseHandlers(db, ctx);
+  registerUpdateHandlers(db, ctx);
 
   safeHandle("app:getVersion", ctx, () => app.getVersion());
 }

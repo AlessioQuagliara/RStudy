@@ -108,6 +108,16 @@ export class OpenAiCompatibleStudyGenerator implements AiStudyGenerator {
    * conosciamo con certezza, lo rivalida contro lo schema condiviso completo,
    * e mappa qualunque eccezione (rete, timeout, JSON non valido, schema non
    * conforme) in un errore "safe" tipizzato invece di lasciarla propagare.
+   *
+   * Un solo tentativo, specialmente con un modello locale piccolo, scarta
+   * spesso generazioni sostanzialmente buone per un singolo campo fuori
+   * schema (es. un valore enum non ammesso): se il fallimento è "di
+   * contenuto" (JSON non valido o non conforme allo schema, non un errore
+   * infrastrutturale come timeout o motore non disponibile) si ritenta UNA
+   * volta sola, mostrando al modello l'errore Zod esatto e chiedendogli di
+   * correggere solo quello. Il contenuto della risposta non viene mai
+   * loggato (stessa disciplina di privacy del resto del file), solo il
+   * fatto che si sta ritentando.
    */
   private async run<TModel, TFull>(
     systemPrompt: string,
@@ -118,41 +128,80 @@ export class OpenAiCompatibleStudyGenerator implements AiStudyGenerator {
     kind: "exercise_set" | "presentation",
   ): Promise<GenerationOutcome<TFull>> {
     const startedAt = Date.now();
-    try {
-      const raw = await this.client.chatJSON(
-        [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        modelSchema,
-      );
-      const modelContent = parseModelJson(raw, modelSchema);
-      const full = fullSchema.parse(buildFull(modelContent));
-      console.log(
-        `[AiStudyGenerator] ${kind} generato in ${Date.now() - startedAt}ms (model=${this.model})`,
-      );
-      return { status: "success", data: full };
-    } catch (error) {
-      return {
-        status: "error",
-        error: toSafeGenerationError(error, kind, Date.now() - startedAt, this.model),
-      };
+    const baseMessages: Array<{ role: "system" | "user"; content: string }> = [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ];
+
+    const MAX_ATTEMPTS = 2;
+    let lastError: unknown;
+    let lastRawForRepair: string | null = null;
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const messages =
+        attempt === 1 || lastRawForRepair === null
+          ? baseMessages
+          : [...baseMessages, { role: "user" as const, content: buildRepairPrompt(lastRawForRepair, lastError) }];
+
+      let raw: string;
+      try {
+        raw = await this.client.chatJSON(messages, modelSchema);
+      } catch (error) {
+        // Errore infrastrutturale (motore non disponibile, timeout, ecc.):
+        // non è un problema di contenuto correggibile, niente retry.
+        return {
+          status: "error",
+          error: toSafeGenerationError(error, kind, Date.now() - startedAt, this.model),
+        };
+      }
+
+      try {
+        const modelContent = parseModelJson(raw, modelSchema);
+        const full = fullSchema.parse(buildFull(modelContent));
+        console.log(
+          `[AiStudyGenerator] ${kind} generato in ${Date.now() - startedAt}ms (model=${this.model}, tentativi=${attempt})`,
+        );
+        return { status: "success", data: full };
+      } catch (error) {
+        lastError = error;
+        lastRawForRepair = raw;
+        if (attempt < MAX_ATTEMPTS) {
+          console.warn(`[AiStudyGenerator] ${kind}: risposta non valida al tentativo ${attempt}, ritento`);
+        }
+      }
     }
+
+    return {
+      status: "error",
+      error: toSafeGenerationError(lastError, kind, Date.now() - startedAt, this.model),
+    };
   }
 }
 
 /**
+ * Prompt di riparazione per il secondo tentativo: mostra al modello la sua
+ * risposta precedente e il motivo esatto per cui non è stata accettata
+ * (messaggio Zod, che nomina il campo e il valore atteso), chiedendo di
+ * correggere SOLO quello. Molto più efficace di un retry "cieco" con lo
+ * stesso prompt, specialmente per errori puntuali come un valore enum non
+ * ammesso.
+ */
+function buildRepairPrompt(previousRaw: string, error: unknown): string {
+  const message = error instanceof Error ? error.message : "Risposta non valida.";
+  return `La tua risposta precedente non è stata accettata per questo motivo:\n${message}\n\nEcco la tua risposta precedente:\n${previousRaw}\n\nCorreggi ESCLUSIVAMENTE il problema indicato, mantenendo invariato il resto del contenuto. Rispondi di nuovo con l'intero oggetto JSON corretto, conforme allo schema richiesto, senza testo prima o dopo.`;
+}
+
+/**
  * Traduce qualunque eccezione (motore di inferenza locale non disponibile,
- * modello non caricato, JSON non valido, schema non conforme) in un
- * messaggio sicuro per l'utente e un codice classificato. Non logga mai il
- * messaggio grezzo dell'errore né il contenuto della richiesta/risposta:
- * solo metadati (kind, durata, model). Non c'è più un endpoint HTTP remoto
- * da classificare per status code: gli errori "infrastrutturali" arrivano
- * ora dal motore node-llama-cpp (classi come InsufficientMemoryError,
- * UnsupportedError) o dai messaggi propri di electron/ai/localAiClient.ts.
- * `rate_limited` resta nello schema condiviso (electron/shared/schemas.ts)
- * ma non è più prodotto qui: non esiste un provider remoto che possa
- * limitare le richieste per un modello che gira in locale.
+ * modello non caricato, provider cloud non raggiungibile/chiave non valida,
+ * JSON non valido, schema non conforme) in un messaggio sicuro per l'utente
+ * e un codice classificato. Non logga mai il messaggio grezzo dell'errore né
+ * il contenuto della richiesta/risposta: solo metadati (kind, durata,
+ * model). Gli errori "infrastrutturali" arrivano dal motore node-llama-cpp
+ * (classi come InsufficientMemoryError, UnsupportedError, vedi
+ * electron/ai/localAiClient.ts) quando il provider è locale, oppure dalle
+ * classi CloudAuthError/CloudRateLimitError/CloudProviderError (vedi
+ * electron/ai/cloudAiClient.ts) quando il provider è cloud.
  */
 function toSafeGenerationError(
   error: unknown,
@@ -165,31 +214,46 @@ function toSafeGenerationError(
     logClassifiedError(kind, "timeout", durationMs, model);
     return {
       code: "timeout",
-      message: "Il modello AI locale non ha risposto in tempo. Riprova tra qualche istante.",
+      message: "Il modello AI non ha risposto in tempo. Riprova tra qualche istante.",
     };
   }
 
   const message = error instanceof Error ? error.message : "";
+  const errorClassName = error instanceof Error ? error.constructor.name : "";
 
-  if (/non è JSON valido|non conforme allo schema|risposta del modello ai locale vuota/i.test(message)) {
-    logClassifiedError(kind, "invalid_response", durationMs, model);
+  if (errorClassName === "CloudRateLimitError") {
+    logClassifiedError(kind, "rate_limited", durationMs, model);
     return {
-      code: "invalid_response",
-      message: "Il modello AI locale ha restituito una risposta non valida. Riprova.",
+      code: "rate_limited",
+      message: "Il provider AI cloud ha raggiunto il limite di richieste. Riprova tra qualche istante.",
     };
   }
 
-  const engineErrorClassName = error instanceof Error ? error.constructor.name : "";
+  if (errorClassName === "CloudAuthError") {
+    logClassifiedError(kind, "provider_error", durationMs, model);
+    return {
+      code: "provider_error",
+      message: "La chiave API del provider AI cloud non è valida o è mancante. Controllala in Impostazioni.",
+    };
+  }
+
+  if (/non è JSON valido|non conforme allo schema|risposta del modello ai (locale|cloud) vuota/i.test(message)) {
+    logClassifiedError(kind, "invalid_response", durationMs, model);
+    return {
+      code: "invalid_response",
+      message: "Il modello AI ha restituito una risposta non valida. Riprova.",
+    };
+  }
+
   const isEngineError =
-    ["InsufficientMemoryError", "UnsupportedError", "NoBinaryFoundError", "DisposedError"].includes(
-      engineErrorClassName,
-    ) || /contesto del modello ai locale non disponibile|inferenza ai locale fallita/i.test(message);
+    ["InsufficientMemoryError", "UnsupportedError", "NoBinaryFoundError", "DisposedError", "CloudProviderError"].includes(
+      errorClassName,
+    ) || /contesto del modello ai locale non disponibile|inferenza ai (locale|cloud) fallita/i.test(message);
   if (isEngineError) {
     logClassifiedError(kind, "provider_error", durationMs, model);
     return {
       code: "provider_error",
-      message:
-        "Il motore di inferenza AI locale non è disponibile al momento. Riprova o verifica il modello in Impostazioni.",
+      message: "Il motore di inferenza AI non è disponibile al momento. Riprova o verifica le Impostazioni AI.",
     };
   }
 

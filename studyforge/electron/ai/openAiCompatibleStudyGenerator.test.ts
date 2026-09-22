@@ -3,6 +3,7 @@ import {
   OpenAiCompatibleStudyGenerator,
   type ChatJsonClient,
 } from "./openAiCompatibleStudyGenerator";
+import { CloudAiDailyLimitReachedError } from "../services/cloudUsageService";
 import type { GenerateExerciseSetInput, GeneratePresentationInput } from "../shared/schemas";
 
 const EXERCISE_INPUT: GenerateExerciseSetInput = {
@@ -176,6 +177,25 @@ describe("OpenAiCompatibleStudyGenerator.generateExerciseSet", () => {
       status: "error",
       error: { code: "unknown" },
     });
+  });
+
+  it("limite giornaliero AI cloud raggiunto -> errore daily_limit_reached, nessun retry, messaggio già sicuro", async () => {
+    let calls = 0;
+    const client = new FakeChatJsonClient(() => {
+      calls++;
+      return Promise.reject(new CloudAiDailyLimitReachedError(35));
+    });
+    const generator = new OpenAiCompatibleStudyGenerator(client, "fake-model");
+
+    const result = await generator.generateExerciseSet(EXERCISE_INPUT);
+
+    expect(result.status).toBe("error");
+    if (result.status === "error") {
+      expect(result.error.code).toBe("daily_limit_reached");
+      expect(result.error.message).toMatch(/limite giornaliero/i);
+    }
+    // Errore infrastrutturale: un solo tentativo, mai il retry di riparazione.
+    expect(calls).toBe(1);
   });
 });
 

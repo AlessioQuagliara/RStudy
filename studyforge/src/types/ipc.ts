@@ -27,6 +27,10 @@ import type {
   GenerateLessonPresentationInput,
   ExerciseSetGenerationOutcome,
   PresentationGenerationOutcome,
+  CloudProviderInfo,
+  CloudAiUsageToday,
+  GenerateStudySessionResult,
+  StudySessionGeneration,
 } from "@shared/schemas";
 
 /**
@@ -76,6 +80,7 @@ export interface RStudyApi {
     getModelStatus: () => Promise<ModelStatus>;
     downloadModel: () => Promise<{ ok: true }>;
     transcribeAudio: (input: TranscribeAudioInput) => Promise<TranscribeAudioResult>;
+    getCloudProviderInfo: () => Promise<CloudProviderInfo>;
   };
   studyAi: {
     generateExercises: (
@@ -91,6 +96,14 @@ export interface RStudyApi {
       question: string,
       activeLessonId?: string | null,
     ) => Promise<RagQueryResult>;
+  };
+  usage: {
+    getCloudAiToday: () => Promise<CloudAiUsageToday>;
+  };
+  studySession: {
+    generate: (courseId: string) => Promise<GenerateStudySessionResult>;
+    getStatus: (courseId: string) => Promise<StudySessionGeneration | null>;
+    download: (courseId: string) => Promise<{ ok: boolean; filePath: string | null }>;
   };
   settings: {
     get: () => Promise<AppSettings>;

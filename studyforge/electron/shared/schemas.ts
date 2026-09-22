@@ -229,6 +229,55 @@ export type CourseAiOutput = z.infer<typeof courseAiOutputSchema>;
 export const generateCourseSummaryInputSchema = z.object({ courseId: z.string().min(1) });
 export type GenerateCourseSummaryInput = z.infer<typeof generateCourseSummaryInputSchema>;
 
+// ---------- Genera sessione studio (PDF multi-agente per corso) ----------
+
+export const studySessionStatusSchema = z.enum(["queued", "running", "ready", "failed"]);
+export type StudySessionStatus = z.infer<typeof studySessionStatusSchema>;
+
+export const studySessionStepSchema = z.enum(["collect", "analyze", "design", "author", "review", "render"]);
+export type StudySessionStep = z.infer<typeof studySessionStepSchema>;
+
+/**
+ * Stato esposto al renderer via `studySession:getStatus` (polling, stesso
+ * pattern di `ai:getModelStatus`): niente path assoluti del filesystem né
+ * dettagli interni della pipeline, solo ciò che serve per mostrare
+ * avanzamento/esito. Il download del PDF passa da un canale IPC separato
+ * (`studySession:download`), mai da un path esposto qui.
+ */
+export const studySessionGenerationSchema = z.object({
+  id: z.string(),
+  courseId: z.string(),
+  status: studySessionStatusSchema,
+  currentStep: studySessionStepSchema.nullable(),
+  progressPercentage: z.number().int().min(0).max(100),
+  pdfFileName: z.string().nullable(),
+  pdfFileSize: z.number().int().nullable(),
+  errorMessage: z.string().nullable(),
+  createdAt: z.string(),
+  completedAt: z.string().nullable(),
+});
+export type StudySessionGeneration = z.infer<typeof studySessionGenerationSchema>;
+
+export const generateStudySessionInputSchema = z.object({ courseId: z.string().min(1) });
+export type GenerateStudySessionInput = z.infer<typeof generateStudySessionInputSchema>;
+
+export const getStudySessionStatusInputSchema = z.object({ courseId: z.string().min(1) });
+export type GetStudySessionStatusInput = z.infer<typeof getStudySessionStatusInputSchema>;
+
+export const downloadStudySessionInputSchema = z.object({ courseId: z.string().min(1) });
+export type DownloadStudySessionInput = z.infer<typeof downloadStudySessionInputSchema>;
+
+/** Esito di `studySession:generate`: avvio accettato, oppure rifiutato con motivo esplicito (nessuna lezione valida, job già attivo, rigenerazione troppo ravvicinata). */
+export const generateStudySessionResultSchema = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("started"), generationId: z.string() }),
+  z.object({
+    status: z.literal("rejected"),
+    code: z.enum(["no_valid_lessons", "already_running", "too_soon"]),
+    message: z.string(),
+  }),
+]);
+export type GenerateStudySessionResult = z.infer<typeof generateStudySessionResultSchema>;
+
 export const ragCitationSchema = z.object({
   sourceLabel: z.string(),
   excerpt: z.string(),
@@ -263,24 +312,17 @@ export const appSettingsSchema = z.object({
   language: z.literal("it"),
   theme: themeModeSchema,
   importFolder: z.string().nullable(),
-  aiProvider: aiProviderSchema,
-  /** Chiave API del provider cloud, inserita dall'utente in Impostazioni: mai bundlata nella build, resta solo nel DB locale dell'utente (a differenza delle chiavi Paddle, vedi .env.example). */
-  cloudApiKey: z.string().nullable(),
-  /** Base URL dell'endpoint chat-completions OpenAI-compatible (es. Dashscope). */
-  cloudBaseUrl: z.string().nullable(),
-  /** Nome del modello da passare al provider cloud (campo "model" della request). */
-  cloudModel: z.string().nullable(),
   /**
-   * Chiave API per la trascrizione vocale (dettato appunti, electron/ai/transcriptionClient.ts):
-   * provider separato dal cloudApiKey della chat, perché un endpoint chat-completions
-   * OpenAI-compatible generico (Dashscope, DeepSeek...) non implementa necessariamente
-   * anche /audio/transcriptions. Stessa disciplina di privacy: mai bundlata, mai nei backup.
+   * Provider "cloud": endpoint/modello/chiave sono centralizzati e letti
+   * SOLO da variabili d'ambiente lato main process (electron/ai/factory.ts),
+   * mai da qui — vedi .env.example. Prima della centralizzazione questi
+   * campi vivevano qui (cloudApiKey/cloudBaseUrl/cloudModel/
+   * transcriptionApiKey/transcriptionBaseUrl/transcriptionModel): rimossi
+   * dallo schema. Un vecchio blob JSON che li contiene ancora viene
+   * ignorato silenziosamente da Zod (nessun `.strict()` su questo schema),
+   * nessuna migration necessaria.
    */
-  transcriptionApiKey: z.string().nullable(),
-  /** Base URL dell'endpoint di trascrizione OpenAI-compatible (default: OpenAI stesso, unico provider verificato per /audio/transcriptions). */
-  transcriptionBaseUrl: z.string().nullable(),
-  /** Nome del modello di trascrizione (default "whisper-1"). */
-  transcriptionModel: z.string().nullable(),
+  aiProvider: aiProviderSchema,
 });
 export type AppSettings = z.infer<typeof appSettingsSchema>;
 
@@ -358,11 +400,29 @@ export const transcribeAudioResultSchema = z.discriminatedUnion("status", [
   z.object({ status: z.literal("success"), text: z.string() }),
   z.object({
     status: z.literal("error"),
-    code: z.enum(["not_configured", "provider_error", "timeout", "unknown"]),
+    code: z.enum(["not_configured", "provider_error", "timeout", "daily_limit_reached", "unknown"]),
     message: z.string(),
   }),
 ]);
 export type TranscribeAudioResult = z.infer<typeof transcribeAudioResultSchema>;
+
+/** Esposto via `usage:getCloudAiToday`: nessun campo su chiave/provider/configurazione interna. */
+export const cloudAiUsageTodaySchema = z.object({
+  date: z.string(),
+  limit: z.number().int().positive(),
+  used: z.number().int().nonnegative(),
+  remaining: z.number().int().nonnegative(),
+  percentage: z.number().int().min(0).max(100),
+  resetAt: z.string(),
+});
+export type CloudAiUsageToday = z.infer<typeof cloudAiUsageTodaySchema>;
+
+/** Esposto via `ai:getCloudProviderInfo`, sola lettura: mai la chiave API. */
+export const cloudProviderInfoSchema = z.object({
+  chat: z.object({ baseUrl: z.string().nullable(), model: z.string().nullable(), configured: z.boolean() }),
+  transcription: z.object({ baseUrl: z.string().nullable(), model: z.string().nullable(), configured: z.boolean() }),
+});
+export type CloudProviderInfo = z.infer<typeof cloudProviderInfoSchema>;
 
 export const backupDataSchema = z.object({
   version: z.literal(1),
@@ -618,6 +678,8 @@ export const aiGenerationErrorCodeSchema = z.enum([
   "provider_error",
   "timeout",
   "rate_limited",
+  // Limite giornaliero condiviso di richieste AI cloud raggiunto (electron/services/cloudUsageService.ts): nessun contatto col provider per questo tentativo.
+  "daily_limit_reached",
   "unknown",
 ]);
 export type AiGenerationErrorCode = z.infer<typeof aiGenerationErrorCodeSchema>;

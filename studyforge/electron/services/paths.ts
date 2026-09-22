@@ -25,3 +25,10 @@ export function getBackupsDir(): string {
   fs.mkdirSync(dir, { recursive: true });
   return dir;
 }
+
+/** PDF generati da "Genera sessione studio" (electron/services/studySessionService.ts). */
+export function getStudySessionsDir(): string {
+  const dir = path.join(getUserDataDir(), "study-sessions");
+  fs.mkdirSync(dir, { recursive: true });
+  return dir;
+}

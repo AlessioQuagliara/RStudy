@@ -11,6 +11,9 @@ import {
   flashcards,
   courseAiOutputs,
   lessonAiGenerations,
+  cloudAiUsageDaily,
+  studySessionGenerations,
+  studySessionGenerationSteps,
 } from "./schema";
 import type {
   CreateCourseInput,
@@ -576,5 +579,237 @@ export const LessonAiGenerationsRepo = {
       }
     }
     return validRows;
+  },
+};
+
+// ---------- Cloud AI usage (contatore giornaliero, per installazione) ----------
+export const CloudUsageRepo = {
+  getByDate(db: Db, usageDate: string) {
+    return db.select().from(cloudAiUsageDaily).where(eq(cloudAiUsageDaily.usageDate, usageDate)).get() ?? null;
+  },
+
+  /**
+   * Verifica il limite e incrementa in un'UNICA transazione sincrona
+   * (better-sqlite3/drizzle: la callback di db.transaction() è sincrona,
+   * stesso pattern già usato in electron/ai/studyPack.ts) — questo rende
+   * "leggi il conteggio" e "scrivi l'incremento" atomici anche con più
+   * fetch cloud avviate quasi in contemporanea lato Node: non possono
+   * interfogliarsi a metà tra lettura e scrittura. Ritorna accepted:false
+   * SENZA scrivere nulla se il totale ha già raggiunto il limite.
+   */
+  incrementIfUnderLimit(
+    db: Db,
+    args: { usageDate: string; category: "general_ai" | "dictation"; limit: number },
+  ): { accepted: boolean; used: number } {
+    return db.transaction((tx) => {
+      const row = tx.select().from(cloudAiUsageDaily).where(eq(cloudAiUsageDaily.usageDate, args.usageDate)).get();
+      const total = (row?.generalAiCount ?? 0) + (row?.dictationCount ?? 0);
+      if (total >= args.limit) return { accepted: false, used: total };
+
+      const now = nowIso();
+      const general = (row?.generalAiCount ?? 0) + (args.category === "general_ai" ? 1 : 0);
+      const dictation = (row?.dictationCount ?? 0) + (args.category === "dictation" ? 1 : 0);
+      if (!row) {
+        tx.insert(cloudAiUsageDaily)
+          .values({
+            usageDate: args.usageDate,
+            generalAiCount: general,
+            dictationCount: dictation,
+            lastUsedAt: now,
+            createdAt: now,
+            updatedAt: now,
+          })
+          .run();
+      } else {
+        tx.update(cloudAiUsageDaily)
+          .set({ generalAiCount: general, dictationCount: dictation, lastUsedAt: now, updatedAt: now })
+          .where(eq(cloudAiUsageDaily.usageDate, args.usageDate))
+          .run();
+      }
+      return { accepted: true, used: total + 1 };
+    });
+  },
+};
+
+// ---------- Study session generations (job "Genera sessione studio") ----------
+export type StudySessionStep = "collect" | "analyze" | "design" | "author" | "review" | "render";
+
+export const StudySessionGenerationsRepo = {
+  get(db: Db, id: string) {
+    return db.select().from(studySessionGenerations).where(eq(studySessionGenerations.id, id)).get() ?? null;
+  },
+
+  /** Job attivo (queued|running) per il corso, se esiste — al più uno per il vincolo DB. */
+  getActiveForCourse(db: Db, courseId: string) {
+    return (
+      db
+        .select()
+        .from(studySessionGenerations)
+        .where(
+          and(
+            eq(studySessionGenerations.courseId, courseId),
+            or(eq(studySessionGenerations.status, "queued"), eq(studySessionGenerations.status, "running")),
+          ),
+        )
+        .get() ?? null
+    );
+  },
+
+  /** Ultimo tentativo per il corso (qualunque stato): quello che la UI mostra di default. */
+  getLatestForCourse(db: Db, courseId: string) {
+    return (
+      db
+        .select()
+        .from(studySessionGenerations)
+        .where(eq(studySessionGenerations.courseId, courseId))
+        .orderBy(desc(studySessionGenerations.createdAt))
+        .limit(1)
+        .get() ?? null
+    );
+  },
+
+  /** Ultima generazione completata con successo: è quella "attiva" per il download, indipendentemente da tentativi falliti successivi. */
+  getLatestReadyForCourse(db: Db, courseId: string) {
+    return (
+      db
+        .select()
+        .from(studySessionGenerations)
+        .where(and(eq(studySessionGenerations.courseId, courseId), eq(studySessionGenerations.status, "ready")))
+        .orderBy(desc(studySessionGenerations.createdAt))
+        .limit(1)
+        .get() ?? null
+    );
+  },
+
+  /**
+   * Crea la riga "queued" per un nuovo tentativo. L'indice unico parziale su
+   * (courseId) WHERE status IN ('queued','running') garantisce a livello DB
+   * che non possano coesistere due job attivi per lo stesso corso: un
+   * secondo insert concorrente fallisce con violazione di vincolo invece di
+   * avviare due generazioni in parallelo (protezione da doppio click/doppia
+   * richiesta, anche cross-processo se mai ce ne fosse più di uno).
+   */
+  create(db: Db, input: { courseId: string; sourceContentVersionHash: string; sourceLessonsCount: number }) {
+    const now = nowIso();
+    const row = {
+      id: createId(),
+      courseId: input.courseId,
+      status: "queued" as const,
+      currentStep: null,
+      progressPercentage: 0,
+      sourceContentVersionHash: input.sourceContentVersionHash,
+      sourceLessonsCount: input.sourceLessonsCount,
+      cloudCallsUsed: 0,
+      pdfPath: null,
+      pdfFileName: null,
+      pdfFileSize: null,
+      errorMessage: null,
+      completedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    db.insert(studySessionGenerations).values(row).run();
+    return row;
+  },
+
+  updateProgress(
+    db: Db,
+    id: string,
+    patch: { status?: "queued" | "running"; currentStep: StudySessionStep; progressPercentage: number; cloudCallsUsed: number },
+  ) {
+    db.update(studySessionGenerations)
+      .set({
+        status: patch.status ?? "running",
+        currentStep: patch.currentStep,
+        progressPercentage: patch.progressPercentage,
+        cloudCallsUsed: patch.cloudCallsUsed,
+        updatedAt: nowIso(),
+      })
+      .where(eq(studySessionGenerations.id, id))
+      .run();
+  },
+
+  markReady(db: Db, id: string, output: { pdfPath: string; pdfFileName: string; pdfFileSize: number }) {
+    const now = nowIso();
+    db.update(studySessionGenerations)
+      .set({
+        status: "ready",
+        currentStep: "render",
+        progressPercentage: 100,
+        pdfPath: output.pdfPath,
+        pdfFileName: output.pdfFileName,
+        pdfFileSize: output.pdfFileSize,
+        completedAt: now,
+        updatedAt: now,
+      })
+      .where(eq(studySessionGenerations.id, id))
+      .run();
+  },
+
+  markFailed(db: Db, id: string, errorMessage: string) {
+    const now = nowIso();
+    db.update(studySessionGenerations)
+      .set({ status: "failed", errorMessage, completedAt: now, updatedAt: now })
+      .where(eq(studySessionGenerations.id, id))
+      .run();
+  },
+
+  /**
+   * Crash recovery: da chiamare una sola volta all'avvio dell'app (dopo le
+   * migrazioni), PRIMA di registrare gli IPC handler. Se l'app è stata
+   * chiusa/è crashata a metà di un job, la riga resta "queued"/"running" per
+   * sempre (il runner vive solo nel processo che l'ha avviato, niente
+   * persistenza dello stato di esecuzione oltre alla riga stessa): qui la si
+   * marca "failed" così lo slot torna libero (l'indice unico parziale
+   * altrimenti impedirebbe per sempre una nuova generazione per quel corso)
+   * e l'utente vede un esito chiaro invece di un job bloccato "in corso" a
+   * tempo indeterminato.
+   */
+  failAllStaleActive(db: Db, message: string): number {
+    const now = nowIso();
+    const result = db
+      .update(studySessionGenerations)
+      .set({ status: "failed", errorMessage: message, completedAt: now, updatedAt: now })
+      .where(or(eq(studySessionGenerations.status, "queued"), eq(studySessionGenerations.status, "running")))
+      .run();
+    return result.changes;
+  },
+};
+
+export const StudySessionGenerationStepsRepo = {
+  add(
+    db: Db,
+    input: {
+      generationId: string;
+      stepName: StudySessionStep;
+      stepIndex: number;
+      status: "done" | "failed";
+      outputJson?: string | null;
+      errorMessage?: string | null;
+    },
+  ) {
+    const now = nowIso();
+    db.insert(studySessionGenerationSteps)
+      .values({
+        id: createId(),
+        generationId: input.generationId,
+        stepName: input.stepName,
+        stepIndex: input.stepIndex,
+        status: input.status,
+        outputJson: input.outputJson ?? null,
+        errorMessage: input.errorMessage ?? null,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .run();
+  },
+
+  listByGeneration(db: Db, generationId: string) {
+    return db
+      .select()
+      .from(studySessionGenerationSteps)
+      .where(eq(studySessionGenerationSteps.generationId, generationId))
+      .orderBy(asc(studySessionGenerationSteps.stepIndex))
+      .all();
   },
 };

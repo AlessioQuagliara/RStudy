@@ -15,7 +15,7 @@ export function DashboardPage() {
     <>
       <Topbar title="Dashboard" />
 
-      <div className="col-span-12 flex flex-wrap gap-2">
+      <div className="col-span-12 flex flex-wrap gap-2" data-tour="dashboard-quick-actions">
         <Link to="/courses" className="btn btn-primary btn-sm">
           <Plus className="size-4" /> Nuovo corso
         </Link>
@@ -27,7 +27,7 @@ export function DashboardPage() {
       {stats.isLoading ? (
         <SkeletonCardGrid count={4} />
       ) : (
-        <StatRow>
+        <StatRow tourId="dashboard-stats">
           <Stat icon={GraduationCap} title="Corsi attivi" value={String(stats.activeCoursesCount)} />
           <Stat icon={BookOpen} title="CFU in corso" value={String(stats.totalCfu)} />
           <Stat

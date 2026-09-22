@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getIpc } from "@/lib/ipc";
+import { cloudAiUsageTodayQueryKey } from "@/features/usage/api";
 
 export function useCourseSummary(courseId: string) {
   return useQuery({
@@ -12,7 +13,10 @@ export function useGenerateCourseSummary(courseId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => getIpc().ai.generateCourseSummary(courseId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["course-summary", courseId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["course-summary", courseId] });
+      queryClient.invalidateQueries({ queryKey: cloudAiUsageTodayQueryKey });
+    },
   });
 }
 

@@ -1,6 +1,7 @@
 import { Sparkles } from "lucide-react";
 import { MermaidDiagram } from "@/components/MermaidDiagram";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { QuestionMarkdown } from "@/features/lessons/shared/QuestionMarkdown";
 import type { KeyPoint, StudyOutlineTopic, SelfCheckQuestion, LessonAiOutput } from "@shared/schemas";
 
 export function AiOutputPanel({ output, generating }: { output: LessonAiOutput | null | undefined; generating: boolean }) {
@@ -32,7 +33,9 @@ export function AiOutputPanel({ output, generating }: { output: LessonAiOutput |
     <div className="flex flex-col gap-6">
       <section>
         <h3 className="mb-2 font-semibold">Riepilogo</h3>
-        <p className="text-sm leading-relaxed whitespace-pre-wrap">{output.summaryMarkdown}</p>
+        <div className="text-sm leading-relaxed">
+          <QuestionMarkdown>{output.summaryMarkdown}</QuestionMarkdown>
+        </div>
       </section>
 
       {keyPoints.length > 0 && (

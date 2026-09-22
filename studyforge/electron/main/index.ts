@@ -3,6 +3,8 @@ import path from "node:path";
 import dotenv from "dotenv";
 import { runMigrations } from "../db/migrate";
 import { getDbPath } from "../services/paths";
+import { getDb } from "../db/client";
+import { recoverStaleStudySessionJobs } from "../services/studySessionService";
 import { registerIpcHandlers } from "../ipc/registerHandlers";
 import { initUpdater, checkForUpdates } from "../services/updaterService";
 import { applyContentSecurityPolicy, applyPermissionPolicy, buildAllowedOrigins } from "./security";
@@ -107,6 +109,7 @@ app.whenReady().then(() => {
     ? path.join(process.resourcesPath, "drizzle")
     : path.join(__dirname, "../../drizzle");
   runMigrations(getDbPath(), migrationsFolder);
+  recoverStaleStudySessionJobs(getDb());
 
   mainWindow = createWindow();
   registerIpcHandlers({

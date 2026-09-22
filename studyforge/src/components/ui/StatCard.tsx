@@ -1,8 +1,8 @@
 import type { LucideIcon } from "lucide-react";
 
-export function StatRow({ children }: { children: React.ReactNode }) {
+export function StatRow({ children, tourId }: { children: React.ReactNode; tourId?: string }) {
   return (
-    <section className="stats stats-vertical bg-base-200 xl:stats-horizontal col-span-12 shadow-xs">
+    <section className="stats stats-vertical bg-base-200 xl:stats-horizontal col-span-12 shadow-xs" data-tour={tourId}>
       {children}
     </section>
   );

@@ -29,6 +29,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx electron/db/migrate.ts",
     "seed": "tsx electron/db/seed.ts",
+    "migrate:cloud-credentials": "tsx electron/scripts/exportCloudCredentialsToEnv.ts",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
@@ -49,11 +50,13 @@
     "@tiptap/starter-kit": "^2.11.5",
     "better-sqlite3": "^13.0.3",
     "dotenv": "^17.4.2",
+    "driver.js": "^1.8.0",
     "drizzle-orm": "^0.38.4",
     "electron-updater": "^6.8.9",
     "katex": "^0.18.4",
     "lucide-react": "^0.469.0",
     "mammoth": "^1.9.0",
+    "marked": "^18.0.13",
     "mermaid": "^11.4.1",
     "monaco-editor": "^0.56.0",
     "node-llama-cpp": "3.21.1",

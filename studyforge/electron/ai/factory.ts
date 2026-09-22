@@ -5,37 +5,73 @@ import { getModelStatus, getLocalModelPath } from "../services/localModelService
 import { LocalAiClient } from "./localAiClient";
 import { CloudAiClient } from "./cloudAiClient";
 import type { AiChatClient } from "./chatPrompt";
+import { withDailyUsageGuard } from "./cloudUsageGuard";
 import { LocalHashEmbeddingProvider, type EmbeddingProvider } from "../rag/embeddingProvider";
 import { OpenAiCompatibleStudyGenerator } from "./openAiCompatibleStudyGenerator";
 import type { AiStudyGenerator } from "./studyGenerator";
 
 /**
- * Override facoltativo via variabile d'ambiente per la chiave API cloud:
- * comodo in sviluppo/CI per non dover passare dalla UI Impostazioni, stesso
- * ruolo di RSTUDY_AI_MODEL_PATH per il path del modello locale (vedi sotto).
- * In produzione la chiave resta quella incollata dall'utente in
- * Impostazioni (settings.cloudApiKey, tabella SQLite app_settings): non
- * viene mai bundlata nella build, a differenza delle chiavi Paddle (vedi
- * .env.example) che sono condivise da tutti gli utenti verso un backend
- * comune — qui ogni utente usa (e paga) la propria chiave.
+ * Il provider "cloud" è centralizzato: chiave/endpoint/modello sono pagati e
+ * gestiti dal distributore dell'app, letti SOLO da variabili d'ambiente lato
+ * main process (stesso meccanismo già usato per i segreti Paddle, vedi
+ * .env.example — incluse come extraResource nel pacchetto distribuito). Non
+ * esiste più un percorso "bring your own key": l'utente sceglie solo tra
+ * questo provider condiviso (soggetto al limite giornaliero, vedi
+ * electron/services/cloudUsageService.ts) e il modello locale offline.
  */
 const ENV_CLOUD_API_KEY = "RSTUDY_CLOUD_API_KEY";
+const ENV_CLOUD_BASE_URL = "RSTUDY_CLOUD_BASE_URL";
+const ENV_CLOUD_MODEL = "RSTUDY_CLOUD_MODEL";
+const ENV_TRANSCRIPTION_API_KEY = "RSTUDY_TRANSCRIPTION_API_KEY";
+const ENV_TRANSCRIPTION_BASE_URL = "RSTUDY_TRANSCRIPTION_BASE_URL";
+const ENV_TRANSCRIPTION_MODEL = "RSTUDY_TRANSCRIPTION_MODEL";
 
-function buildCloudAiClient(settings: AppSettings): CloudAiClient {
-  const apiKey = readEnvOverride(ENV_CLOUD_API_KEY) ?? settings.cloudApiKey;
-  if (!apiKey) {
-    throw new Error("Nessuna chiave API cloud configurata. Vai in Impostazioni per inserirla.");
+function getCloudCredentialsFromEnv(): { apiKey: string; baseUrl: string; model: string } {
+  const apiKey = readEnvOverride(ENV_CLOUD_API_KEY);
+  const baseUrl = readEnvOverride(ENV_CLOUD_BASE_URL);
+  const model = readEnvOverride(ENV_CLOUD_MODEL);
+  if (!apiKey || !baseUrl || !model) {
+    throw new Error("Provider AI cloud non disponibile in questa build.");
   }
-  if (!settings.cloudBaseUrl) {
-    throw new Error("Nessun endpoint AI cloud configurato. Vai in Impostazioni.");
+  return { apiKey, baseUrl, model };
+}
+
+export function getTranscriptionCredentialsFromEnv(): { apiKey: string; baseUrl: string; model: string } {
+  const apiKey = readEnvOverride(ENV_TRANSCRIPTION_API_KEY);
+  const baseUrl = readEnvOverride(ENV_TRANSCRIPTION_BASE_URL);
+  const model = readEnvOverride(ENV_TRANSCRIPTION_MODEL);
+  if (!apiKey || !baseUrl || !model) {
+    throw new Error("Trascrizione non disponibile in questa build.");
   }
-  if (!settings.cloudModel) {
-    throw new Error("Nessun modello AI cloud configurato. Vai in Impostazioni.");
-  }
+  return { apiKey, baseUrl, model };
+}
+
+/** Informazioni di provider cloud in sola lettura per la UI Impostazioni: mai la chiave API. */
+export function getCloudProviderInfo() {
+  const chatBaseUrl = readEnvOverride(ENV_CLOUD_BASE_URL);
+  const chatModel = readEnvOverride(ENV_CLOUD_MODEL);
+  const transcriptionBaseUrl = readEnvOverride(ENV_TRANSCRIPTION_BASE_URL);
+  const transcriptionModel = readEnvOverride(ENV_TRANSCRIPTION_MODEL);
+  return {
+    chat: {
+      baseUrl: chatBaseUrl,
+      model: chatModel,
+      configured: Boolean(readEnvOverride(ENV_CLOUD_API_KEY) && chatBaseUrl && chatModel),
+    },
+    transcription: {
+      baseUrl: transcriptionBaseUrl,
+      model: transcriptionModel,
+      configured: Boolean(readEnvOverride(ENV_TRANSCRIPTION_API_KEY) && transcriptionBaseUrl && transcriptionModel),
+    },
+  };
+}
+
+function buildCloudAiClient(settings: Pick<AppSettings, "temperature" | "maxTokens">): CloudAiClient {
+  const { apiKey, baseUrl, model } = getCloudCredentialsFromEnv();
   return new CloudAiClient({
     apiKey,
-    baseUrl: settings.cloudBaseUrl,
-    model: settings.cloudModel,
+    baseUrl,
+    model,
     temperature: settings.temperature,
     maxTokens: settings.maxTokens,
   });
@@ -66,7 +102,28 @@ function buildLocalAiClient(db: Db, settings: AppSettings): LocalAiClient {
  */
 export async function createAiClient(db: Db): Promise<AiChatClient> {
   const settings = getSettings(db);
-  return settings.aiProvider === "cloud" ? buildCloudAiClient(settings) : buildLocalAiClient(db, settings);
+  if (settings.aiProvider === "cloud") {
+    return withDailyUsageGuard(buildCloudAiClient(settings), db, "general_ai");
+  }
+  return buildLocalAiClient(db, settings);
+}
+
+/**
+ * Come `createAiClient`, ma SENZA il guard sul budget giornaliero condiviso
+ * (electron/ai/cloudUsageGuard.ts): usata solo dalla pipeline di "Genera
+ * sessione studio" (electron/services/studySessionService.ts), che ha un
+ * proprio budget separato per-job (CLOUD_STUDY_SESSION_MAX_CALLS_PER_JOB) e
+ * non deve consumare/essere bloccata dal contatore dei 35/giorno dell'AI
+ * generalista — decisione di prodotto esplicita: una singola sessione
+ * studio può fare decine di chiamate senza azzerare il budget quotidiano
+ * generalista.
+ */
+export async function createAiClientForStudySession(db: Db): Promise<AiChatClient> {
+  const settings = getSettings(db);
+  if (settings.aiProvider === "cloud") {
+    return buildCloudAiClient(settings);
+  }
+  return buildLocalAiClient(db, settings);
 }
 
 export async function tryCreateAiClient(db: Db): Promise<AiChatClient | null> {
@@ -122,8 +179,8 @@ export async function tryCreateStudyGenerator(db: Db): Promise<StudyGeneratorHan
 
   if (settings.aiProvider === "cloud") {
     try {
-      const client = buildCloudAiClient(settings);
-      const model = settings.cloudModel!;
+      const { model } = getCloudCredentialsFromEnv();
+      const client = withDailyUsageGuard(buildCloudAiClient(settings), db, "general_ai");
       return { generator: new OpenAiCompatibleStudyGenerator(client, model), model };
     } catch {
       return null;

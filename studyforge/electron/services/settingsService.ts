@@ -15,12 +15,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   theme: "system",
   importFolder: null,
   aiProvider: "local",
-  cloudApiKey: null,
-  cloudBaseUrl: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
-  cloudModel: "qwen3.8-flash",
-  transcriptionApiKey: null,
-  transcriptionBaseUrl: "https://api.openai.com/v1",
-  transcriptionModel: "whisper-1",
 };
 
 export function getSettings(db: Db): AppSettings {

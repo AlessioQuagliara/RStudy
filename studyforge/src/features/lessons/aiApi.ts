@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getIpc } from "@/lib/ipc";
 import { lessonKeys } from "@/features/lessons/api";
 import { flashcardKeys } from "@/features/flashcards/api";
+import { cloudAiUsageTodayQueryKey } from "@/features/usage/api";
 
 export function useLessonAiOutput(lessonId: string | undefined) {
   return useQuery({
@@ -20,6 +21,7 @@ export function useGenerateLessonStudyPack(courseId: string) {
       queryClient.invalidateQueries({ queryKey: lessonKeys.aiOutput(lessonId) });
       queryClient.invalidateQueries({ queryKey: flashcardKeys.byCourse(courseId) });
       queryClient.invalidateQueries({ queryKey: flashcardKeys.dueToday });
+      queryClient.invalidateQueries({ queryKey: cloudAiUsageTodayQueryKey });
     },
   });
 }

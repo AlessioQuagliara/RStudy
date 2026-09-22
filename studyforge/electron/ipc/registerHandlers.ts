@@ -11,6 +11,8 @@ import { registerSettingsHandlers } from "./handlers/settings";
 import { registerBackupHandlers } from "./handlers/backup";
 import { registerLicenseHandlers } from "./handlers/license";
 import { registerUpdateHandlers } from "./handlers/updates";
+import { registerUsageHandlers } from "./handlers/usage";
+import { registerStudySessionHandlers } from "./handlers/studySession";
 import { safeHandle, type IpcContext } from "./safeHandle";
 
 export function registerIpcHandlers(ctx: IpcContext): void {
@@ -27,6 +29,8 @@ export function registerIpcHandlers(ctx: IpcContext): void {
   registerBackupHandlers(db, ctx);
   registerLicenseHandlers(db, ctx);
   registerUpdateHandlers(db, ctx);
+  registerUsageHandlers(db, ctx);
+  registerStudySessionHandlers(db, ctx);
 
   safeHandle("app:getVersion", ctx, () => app.getVersion());
 }

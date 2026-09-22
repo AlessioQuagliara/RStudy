@@ -19,6 +19,9 @@ import {
   generateLessonPresentationInputSchema,
   activateLicenseInputSchema,
   transcribeAudioInputSchema,
+  generateStudySessionInputSchema,
+  getStudySessionStatusInputSchema,
+  downloadStudySessionInputSchema,
 } from "./schemas";
 
 /**
@@ -61,11 +64,18 @@ export const ipcInputSchemas = {
   "ai:getModelStatus": z.undefined(),
   "ai:downloadModel": z.undefined(),
   "ai:transcribeAudio": transcribeAudioInputSchema,
+  "ai:getCloudProviderInfo": z.undefined(),
 
   "studyAi:generateExercises": generateLessonExercisesInputSchema,
   "studyAi:generatePresentation": generateLessonPresentationInputSchema,
 
   "rag:query": ragQueryInputSchema,
+
+  "usage:getCloudAiToday": z.undefined(),
+
+  "studySession:generate": generateStudySessionInputSchema,
+  "studySession:getStatus": getStudySessionStatusInputSchema,
+  "studySession:download": downloadStudySessionInputSchema,
 
   "settings:get": z.undefined(),
   "settings:update": updateSettingsInputSchema,

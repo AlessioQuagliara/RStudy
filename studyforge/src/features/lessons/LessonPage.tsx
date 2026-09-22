@@ -192,7 +192,14 @@ export function LessonPage() {
         </button>
       </div>
 
-      <Tabs items={[{ key: "editor", label: "Appunti" }, { key: "ai", label: "Studio AI" }]} active={tab} onChange={setTab} />
+      <Tabs
+        items={[
+          { key: "editor", label: "Appunti" },
+          { key: "ai", label: "Studio AI", tourId: "lesson-ai-tab" },
+        ]}
+        active={tab}
+        onChange={setTab}
+      />
 
       {tab === "editor" && (
         <div className="col-span-12">

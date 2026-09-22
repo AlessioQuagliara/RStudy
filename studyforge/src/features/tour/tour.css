@@ -1,0 +1,62 @@
+/*
+ * Il tema chiaro/scuro dell'app è pilotato da `data-theme` su <html>
+ * (vedi useUiStore) tramite le custom property DaisyUI definite in
+ * tailwind.css. Gli elementi che Driver.js inietta in <body> ereditano
+ * quelle stesse variabili per normale cascata CSS: qui basta puntarci,
+ * nessuna sincronizzazione JS aggiuntiva è necessaria per il cambio tema.
+ */
+.driver-popover {
+  background-color: var(--color-base-100);
+  color: var(--color-base-content);
+  border-radius: var(--radius-box);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.driver-popover-title {
+  color: var(--color-base-content);
+}
+
+.driver-popover-description {
+  color: color-mix(in oklch, var(--color-base-content) 75%, transparent);
+}
+
+.driver-popover-close-btn {
+  color: color-mix(in oklch, var(--color-base-content) 40%, transparent);
+}
+
+.driver-popover-close-btn:hover,
+.driver-popover-close-btn:focus {
+  color: var(--color-base-content);
+}
+
+.driver-popover-progress-text {
+  color: color-mix(in oklch, var(--color-base-content) 50%, transparent);
+}
+
+.driver-popover-footer-btn {
+  background-color: var(--color-base-200);
+  color: var(--color-base-content);
+  border: 1px solid color-mix(in oklch, var(--color-base-content) 15%, transparent);
+  border-radius: var(--radius-field);
+}
+
+.driver-popover-footer-btn:hover,
+.driver-popover-footer-btn:focus {
+  background-color: var(--color-base-300);
+}
+
+.driver-popover-next-btn {
+  background-color: var(--color-primary);
+  color: var(--color-primary-content);
+  border-color: var(--color-primary);
+}
+
+.driver-popover-next-btn:hover,
+.driver-popover-next-btn:focus {
+  background-color: var(--color-primary);
+  opacity: 0.9;
+}
+
+.driver-popover-arrow {
+  border-color: var(--color-base-100);
+}

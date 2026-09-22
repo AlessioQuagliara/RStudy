@@ -249,3 +249,102 @@ export const lessonAiGenerations = sqliteTable(
       .where(sql`${t.status} = 'ready'`),
   ],
 );
+
+/**
+ * Contatore giornaliero di richieste AI cloud, per installazione (nessuna
+ * tabella `users`: l'app è single-user locale, stesso pattern a riga
+ * singola già usato da app_settings/license). usage_date in formato
+ * YYYY-MM-DD, fuso Europe/Rome esplicito (vedi
+ * electron/services/cloudUsageService.ts). Il limite condiviso
+ * CLOUD_AI_DAILY_USAGE_LIMIT (default 35) = generalAiCount + dictationCount
+ * SOLO: la futura funzionalità "Genera sessione studio" avrà un budget
+ * per-job separato e non scriverà qui. Nessuna riga viene creata quando
+ * aiProvider è "local".
+ */
+export const cloudAiUsageDaily = sqliteTable("cloud_ai_usage_daily", {
+  usageDate: text("usage_date").primaryKey(),
+  generalAiCount: integer("general_ai_count").notNull().default(0),
+  dictationCount: integer("dictation_count").notNull().default(0),
+  lastUsedAt: text("last_used_at"),
+  createdAt: timestamps.createdAt,
+  updatedAt: timestamps.updatedAt,
+});
+
+/**
+ * Job di generazione della "sessione studio" (libro PDF multi-agente per un
+ * corso intero, electron/services/studySessionService.ts). Una riga per
+ * tentativo (storico), con indice unico parziale che ammette al più una
+ * generazione ATTIVA (queued|running) per corso — stesso pattern già usato
+ * da `lesson_ai_generations` per il caching, qui usato per la mutua
+ * esclusione invece che per la cache. `cloudCallsUsed` è un budget separato
+ * dal contatore giornaliero condiviso `cloud_ai_usage_daily`: una sessione
+ * studio può fare decine di chiamate in un solo job, non deve azzerare da
+ * sola il budget di 35/giorno dell'AI generalista.
+ */
+export const studySessionGenerations = sqliteTable(
+  "study_session_generations",
+  {
+    id: text("id").primaryKey(),
+    courseId: text("course_id")
+      .notNull()
+      .references(() => courses.id, { onDelete: "cascade" }),
+    status: text("status", { enum: ["queued", "running", "ready", "failed"] })
+      .notNull()
+      .default("queued"),
+    currentStep: text("current_step", {
+      enum: ["collect", "analyze", "design", "author", "review", "render"],
+    }),
+    progressPercentage: integer("progress_percentage").notNull().default(0),
+    // Hash deterministico (stesso principio di electron/ai/contentHash.ts) di
+    // tutto il contenuto sorgente aggregato: non usato per bloccare una
+    // rigenerazione esplicita, solo persistito per debug/osservabilità.
+    sourceContentVersionHash: text("source_content_version_hash").notNull(),
+    sourceLessonsCount: integer("source_lessons_count").notNull().default(0),
+    cloudCallsUsed: integer("cloud_calls_used").notNull().default(0),
+    // Popolati solo se status = "ready".
+    pdfPath: text("pdf_path"),
+    pdfFileName: text("pdf_file_name"),
+    pdfFileSize: integer("pdf_file_size"),
+    // Popolato solo se status = "failed": messaggio sanificato, mai il dump
+    // grezzo dell'errore del provider né segreti.
+    errorMessage: text("error_message"),
+    completedAt: text("completed_at"),
+    createdAt: timestamps.createdAt,
+    updatedAt: timestamps.updatedAt,
+  },
+  (t) => [
+    index("study_session_generations_course_id_idx").on(t.courseId),
+    uniqueIndex("study_session_generations_active_uidx")
+      .on(t.courseId)
+      .where(sql`${t.status} in ('queued','running')`),
+  ],
+);
+
+/**
+ * Artefatti/log per step della pipeline multi-agente: utile per debug e per
+ * capire dove un job è fallito, senza dover rigenerare tutto. `outputJson`
+ * contiene solo struttura didattica derivata dal contenuto del corso, mai
+ * segreti. Più righe con lo stesso `stepName` sono normali (es. "analyze"
+ * ha una riga per blocco di contenuto, "author"/"review" una per capitolo).
+ */
+export const studySessionGenerationSteps = sqliteTable(
+  "study_session_generation_steps",
+  {
+    id: text("id").primaryKey(),
+    generationId: text("generation_id")
+      .notNull()
+      .references(() => studySessionGenerations.id, { onDelete: "cascade" }),
+    stepName: text("step_name", {
+      enum: ["collect", "analyze", "design", "author", "review", "render"],
+    }).notNull(),
+    stepIndex: integer("step_index").notNull(),
+    status: text("status", { enum: ["pending", "running", "done", "failed"] })
+      .notNull()
+      .default("pending"),
+    outputJson: text("output_json"),
+    errorMessage: text("error_message"),
+    createdAt: timestamps.createdAt,
+    updatedAt: timestamps.updatedAt,
+  },
+  (t) => [index("study_session_generation_steps_generation_id_idx").on(t.generationId)],
+);

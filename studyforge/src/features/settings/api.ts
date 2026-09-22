@@ -14,6 +14,10 @@ export function useUpdateSettings() {
   });
 }
 
+export function useCloudProviderInfo() {
+  return useQuery({ queryKey: ["ai", "cloud-provider-info"], queryFn: () => getIpc().ai.getCloudProviderInfo() });
+}
+
 export function useModelStatus() {
   return useQuery({
     queryKey: ["ai", "model-status"],

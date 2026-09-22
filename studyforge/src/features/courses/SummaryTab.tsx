@@ -2,6 +2,7 @@ import { Sparkles, AlertCircle } from "lucide-react";
 import { MermaidDiagram } from "@/components/MermaidDiagram";
 import { useCourseSummary, useGenerateCourseSummary } from "@/features/courses/aiApi";
 import { useLessons } from "@/features/lessons/api";
+import { StudySessionPanel } from "@/features/studySession/StudySessionPanel";
 import { toast } from "@/lib/toastStore";
 import type { StudyOutlineTopic } from "@shared/schemas";
 
@@ -28,6 +29,8 @@ export function SummaryTab({ courseId }: { courseId: string }) {
 
   return (
     <div className="col-span-12 flex flex-col gap-4">
+      <StudySessionPanel courseId={courseId} />
+
       <div className="flex items-center justify-between">
         <p className="text-base-content/60 text-sm">
           Basato su {completedCount} lezione/i completata/e

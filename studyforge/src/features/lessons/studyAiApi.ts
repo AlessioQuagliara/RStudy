@@ -1,5 +1,6 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getIpc } from "@/lib/ipc";
+import { cloudAiUsageTodayQueryKey } from "@/features/usage/api";
 import type {
   GenerateLessonExercisesInput,
   GenerateLessonPresentationInput,
@@ -17,13 +18,21 @@ import type {
  * fromCache) è già gestita lato main da LessonAiGenerationsRepo.
  */
 export function useGenerateLessonExercises() {
+  const queryClient = useQueryClient();
   return useMutation<ExerciseSetGenerationOutcome, Error, GenerateLessonExercisesInput>({
     mutationFn: (input) => getIpc().studyAi.generateExercises(input),
+    onSuccess: (outcome) => {
+      if (outcome.status === "success") queryClient.invalidateQueries({ queryKey: cloudAiUsageTodayQueryKey });
+    },
   });
 }
 
 export function useGenerateLessonPresentation() {
+  const queryClient = useQueryClient();
   return useMutation<PresentationGenerationOutcome, Error, GenerateLessonPresentationInput>({
     mutationFn: (input) => getIpc().studyAi.generatePresentation(input),
+    onSuccess: (outcome) => {
+      if (outcome.status === "success") queryClient.invalidateQueries({ queryKey: cloudAiUsageTodayQueryKey });
+    },
   });
 }

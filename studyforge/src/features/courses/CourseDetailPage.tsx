@@ -84,7 +84,7 @@ export function CourseDetailPage() {
         </div>
       </div>
 
-      <Tabs items={TABS} active={tab} onChange={setTab} />
+      <Tabs items={TABS} active={tab} onChange={setTab} tourId="course-tabs" />
 
       {tab === "overview" && <OverviewTab course={course} lessons={lessons} />}
       {tab === "lessons" && <LessonsTab courseId={course.id} />}

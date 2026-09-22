@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Mic, Square, Loader2 } from "lucide-react";
 import type { Editor } from "@tiptap/react";
 import { getIpc } from "@/lib/ipc";
 import { toast } from "@/lib/toastStore";
+import { cloudAiUsageTodayQueryKey } from "@/features/usage/api";
 
 /** Sicurezza contro un microfono lasciato acceso per errore: ferma da sola dopo 5 minuti. */
 const MAX_RECORDING_MS = 5 * 60 * 1000;
@@ -19,6 +21,7 @@ type DictationState = "idle" | "recording" | "transcribing";
  * fallimento silenzioso.
  */
 export function DictationButton({ editor }: { editor: Editor }) {
+  const queryClient = useQueryClient();
   const [state, setState] = useState<DictationState>("idle");
   const [elapsedSec, setElapsedSec] = useState(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -78,6 +81,7 @@ export function DictationButton({ editor }: { editor: Editor }) {
       const result = await getIpc().ai.transcribeAudio({ audioBase64, mimeType: blob.type || "audio/webm" });
       if (result.status === "success") {
         editor.chain().focus().insertContent(`${result.text} `).run();
+        queryClient.invalidateQueries({ queryKey: cloudAiUsageTodayQueryKey });
       } else {
         toast.error(result.message);
       }

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Cpu, Cloud, FolderOpen, Download, Upload, PlugZap, ShieldCheck, AlertTriangle, BadgeCheck, RefreshCw, Mic } from "lucide-react";
+import { Cpu, Cloud, FolderOpen, Download, Upload, PlugZap, ShieldCheck, AlertTriangle, BadgeCheck, RefreshCw, Mic, Gauge } from "lucide-react";
 import { Topbar } from "@/components/layout/Topbar";
 import { Card } from "@/components/ui/Card";
 import { useUiStore } from "@/lib/uiStore";
 import {
   useAppVersion,
   useCheckForUpdates,
+  useCloudProviderInfo,
   useDownloadModel,
   useExportBackup,
   useImportBackup,
@@ -18,6 +19,7 @@ import {
   useUpdateStatus,
 } from "@/features/settings/api";
 import { useTestLocalAiConnection } from "@/features/courses/aiApi";
+import { useCloudAiUsageToday } from "@/features/usage/api";
 import { useLicenseStatus } from "@/features/license/api";
 import { toast } from "@/lib/toastStore";
 import type { AiProvider, ThemeMode } from "@shared/schemas";
@@ -28,6 +30,8 @@ export function SettingsPage() {
   const { data: modelStatus } = useModelStatus();
   const { data: appVersion } = useAppVersion();
   const { data: updateStatus } = useUpdateStatus();
+  const { data: cloudProviderInfo } = useCloudProviderInfo();
+  const { data: cloudUsage } = useCloudAiUsageToday();
   const updateSettings = useUpdateSettings();
   const downloadModel = useDownloadModel();
   const pickImportFolder = usePickImportFolder();
@@ -44,12 +48,6 @@ export function SettingsPage() {
   const [temperature, setTemperature] = useState(0.3);
   const [maxTokens, setMaxTokens] = useState(4096);
   const [aiProvider, setAiProvider] = useState<AiProvider>("local");
-  const [cloudApiKey, setCloudApiKey] = useState("");
-  const [cloudBaseUrl, setCloudBaseUrl] = useState("");
-  const [cloudModel, setCloudModel] = useState("");
-  const [transcriptionApiKey, setTranscriptionApiKey] = useState("");
-  const [transcriptionBaseUrl, setTranscriptionBaseUrl] = useState("");
-  const [transcriptionModel, setTranscriptionModel] = useState("");
 
   useEffect(() => {
     if (settings) {
@@ -57,12 +55,6 @@ export function SettingsPage() {
       setTemperature(settings.temperature);
       setMaxTokens(settings.maxTokens);
       setAiProvider(settings.aiProvider);
-      setCloudApiKey(settings.cloudApiKey ?? "");
-      setCloudBaseUrl(settings.cloudBaseUrl ?? "");
-      setCloudModel(settings.cloudModel ?? "");
-      setTranscriptionApiKey(settings.transcriptionApiKey ?? "");
-      setTranscriptionBaseUrl(settings.transcriptionBaseUrl ?? "");
-      setTranscriptionModel(settings.transcriptionModel ?? "");
     }
   }, [settings]);
 
@@ -77,26 +69,8 @@ export function SettingsPage() {
 
   const saveProviderSettings = async () => {
     try {
-      await updateSettings.mutateAsync({
-        aiProvider,
-        cloudApiKey: cloudApiKey.trim() || null,
-        cloudBaseUrl: cloudBaseUrl.trim() || null,
-        cloudModel: cloudModel.trim() || null,
-      });
+      await updateSettings.mutateAsync({ aiProvider });
       toast.success("Provider AI salvato");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Errore nel salvataggio");
-    }
-  };
-
-  const saveTranscriptionSettings = async () => {
-    try {
-      await updateSettings.mutateAsync({
-        transcriptionApiKey: transcriptionApiKey.trim() || null,
-        transcriptionBaseUrl: transcriptionBaseUrl.trim() || null,
-        transcriptionModel: transcriptionModel.trim() || null,
-      });
-      toast.success("Impostazioni dettato salvate");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Errore nel salvataggio");
     }
@@ -145,12 +119,12 @@ export function SettingsPage() {
     <>
       <Topbar title="Impostazioni" />
 
-      <Card span={12}>
+      <Card span={12} tourId="settings-ai-provider">
         <h2 className="card-title">Provider AI</h2>
         <p className="text-base-content/60 text-sm">
-          Scegli come generare study pack, esercizi, presentazioni e risposte RAG. Il locale gira offline senza
-          API key, il cloud è generalmente più affidabile su lezioni lunghe ma invia gli appunti al provider
-          scelto e richiede una chiave API a tuo carico.
+          Scegli come generare study pack, esercizi, presentazioni e risposte RAG. Il locale gira offline sul
+          tuo computer; il cloud usa il servizio AI incluso nell'app (nessuna chiave da inserire), con un
+          limite giornaliero di richieste condiviso con il dettato appunti.
         </p>
         <div className="join mt-2">
           <button
@@ -169,42 +143,11 @@ export function SettingsPage() {
           </button>
         </div>
         {aiProvider === "cloud" && (
-          <div className="mt-3 flex flex-col gap-3">
-            <label className="form-control">
-              <span className="label-text mb-1 text-xs">Chiave API</span>
-              <input
-                type="password"
-                className="input input-bordered input-sm"
-                value={cloudApiKey}
-                onChange={(e) => setCloudApiKey(e.target.value)}
-                placeholder="Incolla qui la tua chiave API"
-                autoComplete="off"
-              />
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="form-control">
-                <span className="label-text mb-1 text-xs">Base URL (endpoint OpenAI-compatible)</span>
-                <input
-                  className="input input-bordered input-sm"
-                  value={cloudBaseUrl}
-                  onChange={(e) => setCloudBaseUrl(e.target.value)}
-                />
-              </label>
-              <label className="form-control">
-                <span className="label-text mb-1 text-xs">Modello</span>
-                <input
-                  className="input input-bordered input-sm"
-                  value={cloudModel}
-                  onChange={(e) => setCloudModel(e.target.value)}
-                />
-              </label>
-            </div>
-            <p className="text-base-content/40 text-xs">
-              La chiave resta solo su questo computer (DB locale dell'app), non viene mai inclusa nei backup
-              esportati né inviata ad Anthropic/RStudy: va direttamente dal tuo dispositivo al provider
-              configurato qui sopra.
-            </p>
-          </div>
+          <p className="text-base-content/40 mt-3 text-xs">
+            {cloudProviderInfo?.chat.configured
+              ? `Servizio cloud attivo (modello ${cloudProviderInfo.chat.model}).`
+              : "Il servizio AI cloud non è temporaneamente disponibile in questa build. Puoi usare il modello locale."}
+          </p>
         )}
         <div className="mt-3 flex gap-2">
           <button type="button" className="btn btn-primary btn-sm" onClick={saveProviderSettings}>
@@ -216,51 +159,61 @@ export function SettingsPage() {
         </div>
       </Card>
 
+      {aiProvider === "cloud" && (
+        <Card span={6}>
+          <h2 className="card-title">
+            <Gauge className="size-4" /> Utilizzo AI cloud
+          </h2>
+          <p className="text-sm">
+            {cloudUsage?.used ?? 0} / {cloudUsage?.limit ?? 35} richieste utilizzate oggi
+          </p>
+          <progress
+            className={`progress w-full ${
+              (cloudUsage?.percentage ?? 0) >= 100
+                ? "progress-error"
+                : (cloudUsage?.percentage ?? 0) >= 80
+                  ? "progress-warning"
+                  : "progress-primary"
+            }`}
+            value={cloudUsage?.used ?? 0}
+            max={cloudUsage?.limit ?? 35}
+          />
+          <p className="text-base-content/60 text-xs">
+            {cloudUsage?.remaining ?? 0} richieste disponibili. Il limite si rinnova ogni giorno.
+          </p>
+          {(cloudUsage?.percentage ?? 0) >= 100 && (
+            <>
+              <p className="text-warning text-xs">
+                Limite giornaliero raggiunto. Puoi continuare a usare il modello locale, se disponibile.
+              </p>
+              {modelStatus?.state === "ready" && (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline mt-2 self-start"
+                  onClick={() => updateSettings.mutate({ aiProvider: "local" })}
+                >
+                  Passa al modello locale
+                </button>
+              )}
+            </>
+          )}
+        </Card>
+      )}
+
       <Card span={6}>
         <h2 className="card-title">
           <Mic className="size-4" /> Dettato appunti
         </h2>
         <p className="text-base-content/60 text-sm">
-          Il pulsante microfono nell'editor lezione registra e trascrive tramite un endpoint di trascrizione
-          OpenAI-compatible (testato con OpenAI Whisper) — separato dal provider AI di generazione qui sopra,
-          perché non tutti i provider chat sanno anche trascrivere audio.
+          Il pulsante microfono nell'editor lezione registra e trascrive tramite il servizio di trascrizione
+          incluso nell'app — nessuna chiave da inserire, soggetto allo stesso limite giornaliero di richieste
+          cloud del Provider AI qui sopra.
         </p>
-        <label className="form-control">
-          <span className="label-text mb-1 text-xs">Chiave API</span>
-          <input
-            type="password"
-            className="input input-bordered input-sm"
-            value={transcriptionApiKey}
-            onChange={(e) => setTranscriptionApiKey(e.target.value)}
-            placeholder="Incolla qui la tua chiave API"
-            autoComplete="off"
-          />
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          <label className="form-control">
-            <span className="label-text mb-1 text-xs">Base URL</span>
-            <input
-              className="input input-bordered input-sm"
-              value={transcriptionBaseUrl}
-              onChange={(e) => setTranscriptionBaseUrl(e.target.value)}
-            />
-          </label>
-          <label className="form-control">
-            <span className="label-text mb-1 text-xs">Modello</span>
-            <input
-              className="input input-bordered input-sm"
-              value={transcriptionModel}
-              onChange={(e) => setTranscriptionModel(e.target.value)}
-            />
-          </label>
-        </div>
         <p className="text-base-content/40 text-xs">
-          Senza chiave configurata il pulsante microfono resta visibile ma segnala l'errore invece di registrare.
-          L'audio registrato va direttamente dal tuo dispositivo al provider configurato, mai salvato su disco.
+          {cloudProviderInfo?.transcription.configured
+            ? "Servizio di trascrizione attivo."
+            : "Servizio di trascrizione non disponibile in questa build."}
         </p>
-        <button type="button" className="btn btn-primary btn-sm mt-2 self-start" onClick={saveTranscriptionSettings}>
-          Salva impostazioni dettato
-        </button>
       </Card>
 
       <Card span={6}>
@@ -448,7 +401,7 @@ export function SettingsPage() {
         </div>
       </Card>
 
-      <Card span={6}>
+      <Card span={6} tourId="settings-theme">
         <h2 className="card-title">Aspetto</h2>
         <div className="join">
           {(["light", "dark", "system"] as ThemeMode[]).map((mode) => (
@@ -467,7 +420,7 @@ export function SettingsPage() {
         </div>
       </Card>
 
-      <Card span={12}>
+      <Card span={12} tourId="settings-backup">
         <h2 className="card-title">Backup</h2>
         <p className="text-base-content/60 text-sm">
           Il backup esporta corsi, lezioni, materiali (metadati), flashcard e output AI in un file JSON. Il

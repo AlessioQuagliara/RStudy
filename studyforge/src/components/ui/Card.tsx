@@ -13,13 +13,15 @@ export function Card({
   children,
   className,
   span = 12,
+  tourId,
 }: {
   children: ReactNode;
   className?: string;
   span?: keyof typeof SPAN_CLASS;
+  tourId?: string;
 }) {
   return (
-    <section className={cn("card bg-base-200 col-span-12 shadow-xs", SPAN_CLASS[span], className)}>
+    <section className={cn("card bg-base-200 col-span-12 shadow-xs", SPAN_CLASS[span], className)} data-tour={tourId}>
       <div className="card-body">{children}</div>
     </section>
   );

@@ -1,24 +1,24 @@
 import type { Db } from "../../db/client";
-import { createAiClient, tryCreateAiClient } from "../../ai/factory";
+import {
+  createAiClient,
+  tryCreateAiClient,
+  getCloudProviderInfo,
+  getTranscriptionCredentialsFromEnv,
+} from "../../ai/factory";
 import { generateLessonStudyPack } from "../../ai/studyPack";
 import { generateCourseSummary } from "../../ai/courseSummary";
 import { transcribeAudio } from "../../ai/transcriptionClient";
 import { CourseAiOutputsRepo, LessonAiOutputsRepo } from "../../db/repositories";
 import { getModelStatus, startModelDownload } from "../../services/localModelService";
 import { getSettings } from "../../services/settingsService";
+import { reserveCloudAiCall, CloudAiDailyLimitReachedError } from "../../services/cloudUsageService";
 import { safeHandle, type IpcContext } from "../safeHandle";
 import type { TranscribeAudioResult } from "../../shared/schemas";
 
-/**
- * Override facoltativo via variabile d'ambiente per la chiave API di
- * trascrizione: stesso ruolo di RSTUDY_CLOUD_API_KEY (electron/ai/factory.ts)
- * per sviluppo/CI senza passare dalla UI Impostazioni.
- */
-const ENV_TRANSCRIPTION_API_KEY = "RSTUDY_TRANSCRIPTION_API_KEY";
-
 /** Nome del modello effettivamente in uso secondo il provider selezionato, per la colonna `model` persistita insieme all'output AI. */
 function activeModelLabel(settings: ReturnType<typeof getSettings>): string {
-  return settings.aiProvider === "cloud" ? (settings.cloudModel ?? "cloud") : settings.localModelUri;
+  if (settings.aiProvider !== "cloud") return settings.localModelUri;
+  return getCloudProviderInfo().chat.model ?? "cloud";
 }
 
 export function registerAiHandlers(db: Db, ctx: IpcContext): void {
@@ -44,7 +44,7 @@ export function registerAiHandlers(db: Db, ctx: IpcContext): void {
         ok: false,
         message:
           settings.aiProvider === "cloud"
-            ? "Provider AI cloud non configurato. Vai in Impostazioni per inserire chiave API, endpoint e modello."
+            ? "Il servizio AI cloud non è temporaneamente disponibile. Puoi usare il modello locale."
             : "Modello AI locale non ancora scaricato. Vai in Impostazioni per scaricarlo.",
       };
     }
@@ -58,18 +58,31 @@ export function registerAiHandlers(db: Db, ctx: IpcContext): void {
   });
 
   safeHandle("ai:transcribeAudio", ctx, async (input): Promise<TranscribeAudioResult> => {
-    const settings = getSettings(db);
-    const apiKey = process.env[ENV_TRANSCRIPTION_API_KEY]?.trim() || settings.transcriptionApiKey;
-    if (!apiKey || !settings.transcriptionBaseUrl || !settings.transcriptionModel) {
+    let credentials: { apiKey: string; baseUrl: string; model: string };
+    try {
+      credentials = getTranscriptionCredentialsFromEnv();
+    } catch {
       return {
         status: "error",
         code: "not_configured",
-        message: "Trascrizione non configurata. Vai in Impostazioni per inserire una chiave API.",
+        message: "Trascrizione non disponibile in questa build.",
       };
     }
-    return transcribeAudio(
-      { apiKey, baseUrl: settings.transcriptionBaseUrl, model: settings.transcriptionModel },
-      { buffer: Buffer.from(input.audioBase64, "base64"), mimeType: input.mimeType },
-    );
+
+    try {
+      reserveCloudAiCall(db, "dictation");
+    } catch (error) {
+      if (error instanceof CloudAiDailyLimitReachedError) {
+        return { status: "error", code: "daily_limit_reached", message: error.message };
+      }
+      throw error;
+    }
+
+    return transcribeAudio(credentials, {
+      buffer: Buffer.from(input.audioBase64, "base64"),
+      mimeType: input.mimeType,
+    });
   });
+
+  safeHandle("ai:getCloudProviderInfo", ctx, () => getCloudProviderInfo());
 }

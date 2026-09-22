@@ -80,7 +80,7 @@ export function CoursesListPage() {
             </button>
           ))}
         </div>
-        <button type="button" className="btn btn-primary btn-sm ml-auto" onClick={openCreate}>
+        <button type="button" className="btn btn-primary btn-sm ml-auto" data-tour="courses-new-button" onClick={openCreate}>
           <Plus className="size-4" /> Nuovo corso
         </button>
       </div>

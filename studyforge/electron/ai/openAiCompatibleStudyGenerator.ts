@@ -221,6 +221,13 @@ function toSafeGenerationError(
   const message = error instanceof Error ? error.message : "";
   const errorClassName = error instanceof Error ? error.constructor.name : "";
 
+  if (errorClassName === "CloudAiDailyLimitReachedError") {
+    logClassifiedError(kind, "daily_limit_reached", durationMs, model);
+    // Messaggio già "safe" (electron/services/cloudUsageService.ts): nessun
+    // nome di variabile d'ambiente o dettaglio di provider, propaga diretto.
+    return { code: "daily_limit_reached", message };
+  }
+
   if (errorClassName === "CloudRateLimitError") {
     logClassifiedError(kind, "rate_limited", durationMs, model);
     return {

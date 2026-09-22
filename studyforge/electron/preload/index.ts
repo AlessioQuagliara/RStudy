@@ -29,6 +29,10 @@ import type {
   GenerateLessonPresentationInput,
   ExerciseSetGenerationOutcome,
   PresentationGenerationOutcome,
+  CloudProviderInfo,
+  CloudAiUsageToday,
+  GenerateStudySessionResult,
+  StudySessionGeneration,
 } from "../shared/schemas";
 
 /**
@@ -89,6 +93,7 @@ const api = {
     downloadModel: () => invoke<{ ok: true }>("ai:downloadModel"),
     transcribeAudio: (input: TranscribeAudioInput) =>
       invoke<TranscribeAudioResult>("ai:transcribeAudio", input),
+    getCloudProviderInfo: () => invoke<CloudProviderInfo>("ai:getCloudProviderInfo"),
   },
   studyAi: {
     generateExercises: (input: GenerateLessonExercisesInput) =>
@@ -99,6 +104,15 @@ const api = {
   rag: {
     query: (courseId: string, question: string, activeLessonId?: string | null) =>
       invoke<RagQueryResult>("rag:query", { courseId, question, activeLessonId }),
+  },
+  usage: {
+    getCloudAiToday: () => invoke<CloudAiUsageToday>("usage:getCloudAiToday"),
+  },
+  studySession: {
+    generate: (courseId: string) => invoke<GenerateStudySessionResult>("studySession:generate", { courseId }),
+    getStatus: (courseId: string) => invoke<StudySessionGeneration | null>("studySession:getStatus", { courseId }),
+    download: (courseId: string) =>
+      invoke<{ ok: boolean; filePath: string | null }>("studySession:download", { courseId }),
   },
   settings: {
     get: () => invoke<AppSettings>("settings:get"),

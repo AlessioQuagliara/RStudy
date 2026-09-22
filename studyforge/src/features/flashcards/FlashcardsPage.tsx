@@ -79,6 +79,7 @@ export function FlashcardsPage() {
         <button
           type="button"
           className="btn btn-primary btn-sm"
+          data-tour="flashcards-focus-button"
           onClick={() => setSearchParams({ mode: "focus" })}
           disabled={dueCards.length === 0}
         >

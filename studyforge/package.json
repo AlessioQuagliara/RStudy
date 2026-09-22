@@ -5,6 +5,7 @@
   "private": true,
   "author": "Alessio Quagliara",
   "license": "MIT",
+  "homepage": "https://github.com/AlessioQuagliara/RStudy",
   "main": "dist/main/index.js",
   "packageManager": "pnpm@11.24.0",
   "scripts": {

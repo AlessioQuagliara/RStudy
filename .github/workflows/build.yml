@@ -1,0 +1,138 @@
+name: Desktop build
+
+# Repo monorepo: l'app desktop vive in studyforge/ (vedi `defaults.run.working-directory`
+# sotto), non nella root del repo — qui vivono anche altri progetti (sito web, ecc).
+#
+# Test (typecheck/lint/vitest) su ogni push/PR verso main, sempre su un solo
+# runner Linux (veloce, economico). Il build multipiattaforma vero e proprio
+# (lento: download di Electron, rebuild moduli nativi, packaging) parte SOLO
+# quando si spinge un tag "vX.Y.Z" (pubblica su GitHub Releases, stesso
+# meccanismo di `pnpm release:mac|win|linux` già presente in studyforge/package.json)
+# oppure su richiesta manuale da tab Actions -> "Run workflow" (build di
+# prova, artefatti allegati alla run, nessuna pubblicazione).
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: studyforge
+
+jobs:
+  test:
+    name: Typecheck, lint, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: studyforge/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+
+  build:
+    name: Build ${{ matrix.name }}
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Ogni job builda SOLO per l'architettura nativa del proprio runner:
+          # niente cross-compilazione di moduli nativi (better-sqlite3,
+          # node-llama-cpp), che da un host di architettura diversa fallisce
+          # (verificato: node-gyp rifiuta di cross-compilare da sorgente).
+          # Le varianti arm64 di Windows/Linux restano fuori da questa CI per
+          # ora: si possono aggiungere in futuro se/quando servono davvero,
+          # usando runner GitHub-hosted arm64 dedicati.
+          - os: macos-14
+            name: macOS (arm64)
+            archFlag: ""
+          - os: windows-latest
+            name: Windows (x64)
+            archFlag: "--x64"
+          - os: ubuntu-latest
+            name: Linux (x64)
+            archFlag: "--x64"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: studyforge/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+
+      # Credenziali applicative centralizzate (electron/ai/factory.ts,
+      # electron/services/paddleClient.ts): mai committate, richieste da
+      # electron-builder.yml (extraResources -> .env) per generare il
+      # pacchetto. Vanno configurate come Secrets del repository (Settings ->
+      # Secrets and variables -> Actions) PRIMA di taggare una release reale;
+      # se un secret non è impostato la riga resta vuota e l'app si comporta
+      # come "servizio non configurato" (fallback già gestito dal codice),
+      # non fallisce la build.
+      - name: Scrivi .env da secrets
+        shell: bash
+        run: |
+          cat > .env << 'ENVEOF'
+          PADDLE_API_SANDBOX=${{ secrets.PADDLE_API_SANDBOX }}
+          PADDLE_API=${{ secrets.PADDLE_API }}
+          PADDLE_PRICE_ID=${{ secrets.PADDLE_PRICE_ID }}
+          RSTUDY_CLOUD_API_KEY=${{ secrets.RSTUDY_CLOUD_API_KEY }}
+          RSTUDY_CLOUD_BASE_URL=${{ secrets.RSTUDY_CLOUD_BASE_URL }}
+          RSTUDY_CLOUD_MODEL=${{ secrets.RSTUDY_CLOUD_MODEL }}
+          RSTUDY_TRANSCRIPTION_API_KEY=${{ secrets.RSTUDY_TRANSCRIPTION_API_KEY }}
+          RSTUDY_TRANSCRIPTION_BASE_URL=${{ secrets.RSTUDY_TRANSCRIPTION_BASE_URL }}
+          RSTUDY_TRANSCRIPTION_MODEL=${{ secrets.RSTUDY_TRANSCRIPTION_MODEL }}
+          CLOUD_AI_DAILY_USAGE_LIMIT=${{ secrets.CLOUD_AI_DAILY_USAGE_LIMIT }}
+          CLOUD_STUDY_SESSION_MAX_CALLS_PER_JOB=${{ secrets.CLOUD_STUDY_SESSION_MAX_CALLS_PER_JOB }}
+          CLOUD_STUDY_SESSION_MIN_INTERVAL_HOURS=${{ secrets.CLOUD_STUDY_SESSION_MIN_INTERVAL_HOURS }}
+          ENVEOF
+
+      - run: pnpm build
+
+      - name: Package (pubblica su GitHub Releases solo per un tag v*)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            npx electron-builder ${{ matrix.archFlag }} --publish always
+          else
+            npx electron-builder ${{ matrix.archFlag }} --publish never
+          fi
+
+      - name: Carica artefatti (solo build di prova, non pubblicate)
+        if: "!startsWith(github.ref, 'refs/tags/v')"
+        uses: actions/upload-artifact@v4
+        with:
+          name: rstudy-${{ matrix.name }}
+          path: |
+            studyforge/release/*.dmg
+            studyforge/release/*.zip
+            studyforge/release/*.exe
+            studyforge/release/*.AppImage
+            studyforge/release/*.deb
+          if-no-files-found: ignore
+          retention-days: 14

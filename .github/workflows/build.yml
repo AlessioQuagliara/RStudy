@@ -32,9 +32,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Versione pinnata identica a studyforge/package.json "packageManager":
+      # studyforge/pnpm-workspace.yaml usa "allowBuilds", una chiave non
+      # supportata dalle versioni di pnpm più vecchie (con pnpm 9 dà l'errore
+      # fuorviante "packages field missing or empty").
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 11.24.0
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -76,7 +80,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 11.24.0
       - uses: actions/setup-node@v4
         with:
           node-version: 20

@@ -6,6 +6,7 @@
   "author": "Alessio Quagliara",
   "license": "MIT",
   "main": "dist/main/index.js",
+  "packageManager": "pnpm@11.24.0",
   "scripts": {
     "dev:renderer": "vite",
     "dev:electron": "tsup --watch --onSuccess \"electron .\"",

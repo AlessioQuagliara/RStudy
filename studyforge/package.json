@@ -3,7 +3,10 @@
   "version": "0.1.2",
   "description": "RStudy — dashboard di studio universitario locale-first (Electron + React)",
   "private": true,
-  "author": "Alessio Quagliara",
+  "author": {
+    "name": "Alessio Quagliara",
+    "email": "quagliara.alessio@gmail.com"
+  },
   "license": "MIT",
   "homepage": "https://github.com/AlessioQuagliara/RStudy",
   "main": "dist/main/index.js",

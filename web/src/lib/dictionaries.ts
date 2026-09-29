@@ -19,14 +19,14 @@ export const dict = {
       buy: "Acquista",
     },
     hero: {
-      pill: "App desktop per macOS, Windows e Linux · AI locale",
+      pill: "App desktop per macOS, Windows e Linux · AI cloud + locale offline",
       tagline: "Study fast, study more",
       title: "I tuoi appunti diventano",
       titleAccent: "esercizi e presentazioni",
       lead: "RStudy trasforma i tuoi appunti universitari in esercizi interattivi e presentazioni per studiare in modo attivo. Pensato per materie tecniche: formule, codice e teoria, non solo testo.",
       ctaPrimary: "Acquista RStudy",
       ctaSecondary: "Vedi il codice",
-      note: "Licenza one-time, nessun abbonamento · AI generativa eseguita in locale (llama.cpp) · macOS, Windows e Linux",
+      note: "Licenza one-time, nessun abbonamento · AI generativa cloud inclusa nel prezzo, con AI locale automatica offline (llama.cpp) · macOS, Windows e Linux",
     },
     features: {
       pill: "Funzionalità",
@@ -60,8 +60,8 @@ export const dict = {
         },
         {
           icon: "shield-check",
-          title: "AI locale, zero cloud",
-          body: "Le generazioni girano sul tuo computer con llama.cpp: nessun appunto lascia mai il dispositivo, anche offline.",
+          title: "AI cloud inclusa, locale offline",
+          body: "Le generazioni usano di serie l'AI cloud inclusa nel prezzo, senza chiavi da configurare. Se sei offline, RStudy passa automaticamente al modello locale (llama.cpp) sul tuo computer.",
         },
       ],
     },
@@ -84,9 +84,9 @@ export const dict = {
       features: [
         "Licenza perpetua: nessun rinnovo, nessun abbonamento",
         "1 anno di aggiornamenti gratuiti inclusi dall'acquisto",
-        "AI locale illimitata (llama.cpp) — nessuna quota, nessun costo per generazione",
+        "AI cloud inclusa nel prezzo (nessuna chiave da configurare, limite giornaliero equo), con AI locale illimitata (llama.cpp) come fallback offline automatico",
         "Appunti, corsi, quiz e presentazioni senza limiti",
-        "Dati sempre locali sul tuo dispositivo",
+        "Appunti, corsi e materiali sempre salvati localmente sul tuo dispositivo",
       ],
       cta: "Acquista RStudy",
       note: "Pagamento sicuro gestito da Paddle. Ricevi la chiave di licenza subito dopo l'acquisto, via email e nella pagina di checkout.",
@@ -101,7 +101,7 @@ export const dict = {
         },
         {
           q: "I miei appunti finiscono su un server?",
-          a: "No. Appunti, materiali e generazioni AI restano sul tuo computer. L'AI gira in locale con llama.cpp, nessun testo viene inviato a servizi esterni.",
+          a: "Appunti, corsi e materiali restano sempre e solo sul tuo computer. Per le generazioni AI, RStudy usa di serie l'AI cloud inclusa nel prezzo: il testo necessario viene inviato al provider AI solo per generare il risultato. Se preferisci restare sempre offline, puoi forzare il modello locale (llama.cpp) in Impostazioni: in quel caso nessun testo lascia il dispositivo.",
         },
         {
           q: "Per quali sistemi operativi è disponibile?",
@@ -165,14 +165,14 @@ export const dict = {
       buy: "Buy now",
     },
     hero: {
-      pill: "Desktop app for macOS, Windows and Linux · Local AI",
+      pill: "Desktop app for macOS, Windows and Linux · Cloud AI + offline local AI",
       tagline: "Study fast, study more",
       title: "Your notes become",
       titleAccent: "exercises and slides",
       lead: "RStudy turns your university notes into interactive exercises and presentations so you study actively. Built for technical subjects: formulas, code and theory, not just text.",
       ctaPrimary: "Buy RStudy",
       ctaSecondary: "View the code",
-      note: "One-time license, no subscription · Generative AI runs locally (llama.cpp) · macOS, Windows and Linux",
+      note: "One-time license, no subscription · Cloud AI included, with automatic offline local AI (llama.cpp) · macOS, Windows and Linux",
     },
     features: {
       pill: "Features",
@@ -206,8 +206,8 @@ export const dict = {
         },
         {
           icon: "shield-check",
-          title: "Local AI, zero cloud",
-          body: "Generations run on your computer with llama.cpp: your notes never leave the device, even offline.",
+          title: "Cloud AI included, local offline",
+          body: "Generations use the included cloud AI by default, no keys to configure. If you're offline, RStudy automatically switches to the local model (llama.cpp) on your computer.",
         },
       ],
     },
@@ -230,9 +230,9 @@ export const dict = {
       features: [
         "Perpetual license: no renewal, no subscription",
         "1 year of free updates included from purchase",
-        "Unlimited local AI (llama.cpp) — no quota, no per-generation cost",
+        "Cloud AI included in the price (no keys to configure, fair daily limit), with unlimited local AI (llama.cpp) as an automatic offline fallback",
         "Unlimited notes, courses, quizzes and presentations",
-        "Your data always stays on your device",
+        "Notes, courses and materials always stored locally on your device",
       ],
       cta: "Buy RStudy",
       note: "Secure payment handled by Paddle. You get your license key right after purchase, by email and on the checkout page.",
@@ -247,7 +247,7 @@ export const dict = {
         },
         {
           q: "Do my notes go to a server?",
-          a: "No. Notes, materials and AI generations stay on your computer. AI runs locally with llama.cpp, no text is sent to external services.",
+          a: "Your notes, courses and materials always stay on your computer, period. For AI generations, RStudy uses the included cloud AI by default: the text needed for the generation is sent to the AI provider just to produce the result. Prefer to stay fully offline? You can force the local model (llama.cpp) in Settings — then no text ever leaves your device.",
         },
         {
           q: "Which operating systems are supported?",

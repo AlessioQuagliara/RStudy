@@ -54,12 +54,20 @@ export default function PrivacyPageIt() {
             SQLite locale. Non vengono mai caricati su un nostro server: non ne abbiamo uno.
           </li>
           <li>
-            <strong>Generazioni AI</strong>: girano interamente in locale con llama.cpp. Nessun testo che scrivi
-            nell&apos;app viene inviato a servizi esterni per generare esercizi, riassunti o presentazioni.
+            <strong>Generazioni AI</strong>: di serie, RStudy usa un servizio AI cloud incluso nell&apos;app
+            (attualmente DeepSeek) per generare esercizi, riassunti, presentazioni e sessioni di studio: il testo
+            necessario viene inviato a quel fornitore esclusivamente per produrre il risultato, secondo la sua
+            privacy policy. Se sei offline, oppure se scegli di forzare il modello locale in Impostazioni, la
+            generazione gira interamente sul tuo computer con llama.cpp e nessun testo lascia il dispositivo.
           </li>
           <li>
-            <strong>Download del modello AI</strong>: al primo utilizzo, l&apos;app scarica un modello linguistico
-            (~2GB) da Hugging Face. Questa è l&apos;unica richiesta di rete automatica legata all&apos;AI.
+            <strong>Dettato appunti</strong>: se usi il pulsante microfono, l&apos;audio registrato viene inviato a
+            un servizio di trascrizione cloud incluso nell&apos;app (attualmente Whisper di OpenAI) esclusivamente
+            per produrre la trascrizione testuale.
+          </li>
+          <li>
+            <strong>Download del modello AI locale</strong>: se scarichi il modello per l&apos;uso offline,
+            l&apos;app scarica un modello linguistico (alcuni GB) da Hugging Face.
           </li>
           <li>
             <strong>Attivazione della licenza</strong>: quando inserisci la chiave di licenza, l&apos;app invia

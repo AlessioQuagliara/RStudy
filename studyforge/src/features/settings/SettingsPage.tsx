@@ -44,14 +44,12 @@ export function SettingsPage() {
   const theme = useUiStore((s) => s.theme);
   const setTheme = useUiStore((s) => s.setTheme);
 
-  const [modelUri, setModelUri] = useState("");
   const [temperature, setTemperature] = useState(0.3);
   const [maxTokens, setMaxTokens] = useState(4096);
-  const [aiProvider, setAiProvider] = useState<AiProvider>("local");
+  const [aiProvider, setAiProvider] = useState<AiProvider>("cloud");
 
   useEffect(() => {
     if (settings) {
-      setModelUri(settings.localModelUri);
       setTemperature(settings.temperature);
       setMaxTokens(settings.maxTokens);
       setAiProvider(settings.aiProvider);
@@ -60,7 +58,7 @@ export function SettingsPage() {
 
   const saveModelSettings = async () => {
     try {
-      await updateSettings.mutateAsync({ localModelUri: modelUri, temperature, maxTokens });
+      await updateSettings.mutateAsync({ temperature, maxTokens });
       toast.success("Impostazioni AI salvate");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Errore nel salvataggio");
@@ -78,11 +76,6 @@ export function SettingsPage() {
 
   const handleDownloadModel = async () => {
     try {
-      // L'URI corrente potrebbe essere stato modificato ma non ancora salvato:
-      // il download deve sempre usare l'URI effettivamente in Impostazioni.
-      if (settings && modelUri !== settings.localModelUri) {
-        await updateSettings.mutateAsync({ localModelUri: modelUri });
-      }
       await downloadModel.mutateAsync();
       toast.success("Download del modello avviato");
     } catch (error) {
@@ -122,9 +115,11 @@ export function SettingsPage() {
       <Card span={12} tourId="settings-ai-provider">
         <h2 className="card-title">Provider AI</h2>
         <p className="text-base-content/60 text-sm">
-          Scegli come generare study pack, esercizi, presentazioni e risposte RAG. Il locale gira offline sul
-          tuo computer; il cloud usa il servizio AI incluso nell'app (nessuna chiave da inserire), con un
-          limite giornaliero di richieste condiviso con il dettato appunti.
+          Il cloud ha la priorità: usa il servizio AI incluso nell'app (nessuna chiave da inserire), con un
+          limite giornaliero di richieste condiviso con il dettato appunti. Se il cloud non è raggiungibile
+          (es. sei offline) l'app passa automaticamente al modello locale, se ne hai scaricato uno — nessuna
+          generazione si interrompe solo perché manca la connessione. Puoi comunque forzare il locale qui
+          sotto, ad esempio per lavorare sempre offline.
         </p>
         <div className="join mt-2">
           <button
@@ -257,23 +252,19 @@ export function SettingsPage() {
         </div>
         <p className="text-base-content/40 mt-2 text-xs">
           L'inferenza locale è 100% offline: nessuna API key, nessun dato inviato in rete. Il modello viene
-          scaricato una sola volta e salvato nella cartella dati dell'app. Usato solo se il provider AI qui
-          sopra è impostato su "Locale".
+          scaricato una sola volta e salvato nella cartella dati dell'app. Usato quando il provider AI è
+          impostato su "Locale", oppure automaticamente come rete di sicurezza se il cloud non è raggiungibile.
         </p>
       </Card>
 
       <Card span={6}>
         <h2 className="card-title">Modello e parametri</h2>
         <label className="form-control">
-          <span className="label-text mb-1 text-xs">URI modello (formato node-llama-cpp / Hugging Face)</span>
-          <input
-            className="input input-bordered input-sm"
-            value={modelUri}
-            onChange={(e) => setModelUri(e.target.value)}
-          />
+          <span className="label-text mb-1 text-xs">Modello locale</span>
+          <input className="input input-bordered input-sm" value={settings?.localModelUri ?? ""} disabled readOnly />
         </label>
         <p className="text-base-content/40 text-xs">
-          Cambiare l'URI dopo aver già scaricato un modello richiede un nuovo download.
+          Il modello locale è fisso e gestito dall'app: non è più possibile sceglierne uno diverso.
         </p>
         <div className="grid grid-cols-2 gap-3">
           <label className="form-control">

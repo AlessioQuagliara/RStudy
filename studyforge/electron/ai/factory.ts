@@ -25,6 +25,31 @@ const ENV_CLOUD_MODEL = "RSTUDY_CLOUD_MODEL";
 const ENV_TRANSCRIPTION_API_KEY = "RSTUDY_TRANSCRIPTION_API_KEY";
 const ENV_TRANSCRIPTION_BASE_URL = "RSTUDY_TRANSCRIPTION_BASE_URL";
 const ENV_TRANSCRIPTION_MODEL = "RSTUDY_TRANSCRIPTION_MODEL";
+/**
+ * Modello cloud dedicato alla pipeline "Genera sessione studio"
+ * (electron/services/studySessionService.ts), opzionale: se non impostata si
+ * ricade sul modello generale (ENV_CLOUD_MODEL). Esiste perché quella
+ * pipeline genera JSON strutturato molto più lungo (capitoli interi in
+ * markdown) delle altre funzioni AI, e un modello "flash"/reasoning con un
+ * budget di token pensato per risposte brevi lo tronca a metà: il
+ * `finish_reason` torna "length" con un JSON incompleto, che fallisce la
+ * validazione Zod e fa apparire la generazione come fallita ("La
+ * generazione della sessione studio non è riuscita"). Un modello "pro" più
+ * capace, con più margine di token (vedi STUDY_SESSION_CLOUD_MAX_TOKENS
+ * sotto), evita il troncamento.
+ */
+const ENV_CLOUD_STUDY_SESSION_MODEL = "RSTUDY_CLOUD_STUDY_SESSION_MODEL";
+/**
+ * Budget di token per le chiamate cloud della pipeline "Genera sessione
+ * studio", indipendente da `settings.maxTokens` (che resta il default per
+ * chat generalista/RAG/esercizi): i modelli reasoning usati da questo
+ * provider spendono una quota di token "di pensiero" (`reasoning_content`)
+ * prima di produrre la risposta vera, quota che si somma al contenuto
+ * JSON/markdown richiesto e va tolta dallo stesso `max_tokens` — un valore
+ * pensato per risposte brevi (i.e. 4096, il default di `settings.maxTokens`)
+ * qui tronca sistematicamente l'output.
+ */
+const STUDY_SESSION_CLOUD_MAX_TOKENS = 12000;
 
 function getCloudCredentialsFromEnv(): { apiKey: string; baseUrl: string; model: string } {
   const apiKey = readEnvOverride(ENV_CLOUD_API_KEY);
@@ -66,15 +91,66 @@ export function getCloudProviderInfo() {
   };
 }
 
-function buildCloudAiClient(settings: Pick<AppSettings, "temperature" | "maxTokens">): CloudAiClient {
+function buildCloudAiClient(
+  settings: Pick<AppSettings, "temperature" | "maxTokens">,
+  overrides?: { model?: string; maxTokens?: number },
+): CloudAiClient {
   const { apiKey, baseUrl, model } = getCloudCredentialsFromEnv();
   return new CloudAiClient({
     apiKey,
     baseUrl,
-    model,
+    model: overrides?.model ?? model,
     temperature: settings.temperature,
-    maxTokens: settings.maxTokens,
+    maxTokens: overrides?.maxTokens ?? settings.maxTokens,
   });
+}
+
+/** Modello cloud da usare per "Genera sessione studio": l'override dedicato se configurato, altrimenti il modello cloud generale. */
+function getStudySessionCloudModel(): string | undefined {
+  return readEnvOverride(ENV_CLOUD_STUDY_SESSION_MODEL) ?? undefined;
+}
+
+function isLocalModelReady(db: Db): boolean {
+  return getModelStatus(db).state === "ready" && Boolean(getLocalModelPath(db));
+}
+
+/**
+ * Avvolge un client cloud con un fallback automatico al modello locale: se
+ * una chiamata cloud fallisce (offline, provider irraggiungibile, chiave non
+ * configurata in questa build, limite giornaliero raggiunto, ecc.) e un
+ * modello locale è pronto, il client locale viene provato al posto di far
+ * fallire l'intera operazione — vedi decisione di prodotto in
+ * SettingsPage.tsx: "priorità al cloud, locale come rete di sicurezza
+ * offline". Il client locale è costruito pigramente (solo se davvero serve),
+ * per non pagare il costo di verifica del modello quando il cloud funziona.
+ */
+function withLocalFallback(cloudClient: AiChatClient, db: Db, settings: AppSettings): AiChatClient {
+  let localClient: AiChatClient | null = null;
+  const getLocalClient = (): AiChatClient => {
+    if (!localClient) localClient = buildLocalAiClient(db, settings);
+    return localClient;
+  };
+
+  async function withFallback<T>(run: (client: AiChatClient) => Promise<T>): Promise<T> {
+    try {
+      return await run(cloudClient);
+    } catch (error) {
+      if (!isLocalModelReady(db)) throw error;
+      console.warn(
+        `[factory] provider cloud non disponibile, ripiego sul modello locale: ${
+          error instanceof Error ? error.message : "errore sconosciuto"
+        }`,
+      );
+      return run(getLocalClient());
+    }
+  }
+
+  return {
+    testConnection: () => cloudClient.testConnection(),
+    chatJSON: (messages, schema) => withFallback((c) => c.chatJSON(messages, schema)),
+    chatText: (messages) => withFallback((c) => c.chatText(messages)),
+    answerWithContext: (input) => withFallback((c) => c.answerWithContext(input)),
+  };
 }
 
 function buildLocalAiClient(db: Db, settings: AppSettings): LocalAiClient {
@@ -95,15 +171,25 @@ function buildLocalAiClient(db: Db, settings: AppSettings): LocalAiClient {
 
 /**
  * Sceglie ed istanzia il client AI (chat/RAG) in base a `settings.aiProvider`:
- * "local" (default, node-llama-cpp offline) o "cloud" (endpoint
- * chat-completions OpenAI-compatible, electron/ai/cloudAiClient.ts). Unico
- * punto di scelta del provider: il resto dell'app dipende solo
- * dall'interfaccia AiChatClient, mai dalle classi concrete.
+ * "cloud" (default, endpoint chat-completions OpenAI-compatible,
+ * electron/ai/cloudAiClient.ts) o "local" (node-llama-cpp offline). Il cloud
+ * ha sempre priorità quando selezionato: se non è raggiungibile (offline,
+ * errore del provider, build senza credenziali) e un modello locale è
+ * pronto, si passa automaticamente al locale (withLocalFallback) invece di
+ * interrompere la generazione — l'utente vede il fallback solo se il locale
+ * non è configurato. Unico punto di scelta del provider: il resto dell'app
+ * dipende solo dall'interfaccia AiChatClient, mai dalle classi concrete.
  */
 export async function createAiClient(db: Db): Promise<AiChatClient> {
   const settings = getSettings(db);
   if (settings.aiProvider === "cloud") {
-    return withDailyUsageGuard(buildCloudAiClient(settings), db, "general_ai");
+    try {
+      const cloudClient = withDailyUsageGuard(buildCloudAiClient(settings), db, "general_ai");
+      return withLocalFallback(cloudClient, db, settings);
+    } catch (error) {
+      if (isLocalModelReady(db)) return buildLocalAiClient(db, settings);
+      throw error;
+    }
   }
   return buildLocalAiClient(db, settings);
 }
@@ -121,7 +207,16 @@ export async function createAiClient(db: Db): Promise<AiChatClient> {
 export async function createAiClientForStudySession(db: Db): Promise<AiChatClient> {
   const settings = getSettings(db);
   if (settings.aiProvider === "cloud") {
-    return buildCloudAiClient(settings);
+    try {
+      const cloudClient = buildCloudAiClient(settings, {
+        model: getStudySessionCloudModel(),
+        maxTokens: STUDY_SESSION_CLOUD_MAX_TOKENS,
+      });
+      return withLocalFallback(cloudClient, db, settings);
+    } catch (error) {
+      if (isLocalModelReady(db)) return buildLocalAiClient(db, settings);
+      throw error;
+    }
   }
   return buildLocalAiClient(db, settings);
 }

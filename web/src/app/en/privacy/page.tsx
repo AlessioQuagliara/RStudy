@@ -46,12 +46,20 @@ export default function PrivacyPageEn() {
             database. They are never uploaded to a server of ours — we don&apos;t have one.
           </li>
           <li>
-            <strong>AI generations</strong>: run entirely locally with llama.cpp. No text you write in the app is
-            sent to external services to generate exercises, summaries or presentations.
+            <strong>AI generations</strong>: by default, RStudy uses a cloud AI service included in the app
+            (currently DeepSeek) to generate exercises, summaries, presentations and study sessions: the text
+            needed for the generation is sent to that provider solely to produce the result, subject to its own
+            privacy policy. If you&apos;re offline, or you choose to force the local model in Settings,
+            generation runs entirely on your computer with llama.cpp and no text ever leaves the device.
           </li>
           <li>
-            <strong>AI model download</strong>: on first use, the app downloads a language model (~2GB) from
-            Hugging Face. This is the only automatic AI-related network request.
+            <strong>Note dictation</strong>: if you use the microphone button, the recorded audio is sent to a
+            cloud transcription service included in the app (currently OpenAI Whisper) solely to produce the text
+            transcription.
+          </li>
+          <li>
+            <strong>Local AI model download</strong>: if you download the model for offline use, the app
+            downloads a language model (a few GB) from Hugging Face.
           </li>
           <li>
             <strong>License activation</strong>: when you enter your license key, the app sends the transaction

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     template: "%s — RStudy",
   },
   description:
-    "RStudy trasforma i tuoi appunti universitari in esercizi interattivi e presentazioni per studiare in modo attivo. AI locale, licenza one-time, per macOS, Windows e Linux.",
+    "RStudy trasforma i tuoi appunti universitari in esercizi interattivi e presentazioni per studiare in modo attivo. AI cloud inclusa e AI locale offline, licenza one-time, per macOS, Windows e Linux.",
   openGraph: {
     type: "website",
     images: ["/og-image.png"],

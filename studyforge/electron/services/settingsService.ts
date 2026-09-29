@@ -7,14 +7,18 @@ import { appSettingsSchema, type AppSettings, type UpdateSettingsInput } from ".
 const SETTINGS_KEY = "app_settings";
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  localModelUri: "hf:Qwen/Qwen2.5-3B-Instruct-GGUF:Q4_K_M",
+  localModelUri: "hf:XHToken/Spark-X2.5-4B-GGUF:Q4_K_M",
   localModelPath: null,
   temperature: 0.3,
   maxTokens: 4096,
   language: "it",
   theme: "system",
   importFolder: null,
-  aiProvider: "local",
+  // Cloud ha priorità di default (electron/ai/factory.ts::withLocalFallback
+  // ripiega comunque sul locale se il cloud non è raggiungibile o non è
+  // configurato in questa build): il locale resta la rete di sicurezza
+  // offline, non la scelta predefinita.
+  aiProvider: "cloud",
 };
 
 export function getSettings(db: Db): AppSettings {

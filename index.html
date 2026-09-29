@@ -4,17 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RStudy — Study fast, study more</title>
-<meta name="description" content="RStudy trasforma i tuoi appunti universitari in esercizi interattivi e presentazioni per studiare in modo attivo. Study fast, study more. App desktop per macOS, Windows e Linux, AI locale, dati sempre locali.">
+<meta name="description" content="RStudy trasforma i tuoi appunti universitari in esercizi interattivi e presentazioni per studiare in modo attivo. Study fast, study more. App desktop per macOS, Windows e Linux, AI cloud inclusa e AI locale offline.">
 <meta name="color-scheme" content="dark">
 <meta property="og:title" content="RStudy — Study fast, study more">
-<meta property="og:description" content="Appunti universitari trasformati in esercizi interattivi e presentazioni. AI locale, nessun dato che lascia il tuo computer. Per macOS, Windows e Linux.">
+<meta property="og:description" content="Appunti universitari trasformati in esercizi interattivi e presentazioni. AI cloud inclusa nel prezzo, con AI locale sempre disponibile offline. Per macOS, Windows e Linux.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://alessioquagliara.github.io/RStudy/">
 <meta property="og:image" content="https://alessioquagliara.github.io/RStudy/assets/img/logo-mark-512.png">
 <meta property="og:locale" content="it_IT">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RStudy — Study fast, study more">
-<meta name="twitter:description" content="Appunti universitari trasformati in esercizi interattivi e presentazioni. AI locale, per macOS, Windows e Linux.">
+<meta name="twitter:description" content="Appunti universitari trasformati in esercizi interattivi e presentazioni. AI cloud inclusa, con AI locale offline. Per macOS, Windows e Linux.">
 <link rel="icon" type="image/svg+xml" href="assets/img/logo-mark.svg">
 <link rel="apple-touch-icon" href="assets/img/logo-mark-180.png">
 <style>
@@ -192,7 +192,7 @@
 
 <main>
   <section class="hero wrap">
-    <span class="pill">✦ App desktop per macOS, Windows e Linux · AI locale</span>
+    <span class="pill">✦ App desktop per macOS, Windows e Linux · AI cloud + locale offline</span>
     <p class="tagline">Study fast, study more</p>
     <h1>I tuoi appunti diventano <span class="accent">esercizi e presentazioni</span></h1>
     <p class="lead">
@@ -203,7 +203,7 @@
       <a class="btn btn-primary" href="#prezzo">Acquista RStudy</a>
       <a class="btn btn-ghost" href="https://github.com/AlessioQuagliara/RStudy/tree/main/studyforge">Vedi il codice</a>
     </div>
-    <p class="hero-note">Licenza one-time, nessun abbonamento · AI generativa eseguita in locale (llama.cpp) · macOS, Windows e Linux</p>
+    <p class="hero-note">Licenza one-time, nessun abbonamento · AI generativa cloud inclusa nel prezzo, con AI locale automatica offline (llama.cpp) · macOS, Windows e Linux</p>
 
     <div class="mock" aria-hidden="true">
       <div class="mock-label">Illustrazione — non uno screenshot dell'app</div>
@@ -293,8 +293,8 @@
       </div>
       <div class="card">
         <div class="icon" aria-hidden="true">🔒</div>
-        <h3>AI locale, zero cloud</h3>
-        <p>Le generazioni girano sul tuo computer con llama.cpp: nessun appunto lascia mai il dispositivo, anche offline.</p>
+        <h3>AI cloud inclusa, locale offline</h3>
+        <p>Le generazioni usano di serie l'AI cloud inclusa nel prezzo, senza chiavi da configurare. Se sei offline, RStudy passa automaticamente al modello locale (llama.cpp) direttamente sul tuo computer.</p>
       </div>
     </div>
   </section>
@@ -313,9 +313,9 @@
       <ul>
         <li>Licenza perpetua: nessun rinnovo, nessun abbonamento</li>
         <li>1 anno di aggiornamenti gratuiti inclusi dall'acquisto</li>
-        <li>AI locale illimitata (llama.cpp) — nessuna quota, nessun costo per generazione</li>
+        <li>AI cloud inclusa nel prezzo (nessuna chiave da configurare, limite giornaliero equo), con AI locale illimitata (llama.cpp) come fallback offline automatico</li>
         <li>Appunti, corsi, quiz e presentazioni senza limiti</li>
-        <li>Dati sempre locali sul tuo dispositivo</li>
+        <li>Appunti, corsi e materiali sempre salvati localmente sul tuo dispositivo</li>
       </ul>
       <button type="button" class="btn btn-primary" id="buy-button">Acquista RStudy</button>
       <p class="price-note">Pagamento sicuro gestito da Paddle. Ricevi la chiave di licenza subito dopo l'acquisto, via email e su questa pagina.</p>
@@ -393,11 +393,12 @@
     </div>
     <div class="privacy">
       <div>
-        <h3>🔒 Locale per progetto</h3>
+        <h3>🔒 Dati sempre locali</h3>
         <ul>
-          <li>Appunti, corsi e materiali sono salvati localmente sul tuo dispositivo.</li>
-          <li>Le generazioni AI (esercizi, presentazioni, riassunti) girano in locale con llama.cpp: nessun appunto viene inviato a servizi esterni.</li>
-          <li>Nessuna telemetria invasiva: l'app funziona interamente offline, modello AI incluso.</li>
+          <li>Appunti, corsi e materiali sono salvati localmente sul tuo dispositivo, sempre.</li>
+          <li>Le generazioni AI (esercizi, presentazioni, riassunti) usano di serie l'AI cloud inclusa: il testo necessario per la generazione viene inviato al provider AI che la elabora, secondo la sua informativa privacy.</li>
+          <li>Vuoi restare sempre offline? Passa al modello locale (llama.cpp) in Impostazioni: le generazioni girano interamente sul tuo computer, nessun appunto lascia il dispositivo. RStudy ci passa comunque in automatico se non hai connessione.</li>
+          <li>Nessuna telemetria invasiva sull'uso dell'app.</li>
         </ul>
       </div>
       <div>
@@ -405,7 +406,7 @@
         <ul>
           <li><code>contextIsolation</code> e <code>sandbox</code> attivi, nessun accesso diretto a Node dal renderer.</li>
           <li>API IPC granulare e tipizzata, con validazione di ogni payload nel processo main.</li>
-          <li>Nessuna chiave API da configurare: il modello AI locale non richiede credenziali né connessione a internet.</li>
+          <li>Nessuna chiave API da configurare, né per il cloud né per il locale: il provider cloud incluso e il modello locale sono già pronti all'uso.</li>
         </ul>
       </div>
     </div>

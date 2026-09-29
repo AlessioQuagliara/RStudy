@@ -1,6 +1,6 @@
 {
   "name": "rstudy",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "RStudy — dashboard di studio universitario locale-first (Electron + React)",
   "private": true,
   "author": {

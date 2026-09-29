@@ -28,28 +28,31 @@ const ENV_TRANSCRIPTION_MODEL = "RSTUDY_TRANSCRIPTION_MODEL";
 /**
  * Modello cloud dedicato alla pipeline "Genera sessione studio"
  * (electron/services/studySessionService.ts), opzionale: se non impostata si
- * ricade sul modello generale (ENV_CLOUD_MODEL). Esiste perché quella
- * pipeline genera JSON strutturato molto più lungo (capitoli interi in
- * markdown) delle altre funzioni AI, e un modello "flash"/reasoning con un
- * budget di token pensato per risposte brevi lo tronca a metà: il
- * `finish_reason` torna "length" con un JSON incompleto, che fallisce la
- * validazione Zod e fa apparire la generazione come fallita ("La
- * generazione della sessione studio non è riuscita"). Un modello "pro" più
- * capace, con più margine di token (vedi STUDY_SESSION_CLOUD_MAX_TOKENS
- * sotto), evita il troncamento.
+ * ricade sul modello generale (ENV_CLOUD_MODEL). Quella pipeline genera JSON
+ * strutturato molto più lungo (capitoli interi in markdown) delle altre
+ * funzioni AI, e beneficia di un modello "pro" più capace oltre al budget di
+ * token più ampio già applicato a tutte le chiamate cloud (vedi
+ * CLOUD_MIN_MAX_TOKENS sotto).
  */
 const ENV_CLOUD_STUDY_SESSION_MODEL = "RSTUDY_CLOUD_STUDY_SESSION_MODEL";
 /**
- * Budget di token per le chiamate cloud della pipeline "Genera sessione
- * studio", indipendente da `settings.maxTokens` (che resta il default per
- * chat generalista/RAG/esercizi): i modelli reasoning usati da questo
- * provider spendono una quota di token "di pensiero" (`reasoning_content`)
- * prima di produrre la risposta vera, quota che si somma al contenuto
- * JSON/markdown richiesto e va tolta dallo stesso `max_tokens` — un valore
- * pensato per risposte brevi (i.e. 4096, il default di `settings.maxTokens`)
- * qui tronca sistematicamente l'output.
+ * Budget minimo di token per QUALSIASI chiamata cloud (chat generalista,
+ * RAG, esercizi/presentazioni, sessione studio) — non solo la pipeline
+ * sessione studio: i modelli del provider cloud centralizzato sono reasoning
+ * model anche per l'uso "generale" (es. deepseek-flash), e spendono una
+ * quota di token "di pensiero" (`reasoning_content`) prima di produrre la
+ * risposta vera, quota che si somma al contenuto JSON/testo richiesto e va
+ * tolta dallo stesso `max_tokens`. `settings.maxTokens` (default 4096, UI in
+ * Impostazioni) è pensato per il modello locale e da solo è troppo basso per
+ * il cloud: senza questo floor, `finish_reason` torna "length" con un JSON
+ * troncato a metà, che fallisce il parsing ("Risposta AI non è JSON valido")
+ * — bug osservato per la prima volta sulla pipeline sessione studio, poi
+ * riapparso su "Salva e genera studio AI" (esercizi) non appena il cloud è
+ * diventato il provider di default. Si applica come MINIMO, non fisso:
+ * se l'utente alza `maxTokens` oltre questa soglia da Impostazioni, vince
+ * il valore più alto.
  */
-const STUDY_SESSION_CLOUD_MAX_TOKENS = 12000;
+const CLOUD_MIN_MAX_TOKENS = 12000;
 
 function getCloudCredentialsFromEnv(): { apiKey: string; baseUrl: string; model: string } {
   const apiKey = readEnvOverride(ENV_CLOUD_API_KEY);
@@ -101,7 +104,7 @@ function buildCloudAiClient(
     baseUrl,
     model: overrides?.model ?? model,
     temperature: settings.temperature,
-    maxTokens: overrides?.maxTokens ?? settings.maxTokens,
+    maxTokens: Math.max(overrides?.maxTokens ?? settings.maxTokens, CLOUD_MIN_MAX_TOKENS),
   });
 }
 
@@ -208,10 +211,7 @@ export async function createAiClientForStudySession(db: Db): Promise<AiChatClien
   const settings = getSettings(db);
   if (settings.aiProvider === "cloud") {
     try {
-      const cloudClient = buildCloudAiClient(settings, {
-        model: getStudySessionCloudModel(),
-        maxTokens: STUDY_SESSION_CLOUD_MAX_TOKENS,
-      });
+      const cloudClient = buildCloudAiClient(settings, { model: getStudySessionCloudModel() });
       return withLocalFallback(cloudClient, db, settings);
     } catch (error) {
       if (isLocalModelReady(db)) return buildLocalAiClient(db, settings);

@@ -37,10 +37,12 @@ asarUnpack:
   - "**/*.node"
 mac:
   category: public.app-category.education
+  # Solo dmg: lo zip serve esclusivamente a Squirrel.Mac per l'auto-update
+  # (electron/services/updaterService.ts), oggi non funzionante su macOS per
+  # mancanza di firma Developer ID (vedi commento gatekeeperAssess sotto) —
+  # da reintrodurre quando la firma sarà a posto.
   target:
     - target: dmg
-      arch: [arm64]
-    - target: zip
       arch: [arm64]
   hardenedRuntime: true
   gatekeeperAssess: false
@@ -54,13 +56,21 @@ win:
   target:
     - target: nsis
       arch: [x64, arm64]
-  artifactName: "${productName}-Setup-${version}-${arch}.${ext}"
+  # NIENTE ${arch} nel pattern: electron-builder di default (nsis.buildUniversalInstaller,
+  # true se non impostato) genera già un installer "universal" che rileva la CPU
+  # all'installazione — ma costruisce ANCHE un installer per-architettura in più
+  # se il pattern dell'artifactName contiene ${arch} (vedi NsisTarget.js::finishBuild,
+  # `pattern.includes("${arch}")`). Con ${arch} rimosso resta solo l'universale:
+  # un file invece di tre.
+  artifactName: "${productName}-Setup-${version}.${ext}"
 linux:
   category: Education
+  # Solo AppImage: portabile, gira su qualunque distro senza installazione.
+  # Il .deb dava integrazione nativa col menu su Debian/Ubuntu ma non
+  # installava su Fedora/Arch/altre distro non-Debian — un file solo, più
+  # semplice per chi scarica dalla pagina release.
   target:
     - target: AppImage
-      arch: [x64, arm64]
-    - target: deb
       arch: [x64, arm64]
   artifactName: "${productName}-${version}-${arch}.${ext}"
 nsis:

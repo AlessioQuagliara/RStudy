@@ -1,0 +1,22 @@
+{% extends "auth/_layout.html" %}
+{% block title %}Registrati · RStudy{% endblock %}
+{% block heading %}Crea un account{% endblock %}
+{% block form %}
+<form method="post" class="mt-4 flex flex-col gap-3">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  <label class="form-control">
+    <span class="label-text mb-1 text-xs">Email</span>
+    <input type="email" name="email" class="input input-bordered w-full" value="{{ email or '' }}" autocomplete="email" required autofocus />
+  </label>
+  <label class="form-control">
+    <span class="label-text mb-1 text-xs">Password (almeno 10 caratteri)</span>
+    <input type="password" name="password" class="input input-bordered w-full" autocomplete="new-password" minlength="10" maxlength="128" required />
+  </label>
+  <label class="form-control">
+    <span class="label-text mb-1 text-xs">Ripeti la password</span>
+    <input type="password" name="password_confirm" class="input input-bordered w-full" autocomplete="new-password" required />
+  </label>
+  <button type="submit" class="btn btn-primary">{{ icon("user-plus") }} Registrati</button>
+</form>
+<p class="text-base-content/60 mt-2 text-sm">Hai già un account? <a class="link link-primary" href="{{ url_for('auth.login') }}">Accedi</a></p>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% from "_ui.html" import topbar, card, empty_state %}
+{% block content %}
+{{ topbar("Dashboard") }}
+{% call card() %}
+  {{ empty_state("graduation-cap", "Versione web in costruzione", "Registrazione, corsi, lezioni ed esercizi arriveranno nei prossimi passi.") }}
+{% endcall %}
+{% endblock %}

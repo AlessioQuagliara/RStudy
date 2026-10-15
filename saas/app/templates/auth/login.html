@@ -1,0 +1,18 @@
+{% extends "auth/_layout.html" %}
+{% block title %}Accedi · RStudy{% endblock %}
+{% block heading %}Accedi a RStudy{% endblock %}
+{% block form %}
+<form method="post" class="mt-4 flex flex-col gap-3">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  <label class="form-control">
+    <span class="label-text mb-1 text-xs">Email</span>
+    <input type="email" name="email" class="input input-bordered w-full" value="{{ email or '' }}" autocomplete="email" required autofocus />
+  </label>
+  <label class="form-control">
+    <span class="label-text mb-1 text-xs">Password</span>
+    <input type="password" name="password" class="input input-bordered w-full" autocomplete="current-password" required />
+  </label>
+  <button type="submit" class="btn btn-primary">{{ icon("log-in") }} Accedi</button>
+</form>
+<p class="text-base-content/60 mt-2 text-sm">Non hai un account? <a class="link link-primary" href="{{ url_for('auth.register') }}">Registrati</a></p>
+{% endblock %}

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-labelledby="rstudyLogoTitle">
+  <title id="rstudyLogoTitle">RStudy</title>
+  <defs>
+    <linearGradient id="rstudyBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c8cff"/>
+      <stop offset="100%" stop-color="#38e1c6"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="2" y="2" width="96" height="96" rx="22" fill="url(#rstudyBg)"/>
+
+  <!-- Speed lines: "fast" -->
+  <g opacity="0.5" stroke="#0b0f1a" stroke-width="4.5" stroke-linecap="round">
+    <line x1="14" y1="35" x2="26" y2="35"/>
+    <line x1="10" y1="45" x2="24" y2="45"/>
+  </g>
+
+  <!-- R monogram -->
+  <path d="M34 24 H54 C64.5 24 71 30 71 39 C71 46.5 66.8 51.8 59.6 53.6 L74 74 H61 L48.5 55 H45 V74 H34 Z
+           M45 33 V46 H52.5 C57.3 46 60 43.4 60 39.3 C60 35.2 57.3 33 52.5 33 Z"
+        fill="#0b0f1a"/>
+
+  <!-- Zap accent: "study fast" -->
+  <g transform="translate(60,58) scale(1.35)">
+    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#0b0f1a"/>
+  </g>
+</svg>

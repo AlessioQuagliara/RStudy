@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@source "../app/templates";
+@source "../app/static/*.js";
+
+/* Temi predefiniti di daisyUI, in attesa della verifica di licenza sul tema del desktop. Default scuro come il desktop. */
+@plugin "daisyui" {
+  themes: light, dark --default;
+}
+
+/* Il pulsante tema mostra il sole sul tema scuro e la luna su quello chiaro, come Topbar.tsx. */
+[data-theme="dark"] .theme-icon-light,
+[data-theme="light"] .theme-icon-dark {
+  display: none;
+}

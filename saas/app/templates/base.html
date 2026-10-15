@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="it" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo-mark.svg') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/app.css') }}" />
+    {# Bloccante di proposito: applica il tema salvato prima del primo paint. #}
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <title>{% block title %}RStudy{% endblock %}</title>
+  </head>
+  <body>
+    {% block body %}
+    {# Stessa struttura di AppShell + Sidebar del desktop (studyforge/src/components/layout). #}
+    <div class="drawer lg:drawer-open min-h-screen">
+      <input id="app-drawer" type="checkbox" class="drawer-toggle" aria-label="Attiva/disattiva menu" />
+      <main class="drawer-content bg-base-100">
+        <div class="grid grid-cols-12 gap-6 p-4 lg:p-8">{% block content %}{% endblock %}</div>
+      </main>
+      <aside class="drawer-side z-20">
+        <label for="app-drawer" class="drawer-overlay" aria-label="Chiudi menu"></label>
+        <nav class="bg-base-200 flex min-h-screen w-64 flex-col gap-2 px-2 pt-6">
+          <div class="mx-3 mb-2 flex items-center gap-2 font-semibold">
+            <img src="{{ url_for('static', filename='logo-mark.svg') }}" alt="" class="size-6 rounded-md" aria-hidden="true" />
+            <span>RStudy</span>
+          </div>
+          <ul class="menu w-full grow">
+            {% for endpoint, label, icon_name in [("main.dashboard", "Dashboard", "layout-dashboard")] %}
+            <li>
+              <a href="{{ url_for(endpoint) }}" class="{{ 'menu-active' if request.endpoint == endpoint }}">
+                {{ icon(icon_name) }} {{ label }}
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+          <div class="mx-3 flex items-center gap-2 text-sm">
+            <span class="text-base-content/60 min-w-0 grow truncate" title="{{ current_user.email }}">{{ current_user.email }}</span>
+            <form method="post" action="{{ url_for('auth.logout') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <button type="submit" class="btn btn-ghost btn-sm btn-square" aria-label="Esci">{{ icon("log-out") }}</button>
+            </form>
+          </div>
+          <p class="text-base-content/40 mx-3 mb-4 text-xs">Versione web · dati salvati sul server</p>
+        </nav>
+      </aside>
+    </div>
+    {% endblock %}
+  </body>
+</html>

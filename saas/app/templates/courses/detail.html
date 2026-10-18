@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% from "_ui.html" import topbar, empty_state, status_badge, csrf %}
+{% from "_ui.html" import pagination with context %}
+{% from "flashcards/_list.html" import flashcard_grid with context %}
+{% block title %}{{ course.title }} · RStudy{% endblock %}
+{% block content %}
+{% set completed, total, pct = course.progress %}
+{{ topbar(course.title, "Corsi", url_for("courses.index")) }}
+
+{# Intestazione e schede di CourseDetailPage.tsx. #}
+<div class="col-span-12 flex flex-wrap items-center gap-3">
+  {{ status_badge(course.status, statuses[course.status]) }}
+  <span class="text-base-content/60 text-sm">{{ course.cfu }} CFU</span>
+  {% if course.exam_date %}<span class="text-base-content/60 text-sm">Esame: {{ course.exam_date | date_it }}</span>{% endif %}
+  <div class="flex items-center gap-2">
+    <progress class="progress progress-primary w-32" value="{{ pct }}" max="100" aria-label="Progresso lezioni"></progress>
+    <span class="text-base-content/60 text-xs">{{ pct }}%</span>
+  </div>
+  <div class="ml-auto flex gap-2">
+    <a href="{{ url_for('courses.edit', course_id=course.id) }}" class="btn btn-sm">{{ icon("pencil") }} Modifica</a>
+    <form method="post" action="{{ url_for('courses.delete', course_id=course.id) }}" data-confirm="Eliminare definitivamente &quot;{{ course.title }}&quot;?">
+      {{ csrf() }}
+      <button type="submit" class="btn btn-sm text-error">{{ icon("trash-2") }} Elimina</button>
+    </form>
+  </div>
+</div>
+
+<div role="tablist" class="tabs tabs-border col-span-12">
+  {% for key, label in tabs.items() %}
+  <a role="tab" class="tab {{ 'tab-active' if tab == key }}" href="{{ url_for('courses.detail', course_id=course.id, tab=key) }}" {{ 'aria-selected=true' if tab == key }}>{{ label }}</a>
+  {% endfor %}
+</div>
+
+{% if tab == "overview" %}
+<div class="col-span-12 grid grid-cols-1 gap-4 lg:grid-cols-3">
+  <div class="lg:col-span-2">
+    <h2 class="mb-1 font-semibold">Introduzione</h2>
+    <p class="text-base-content/70 mb-4 text-sm whitespace-pre-wrap">{{ course.introduction or "Nessuna introduzione impostata per questo corso." }}</p>
+    <h2 class="mb-1 font-semibold">Obiettivi</h2>
+    <p class="text-base-content/70 text-sm whitespace-pre-wrap">{{ course.objectives or "Nessun obiettivo impostato per questo corso." }}</p>
+  </div>
+  <div class="flex flex-col gap-3">
+    <div class="stat bg-base-200 rounded-box p-4">
+      <div class="stat-figure">{{ icon("list-checks", "size-5 opacity-40") }}</div>
+      <div class="stat-title">Progresso lezioni</div>
+      <div class="stat-value text-lg">{{ completed }}/{{ total or "—" }}</div>
+      <progress class="progress progress-primary mt-2 w-full" value="{{ pct }}" max="100" aria-label="Progresso lezioni"></progress>
+    </div>
+    {% if course.exam_date %}
+    <div class="stat bg-base-200 rounded-box p-4">
+      <div class="stat-figure">{{ icon("calendar-clock", "size-5 opacity-40") }}</div>
+      <div class="stat-title">Data esame</div>
+      <div class="stat-value text-lg">{{ course.exam_date | date_it }}</div>
+    </div>
+    {% endif %}
+    <div class="stat bg-base-200 rounded-box p-4">
+      <div class="stat-figure">{{ icon("target", "size-5 opacity-40") }}</div>
+      <div class="stat-title">CFU</div>
+      <div class="stat-value text-lg">{{ course.cfu }}</div>
+    </div>
+  </div>
+</div>
+
+{% elif tab == "lessons" %}
+<div class="col-span-12 flex flex-col gap-4">
+  {% set next_number = (course.lessons | map(attribute="lesson_number") | max | default(0)) + 1 %}
+  <form method="post" action="{{ url_for('courses.create_lesson', course_id=course.id) }}" class="join">
+    {{ csrf() }}
+    <input name="title" class="input input-bordered join-item grow" placeholder="Titolo lezione {{ next_number }}..." aria-label="Titolo nuova lezione" maxlength="200" required />
+    <button type="submit" class="btn btn-primary join-item">{{ icon("plus") }} Aggiungi lezione</button>
+  </form>
+  {% if not course.lessons %}
+  {{ empty_state("circle", "Nessuna lezione", "Aggiungi la prima lezione per iniziare a prendere appunti.") }}
+  {% else %}
+  <ul class="divide-base-300 divide-y">
+    {% for lesson in course.lessons %}
+    <li class="flex items-center justify-between gap-3 py-2">
+      <a href="{{ url_for('courses.lesson', course_id=course.id, lesson_id=lesson.id) }}" class="link link-hover flex min-w-0 items-center gap-2">
+        {% if lesson.status == "completed" %}{{ icon("circle-check", "text-success size-4 shrink-0") }}{% else %}{{ icon("circle", "text-base-content/30 size-4 shrink-0") }}{% endif %}
+        <span class="truncate">Lezione {{ lesson.lesson_number }}: {{ lesson.title }}</span>
+      </a>
+      <div class="flex shrink-0 items-center gap-2">
+        {% if lesson.lesson_date %}<span class="text-base-content/50 text-xs">{{ lesson.lesson_date | date_it }}</span>{% endif %}
+        <form method="post" action="{{ url_for('courses.delete_lesson', course_id=course.id, lesson_id=lesson.id) }}" data-confirm="Eliminare la lezione &quot;{{ lesson.title }}&quot;?">
+          {{ csrf() }}
+          <button type="submit" class="btn btn-ghost btn-xs text-error" aria-label="Elimina lezione {{ lesson.title }}">{{ icon("trash-2", "size-3.5") }}</button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+{% elif tab == "flashcards" %}
+<div class="col-span-12 flex flex-col gap-4">
+  <div class="flex flex-wrap gap-2">
+    <a class="btn btn-primary btn-sm" href="{{ url_for('flashcards.new', course=course.id) }}">{{ icon("plus") }} Nuova flashcard</a>
+    {% if flashcards.items %}<a class="btn btn-sm" href="{{ url_for('flashcards.study', course=course.id) }}">{{ icon("layers") }} Studia ripassi del corso</a>{% endif %}
+  </div>
+  {% if flashcards.items %}
+  {{ flashcard_grid(flashcards.items, request.full_path) }}
+  {{ pagination(flashcards) }}
+  {% else %}
+  {{ empty_state("layers", "Nessuna flashcard", "Genera uno studio AI da una lezione o creane una manualmente.") }}
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "_ui.html" import topbar, card %}
+{% block title %}Abbonamento · RStudy{% endblock %}
+{% block head %}
+{% if enabled and not current_user.is_subscribed %}
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js" defer></script>
+<script src="{{ url_for('static', filename='billing.js') }}" defer></script>
+{% endif %}
+{% endblock %}
+{% block content %}
+{{ topbar("Abbonamento") }}
+{% call card() %}
+  {% if current_user.is_subscribed %}
+  <h2 class="card-title">Piano {{ "annuale" if current_user.subscription_plan == "yearly" else "mensile" }}</h2>
+  {% if current_user.subscription_status == "past_due" %}
+  <div role="alert" class="alert alert-warning text-sm">L'ultimo pagamento non è andato a buon fine: Paddle riproverà. Aggiorna il metodo di pagamento dal portale.</div>
+  {% endif %}
+  {% if current_user.subscription_cancel_at %}
+  <p>Abbonamento disdetto: resta attivo fino al {{ current_user.subscription_cancel_at | date_it }}.</p>
+  {% elif current_user.subscription_period_end %}
+  <p>Prossimo rinnovo il {{ current_user.subscription_period_end | date_it }}.</p>
+  {% endif %}
+  <form method="post" action="{{ url_for('billing.portal') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <button type="submit" class="btn btn-sm">{{ icon("credit-card") }} Gestisci abbonamento</button>
+  </form>
+  <p class="text-base-content/60 text-xs">Dal portale di Paddle puoi disdire, cambiare piano, aggiornare la carta e scaricare le fatture.</p>
+  {% else %}
+  {% if checkout_done %}
+  <div role="status" class="alert alert-success text-sm">Pagamento ricevuto. L'abbonamento si attiva entro qualche istante: ricarica la pagina.</div>
+  {% elif current_user.has_access %}
+  <p>Sei in prova gratuita: {{ current_user.trial_days_left }} {{ "giorno" if current_user.trial_days_left == 1 else "giorni" }} rimasti (fino al {{ current_user.trial_ends_at | date_it }}).</p>
+  {% else %}
+  <div role="alert" class="alert alert-warning text-sm">La prova gratuita è terminata. I tuoi corsi e appunti sono salvati: abbonati per tornare a usarli, oppure <a class="link" href="{{ url_for('settings.export') }}">scarica un backup JSON</a>.</div>
+  {% endif %}
+  {% if enabled %}
+  <span id="paddle-config" hidden
+    data-environment="{{ config.PADDLE_ENVIRONMENT }}"
+    data-token="{{ config.PADDLE_CLIENT_TOKEN }}"
+    data-email="{{ current_user.email }}"
+    data-customer-id="{{ current_user.paddle_customer_id or '' }}"
+    data-user-id="{{ current_user.id }}"
+    data-success-url="{{ url_for('billing.index', checkout='ok', _external=True) }}"></span>
+  <div class="grid gap-4 sm:grid-cols-2">
+    {% for plan, label in plans.items() %}
+    <div class="card border-base-300 bg-base-100 border">
+      <div class="card-body">
+        <h3 class="card-title text-base">{{ "Annuale" if plan == "yearly" else "Mensile" }}{% if plan == "yearly" %} <span class="badge badge-secondary badge-sm">4 mesi gratis</span>{% endif %}</h3>
+        <p class="text-2xl font-bold">{{ label }}</p>
+        <button type="button" class="btn btn-primary btn-sm" data-price-id="{{ prices[plan] }}">Abbonati</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <p class="text-base-content/60 text-xs">Pagamento sicuro gestito da Paddle, che emette la fattura. Puoi disdire quando vuoi.</p>
+  {% else %}
+  <p class="text-base-content/60 text-sm">I pagamenti non sono configurati su questo server (PADDLE_ENVIRONMENT vuoto).</p>
+  {% endif %}
+  {% endif %}
+{% endcall %}
+{% endblock %}

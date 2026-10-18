@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{# Porting di web/src/components/{Header,HomeContent,Footer}.tsx, con i testi adattati alla versione web. #}
+{% block title %}RStudy — Study fast, study more{% endblock %}
+{% block head %}
+<meta name="description" content="RStudy trasforma i tuoi appunti universitari in esercizi, flashcard e riepiloghi generati dall'AI, per studiare in modo attivo. Direttamente dal browser." />
+{% endblock %}
+{% set features = [
+  ("notebook-pen", "Appunti e organizzazione", "Corsi, lezioni e appunti in un unico posto, con data d'esame e CFU per tenere sotto controllo il semestre."),
+  ("sparkles", "Studio AI dagli appunti", "Riepilogo, punti chiave, schema e domande di autoverifica generati dagli appunti di ogni lezione."),
+  ("target", "Esercizi corretti all'istante", "Scelta multipla e risposta aperta generate dai tuoi appunti, con correzione e spiegazione."),
+  ("layers", "Flashcard con ripasso", "Crea o genera flashcard e ripassale con intervalli crescenti: ogni giorno sai cosa ripetere."),
+  ("graduation-cap", "Dashboard dello studio", "Prossimo esame, CFU attivi e lezioni completate a colpo d'occhio."),
+  ("cloud", "Dal browser, ovunque", "Niente da installare: i tuoi dati sono salvati sul server e li ritrovi da qualsiasi dispositivo."),
+] %}
+{% set steps = [
+  ("01", "Prendi appunti", "Crea un corso e scrivi gli appunti di ogni lezione."),
+  ("02", "Genera con l'AI", "In un clic gli appunti diventano riepilogo, esercizi e flashcard."),
+  ("03", "Ripassa", "Rispondi, verifica, ripeti le flashcard in scadenza: un passo alla volta."),
+] %}
+{% set faq = [
+  ("Quanto costa?", "I primi 15 giorni sono gratis e non serve la carta. Poi 4,99 € al mese oppure 39,90 € all'anno. Disdici quando vuoi."),
+  ("Devo installare qualcosa?", "No. RStudy web funziona dal browser: basta registrarsi con email e password."),
+  ("Dove finiscono i miei appunti?", "Corsi e appunti sono salvati sul server di RStudy. Per le generazioni AI il testo necessario viene inviato al provider AI solo per produrre il risultato."),
+  ("C'è un limite alle generazioni AI?", "Sì, un limite giornaliero equo per utente. Rigenerare con gli stessi appunti riusa il risultato già pronto e non consuma il limite."),
+  ("E l'app desktop?", "Resta disponibile per macOS, Windows e Linux, con i dati salvati sul tuo computer. La versione web è un servizio separato, con un account a parte."),
+] %}
+{% block body %}
+<header class="bg-base-100/80 border-base-300 sticky top-0 z-20 border-b backdrop-blur-sm">
+  <div class="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3">
+    <a href="{{ url_for('main.landing') }}" class="flex items-center gap-2 text-lg font-bold">
+      <img src="{{ url_for('static', filename='logo-mark.svg') }}" alt="" width="32" height="32" class="rounded-lg" />
+      RStudy
+    </a>
+    <nav class="hidden items-center gap-6 text-sm font-medium lg:flex" aria-label="Sezioni">
+      <a href="#funzionalita" class="hover:text-primary">Funzionalità</a>
+      <a href="#come-funziona" class="hover:text-primary">Come funziona</a>
+      <a href="#prezzo" class="hover:text-primary">Prezzo</a>
+      <a href="#faq" class="hover:text-primary">FAQ</a>
+    </nav>
+    <div class="flex items-center gap-2">
+      <button type="button" class="btn btn-circle btn-sm btn-ghost" aria-label="Cambia tema chiaro/scuro" data-theme-toggle>
+        <span class="theme-icon-dark">{{ icon("sun") }}</span>
+        <span class="theme-icon-light">{{ icon("moon") }}</span>
+      </button>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-ghost btn-sm">Accedi</a>
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">Registrati</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="px-4 py-16 text-center lg:py-24">
+    <span class="badge badge-outline badge-lg">15 giorni gratis · senza carta</span>
+    <p class="text-secondary mt-6 text-xs font-bold tracking-[0.2em] uppercase">Study fast, study more</p>
+    <h1 class="mt-3 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+      I tuoi appunti diventano <span class="text-primary">esercizi e flashcard</span>
+    </h1>
+    <p class="text-base-content/70 mx-auto mt-6 max-w-2xl text-lg">
+      RStudy trasforma i tuoi appunti universitari in riepiloghi, esercizi e flashcard per studiare in modo attivo.
+    </p>
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Prova gratis per 15 giorni {{ icon("arrow-right") }}</a>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-outline">Ho già un account</a>
+    </div>
+  </section>
+
+  <section id="funzionalita" class="scroll-mt-16 px-4 py-16 lg:py-24">
+    <div class="mx-auto max-w-6xl">
+      <div class="mx-auto max-w-xl text-center">
+        <span class="badge badge-outline">Funzionalità</span>
+        <h2 class="mt-4 text-3xl font-bold sm:text-4xl">Pensato per come si studia davvero</h2>
+        <p class="text-base-content/70 mt-3">Dagli appunti al ripasso attivo, in un'unica app.</p>
+      </div>
+      <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {% for icon_name, title, text in features %}
+        <div class="card border-base-300 border">
+          <div class="card-body">
+            <div class="bg-primary/10 text-primary mb-2 flex size-10 items-center justify-center rounded-lg">{{ icon(icon_name, "size-5") }}</div>
+            <h3 class="card-title text-base">{{ title }}</h3>
+            <p class="text-base-content/70 text-sm">{{ text }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <section id="come-funziona" class="bg-base-200 scroll-mt-16 px-4 py-16 lg:py-24">
+    <div class="mx-auto max-w-6xl">
+      <div class="mx-auto max-w-xl text-center">
+        <span class="badge badge-outline">Come funziona</span>
+        <h2 class="mt-4 text-3xl font-bold sm:text-4xl">Dai tuoi appunti allo studio attivo, in tre passaggi</h2>
+      </div>
+      <div class="mt-10 grid gap-5 lg:grid-cols-3">
+        {% for num, title, text in steps %}
+        <div class="card bg-base-100 border-base-300 border">
+          <div class="card-body">
+            <span class="text-primary text-sm font-bold">{{ num }}</span>
+            <h3 class="card-title text-base">{{ title }}</h3>
+            <p class="text-base-content/70 text-sm">{{ text }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <section id="prezzo" class="scroll-mt-16 px-4 py-16 lg:py-24">
+    <div class="mx-auto max-w-xl text-center">
+      <span class="badge badge-outline">Prezzo</span>
+      <h2 class="mt-4 text-3xl font-bold sm:text-4xl">15 giorni gratis, poi scegli tu</h2>
+      <p class="text-base-content/70 mt-3">Nessuna carta per la prova. Disdici quando vuoi.</p>
+    </div>
+    <div class="mx-auto mt-10 grid max-w-3xl gap-5 sm:grid-cols-2">
+      {% for name, amount, per, note in [("Mensile", "4,99 €", "al mese", "Massima flessibilità"), ("Annuale", "39,90 €", "all'anno", "4 mesi gratis rispetto al mensile")] %}
+      <div class="card border-2 {{ 'border-primary/40' if loop.last else 'border-base-300' }}">
+        <div class="card-body items-center text-center">
+          <h3 class="text-lg font-semibold">{{ name }}</h3>
+          <p class="flex items-baseline gap-1"><span class="text-4xl font-bold">{{ amount }}</span><span class="text-base-content/60">{{ per }}</span></p>
+          <p class="text-base-content/70 text-sm">{{ note }}</p>
+          <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-block mt-4">Inizia la prova gratuita</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <p class="text-base-content/50 mt-6 text-center text-xs">Pagamento sicuro gestito da Paddle. Tutte le funzionalità in entrambi i piani.</p>
+  </section>
+
+  <section id="faq" class="bg-base-200 scroll-mt-16 px-4 py-16 lg:py-24">
+    <div class="mx-auto max-w-xl text-center">
+      <span class="badge badge-outline">Domande frequenti</span>
+      <h2 class="mt-4 text-3xl font-bold sm:text-4xl">Tutto quello che c'è da sapere</h2>
+    </div>
+    <div class="join join-vertical mx-auto mt-10 flex w-full max-w-2xl">
+      {% for q, a in faq %}
+      <div class="collapse-arrow collapse join-item bg-base-100 border-base-300 border">
+        <input type="radio" name="rstudy-faq" aria-label="{{ q }}" {{ "checked" if loop.first }} />
+        <div class="collapse-title font-medium">{{ q }}</div>
+        <div class="collapse-content text-base-content/70 text-sm"><p>{{ a }}</p></div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="mt-10 text-center">
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Inizia ora {{ icon("arrow-right") }}</a>
+    </div>
+  </section>
+</main>
+
+<footer class="border-base-300 border-t">
+  <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-8 text-sm">
+    <span class="text-base-content/70">RStudy — sviluppato da Alessio Quagliara</span>
+    <div class="text-base-content/70 flex gap-5">
+      <a href="https://github.com/AlessioQuagliara/RStudy" class="hover:text-primary">Repository</a>
+      <a href="https://github.com/AlessioQuagliara/RStudy/issues" class="hover:text-primary">Issue</a>
+    </div>
+  </div>
+</footer>
+{% endblock %}

@@ -21,9 +21,17 @@ def test_healthz(client):
 
 
 def test_dashboard_requires_login(client):
-    response = client.get("/")
+    response = client.get("/dashboard")
     assert response.status_code == 302
     assert response.headers["Location"].startswith("/login")
+
+
+def test_landing_is_public_and_links_to_auth(client):
+    response = client.get("/")
+    html = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert 'href="/login"' in html and 'href="/register"' in html
+    assert "<script>" not in html  # la CSP vieta gli script inline
 
 
 def test_login_page_renders_with_security_headers(client):

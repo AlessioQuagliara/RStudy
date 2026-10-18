@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "_ui.html" import topbar, card as card_box, csrf %}
+{% set is_edit = card.id is not none %}
+{% block title %}{{ "Modifica flashcard" if is_edit else "Nuova flashcard" }} · RStudy{% endblock %}
+{% block content %}
+{{ topbar("Modifica flashcard" if is_edit else "Nuova flashcard", course.title, url_for("courses.detail", course_id=course.id, tab="flashcards")) }}
+{% call card_box(8) %}
+<form method="post" class="flex flex-col gap-3">
+  {{ csrf() }}
+  <input type="hidden" name="next" value="{{ request.args.get('next', '') }}" />
+  <label class="form-control">
+    <span class="label-text mb-1">Fronte *</span>
+    <textarea name="front" class="textarea textarea-bordered w-full" rows="2" maxlength="1000" required autofocus>{{ card.front or '' }}</textarea>
+  </label>
+  <label class="form-control">
+    <span class="label-text mb-1">Retro *</span>
+    <textarea name="back" class="textarea textarea-bordered w-full" rows="3" maxlength="2000" required>{{ card.back or '' }}</textarea>
+  </label>
+  <div class="grid grid-cols-2 gap-3">
+    <label class="form-control">
+      <span class="label-text mb-1">Tag (separati da virgola)</span>
+      <input name="tags" class="input input-bordered w-full" value="{{ card.tags | join(', ') }}" />
+    </label>
+    <label class="form-control">
+      <span class="label-text mb-1">Difficoltà</span>
+      <select name="difficulty" class="select select-bordered w-full">
+        {% for value, label in difficulties.items() %}<option value="{{ value }}" {{ 'selected' if card.difficulty == value }}>{{ label }}</option>{% endfor %}
+      </select>
+    </label>
+  </div>
+  <div class="mt-2 flex justify-end gap-2">
+    <a href="{{ url_for('courses.detail', course_id=course.id, tab='flashcards') }}" class="btn">Annulla</a>
+    <button type="submit" class="btn btn-primary">{{ "Salva" if is_edit else "Crea flashcard" }}</button>
+  </div>
+</form>
+{% endcall %}
+{% endblock %}

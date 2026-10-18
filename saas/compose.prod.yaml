@@ -1,0 +1,115 @@
+# PRODUZIONE: Traefik (TLS Let's Encrypt) → Gunicorn, worker AI, Postgres.
+# Avvio:        docker compose -f compose.prod.yaml --env-file .env.prod up -d --build
+# Migrazioni:   passo esplicito, eseguito dal servizio one-shot `migrate` prima di web e worker.
+name: rstudy-saas-prod
+
+x-app-env: &app-env
+  SECRET_KEY: ${SECRET_KEY:?imposta SECRET_KEY}
+  DATABASE_URL: postgresql+psycopg://rstudy:${POSTGRES_PASSWORD:?imposta POSTGRES_PASSWORD}@db:5432/rstudy
+  AI_PROVIDER: ${AI_PROVIDER:-}
+  AI_BASE_URL: ${AI_BASE_URL:-}
+  AI_MODEL: ${AI_MODEL:-}
+  AI_API_KEY: ${AI_API_KEY:-}
+  AI_DAILY_LIMIT: ${AI_DAILY_LIMIT:-35}
+  PADDLE_ENVIRONMENT: ${PADDLE_ENVIRONMENT:-}
+  PADDLE_CLIENT_TOKEN: ${PADDLE_CLIENT_TOKEN:-}
+  PADDLE_API_KEY: ${PADDLE_API_KEY:-}
+  PADDLE_WEBHOOK_SECRET: ${PADDLE_WEBHOOK_SECRET:-}
+  PADDLE_PRICE_MONTHLY: ${PADDLE_PRICE_MONTHLY:-}
+  PADDLE_PRICE_YEARLY: ${PADDLE_PRICE_YEARLY:-}
+
+services:
+  traefik:
+    image: traefik:v3.5
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=rstudy-saas-prod_edge
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.email=${ACME_EMAIL:?imposta ACME_EMAIL}
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.le.acme.tlschallenge=true
+      - --accesslog=true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Sola lettura: Traefik legge le label dei container, non li gestisce.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    networks: [edge]
+    restart: unless-stopped
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: rstudy
+      POSTGRES_DB: rstudy
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Nessuna porta pubblicata: raggiungibile solo dalla rete interna.
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rstudy -d rstudy"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  migrate:
+    build: {context: ., target: runtime}
+    image: rstudy-saas:prod
+    command: ["flask", "--app", "wsgi", "db", "upgrade"]
+    environment: *app-env
+    networks: [internal]
+    depends_on:
+      db: {condition: service_healthy}
+    restart: "no"
+
+  web:
+    build: {context: ., target: runtime}
+    image: rstudy-saas:prod
+    environment:
+      <<: *app-env
+      # Un solo proxy fidato davanti all'app: Traefik. Gli X-Forwarded-* arrivano solo da lui (nessuna porta esposta).
+      PROXY_FIX_X_FOR: "1"
+      PROXY_FIX_X_PROTO: "1"
+      PROXY_FIX_X_HOST: "1"
+    networks: [internal, edge]
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.rstudy.rule=Host(`${DOMAIN:?imposta DOMAIN}`)
+      - traefik.http.routers.rstudy.entrypoints=websecure
+      - traefik.http.routers.rstudy.tls.certresolver=le
+      - traefik.http.routers.rstudy.middlewares=rstudy-hsts
+      - traefik.http.middlewares.rstudy-hsts.headers.stsSeconds=31536000
+      - traefik.http.middlewares.rstudy-hsts.headers.stsIncludeSubdomains=true
+      - traefik.http.services.rstudy.loadbalancer.server.port=8000
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: unless-stopped
+
+  worker:
+    build: {context: ., target: runtime}
+    image: rstudy-saas:prod
+    command: ["flask", "--app", "wsgi", "ai-worker"]
+    environment: *app-env
+    networks: [internal]
+    # Serve uscita verso il provider AI: la rete internal non è "internal: true" per questo.
+    healthcheck:
+      disable: true
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: unless-stopped
+
+networks:
+  edge:
+  internal:
+
+volumes:
+  pgdata:
+  letsencrypt:

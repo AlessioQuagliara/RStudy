@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "_ui.html" import topbar, card as card_box, empty_state %}
+{% block title %}Ripasso · RStudy{% endblock %}
+{% block content %}
+{{ topbar("Ripasso", "Flashcard", url_for("flashcards.index")) }}
+{% call card_box() %}
+{% if card %}
+{# FlashcardStudyMode.tsx: la carta si gira con <details>, senza JavaScript. #}
+<div class="mx-auto flex w-full max-w-lg flex-col items-center gap-4">
+  <p class="text-base-content/50 text-xs">Da ripassare: {{ remaining }} · {{ card.course.title }}</p>
+  <details class="group w-full">
+    <summary class="card bg-base-100 border-base-300 min-h-48 w-full cursor-pointer list-none border shadow-md">
+      <div class="card-body items-center justify-center text-center">
+        <p class="text-base-content/40 mb-2 text-xs group-open:hidden">Fronte: clicca per girare</p>
+        <p class="text-lg whitespace-pre-wrap group-open:hidden">{{ card.front }}</p>
+        <p class="text-base-content/40 mb-2 hidden text-xs group-open:block">Retro</p>
+        <p class="hidden text-lg whitespace-pre-wrap group-open:block">{{ card.back }}</p>
+      </div>
+    </summary>
+    <form method="post" action="{{ url_for('flashcards.review', card_id=card.id, course=course_id) }}" class="mt-4 flex justify-center gap-2">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <button type="submit" name="grade" value="hard" class="btn btn-error btn-sm">Difficile</button>
+      <button type="submit" name="grade" value="medium" class="btn btn-warning btn-sm">Media</button>
+      <button type="submit" name="grade" value="easy" class="btn btn-success btn-sm">Facile</button>
+    </form>
+  </details>
+</div>
+{% else %}
+{% call empty_state("circle-check", "Ripasso completato", "Nessuna flashcard da ripassare per oggi.") %}
+<a class="btn btn-sm" href="{{ url_for('flashcards.index') }}">Torna alle flashcard</a>
+{% endcall %}
+{% endif %}
+{% endcall %}
+{% endblock %}

@@ -1,0 +1,31 @@
+{# FlashcardList.tsx. `next` riporta alla pagina corrente dopo modifica/duplica/elimina. #}
+{% macro flashcard_grid(cards, next) %}
+<div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+  {% for card in cards %}
+  <div class="card bg-base-100 border-base-300 border">
+    <div class="card-body gap-2 p-4">
+      <p class="text-sm font-medium whitespace-pre-wrap">{{ card.front }}</p>
+      <p class="text-base-content/60 text-xs whitespace-pre-wrap">{{ card.back }}</p>
+      <div class="mt-1 flex items-center justify-between">
+        <div class="flex flex-wrap items-center gap-1">
+          <span class="badge badge-ghost badge-xs">{{ difficulties[card.difficulty] }}</span>
+          {% if card.source == "ai" %}<span class="badge badge-info badge-xs">AI</span>{% endif %}
+          {% for t in card.tags %}<span class="badge badge-outline badge-xs">{{ t }}</span>{% endfor %}
+        </div>
+        <div class="flex gap-1">
+          <a class="btn btn-ghost btn-xs" href="{{ url_for('flashcards.edit', card_id=card.id, next=next) }}" aria-label="Modifica flashcard">{{ icon("pencil", "size-3.5") }}</a>
+          <form method="post" action="{{ url_for('flashcards.duplicate', card_id=card.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" /><input type="hidden" name="next" value="{{ next }}" />
+            <button type="submit" class="btn btn-ghost btn-xs" aria-label="Duplica flashcard">{{ icon("copy", "size-3.5") }}</button>
+          </form>
+          <form method="post" action="{{ url_for('flashcards.delete', card_id=card.id) }}" data-confirm="Eliminare questa flashcard?">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" /><input type="hidden" name="next" value="{{ next }}" />
+            <button type="submit" class="btn btn-ghost btn-xs text-error" aria-label="Elimina flashcard">{{ icon("trash-2", "size-3.5") }}</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endmacro %}

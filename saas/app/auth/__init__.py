@@ -8,11 +8,15 @@ from sqlalchemy import delete, func, select
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from ..extensions import db
+from ..billing import TRIAL_DAYS
 from ..models import AuthAttempt, User, utcnow
 
 bp = Blueprint("auth", __name__)
 
 PASSWORD_MIN, PASSWORD_MAX = 10, 128
+SCHOOL_MAX = 200
+# Suggerimenti solo per i valori scelti da almeno 3 utenti: un testo libero inserito da una persona sola resta privato.
+SUGGESTION_MIN_USERS = 3
 WINDOW = timedelta(minutes=15)
 # Limiti per finestra di 15 minuti.
 LOGIN_FAILURES_PER_EMAIL = 5
@@ -56,6 +60,22 @@ def _validate_credentials(email: str, password: str) -> str | None:
     return None
 
 
+def _clean(raw: str) -> str:
+    return " ".join(raw.split())
+
+
+def _suggestions(column) -> list[str]:
+    return db.session.scalars(
+        select(column).where(column.is_not(None)).group_by(column).having(func.count() >= SUGGESTION_MIN_USERS).order_by(column).limit(300)
+    ).all()
+
+
+def _render_register(status: int = 200, **form):
+    return render_template(
+        "auth/register.html", universities=_suggestions(User.university), faculties=_suggestions(User.faculty), **form
+    ), status
+
+
 def _start_session(user: User) -> None:
     # Sessione nuova a ogni login: niente session fixation.
     session.clear()
@@ -67,18 +87,23 @@ def register():
     if current_user.is_authenticated:
         return redirect(url_for("main.dashboard"))
     if request.method == "GET":
-        return render_template("auth/register.html")
+        return _render_register()
 
     email = normalize_email(request.form.get("email", ""))
     password = request.form.get("password", "")
+    form = {"email": email, "university": _clean(request.form.get("university", "")), "faculty": _clean(request.form.get("faculty", ""))}
     ip_key = _key("register-ip", request.remote_addr or "")
 
     if _count_recent(ip_key) >= REGISTRATIONS_PER_IP:
         flash(RATE_LIMITED, "error")
-        return render_template("auth/register.html", email=email), 429
+        return _render_register(429, **form)
     _record(ip_key)
 
     error = _validate_credentials(email, password)
+    if not error and not (form["university"] and form["faculty"]):
+        error = "Indica università e facoltà."
+    if not error and max(len(form["university"]), len(form["faculty"])) > SCHOOL_MAX:
+        error = f"Università e facoltà possono avere al massimo {SCHOOL_MAX} caratteri."
     if not error and password != request.form.get("password_confirm", ""):
         error = "Le due password non coincidono."
     if not error and db.session.scalar(select(User.id).where(User.email == email)):
@@ -86,9 +111,15 @@ def register():
         error = "Esiste già un account con questa email."
     if error:
         flash(error, "error")
-        return render_template("auth/register.html", email=email), 400
+        return _render_register(400, **form)
 
-    user = User(email=email, password_hash=generate_password_hash(password))
+    user = User(
+        email=email,
+        password_hash=generate_password_hash(password),
+        university=form["university"],
+        faculty=form["faculty"],
+        trial_ends_at=utcnow() + timedelta(days=TRIAL_DAYS),
+    )
     db.session.add(user)
     db.session.commit()
     _start_session(user)
@@ -126,4 +157,4 @@ def login():
 def logout():
     logout_user()
     session.clear()
-    return redirect(url_for("auth.login"))
+    return redirect(url_for("main.landing"))

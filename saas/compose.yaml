@@ -1,4 +1,4 @@
-# Ambiente di SVILUPPO locale. La produzione usa compose.prod.yaml (incremento 6).
+# Ambiente di SVILUPPO locale. La produzione usa compose.prod.yaml.
 # Nome di progetto esplicito: container, reti e volumi hanno il prefisso rstudy-saas e non collidono con altri progetti.
 name: rstudy-saas
 
@@ -30,6 +30,17 @@ services:
       SECRET_KEY: ${SECRET_KEY:?imposta SECRET_KEY in .env}
       DATABASE_URL: postgresql+psycopg://rstudy:${POSTGRES_PASSWORD}@db:5432/rstudy
       SESSION_COOKIE_SECURE: "0"
+      AI_PROVIDER: ${AI_PROVIDER:-fake}
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_MODEL: ${AI_MODEL:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_DAILY_LIMIT: ${AI_DAILY_LIMIT:-35}
+      PADDLE_ENVIRONMENT: ${PADDLE_ENVIRONMENT:-}
+      PADDLE_CLIENT_TOKEN: ${PADDLE_CLIENT_TOKEN:-}
+      PADDLE_API_KEY: ${PADDLE_API_KEY:-}
+      PADDLE_WEBHOOK_SECRET: ${PADDLE_WEBHOOK_SECRET:-}
+      PADDLE_PRICE_MONTHLY: ${PADDLE_PRICE_MONTHLY:-}
+      PADDLE_PRICE_YEARLY: ${PADDLE_PRICE_YEARLY:-}
     ports:
       - "127.0.0.1:${RSTUDY_WEB_PORT:-5080}:8000"
     volumes:
@@ -39,6 +50,27 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  # Esegue le generazioni AI in coda. Stessa immagine e stesse variabili del web.
+  worker:
+    build:
+      context: .
+      target: runtime
+    command: ["flask", "--app", "wsgi", "ai-worker"]
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      DATABASE_URL: postgresql+psycopg://rstudy:${POSTGRES_PASSWORD}@db:5432/rstudy
+      AI_PROVIDER: ${AI_PROVIDER:-fake}
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_MODEL: ${AI_MODEL:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_DAILY_LIMIT: ${AI_DAILY_LIMIT:-35}
+    volumes:
+      - ./app:/srv/app
+      - ./wsgi.py:/srv/wsgi.py
+    depends_on:
+      web:
+        condition: service_started
 
   # Ricompila il CSS quando cambiano template o JS. Scrive in ./app/static/dist, montato anche in web.
   assets:

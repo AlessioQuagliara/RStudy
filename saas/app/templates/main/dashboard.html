@@ -1,8 +1,33 @@
 {% extends "base.html" %}
-{% from "_ui.html" import topbar, card, empty_state %}
+{% from "_ui.html" import topbar, card, empty_state, stat %}
 {% block content %}
 {{ topbar("Dashboard") }}
+<div class="col-span-12 flex flex-wrap gap-2">
+  <a href="{{ url_for('courses.new') }}" class="btn btn-primary btn-sm">{{ icon("plus") }} Nuovo corso</a>
+  <a href="{{ url_for('flashcards.study') }}" class="btn btn-sm">{{ icon("layers") }} Apri modalità focus</a>
+</div>
+<div class="col-span-12 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+  {{ stat("graduation-cap", "Corsi attivi", active_count) }}
+  {{ stat("book-open", "CFU in corso", total_cfu) }}
+  {{ stat("calendar-clock", "Prossimo esame", next_exam.exam_date | date_it if next_exam else "—", next_exam.title if next_exam) }}
+  {{ stat("list-checks", "Lezioni completate", completed_lessons ~ "/" ~ total_lessons) }}
+  {{ stat("layers", "Flashcard da ripassare oggi", due_today) }}
+</div>
 {% call card() %}
-  {{ empty_state("graduation-cap", "Versione web in costruzione", "Registrazione, corsi, lezioni ed esercizi arriveranno nei prossimi passi.") }}
+  <h2 class="card-title">Attività recenti</h2>
+  {% if not recent %}
+  {% call empty_state("graduation-cap", "Nessuna attività", "Crea il tuo primo corso per iniziare a pianificare lo studio.") %}
+  <a href="{{ url_for('courses.new') }}" class="btn btn-primary btn-sm">Nuovo corso</a>
+  {% endcall %}
+  {% else %}
+  <ul class="divide-base-300 divide-y">
+    {% for c in recent %}
+    <li class="flex items-center justify-between py-2">
+      <a href="{{ url_for('courses.detail', course_id=c.id) }}" class="link link-hover font-medium">{{ c.title }}</a>
+      <span class="text-base-content/50 text-xs">Aggiornato il {{ c.updated_at | date_it }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
 {% endcall %}
 {% endblock %}

@@ -1,28 +1,35 @@
 # RStudy web (in sviluppo)
 
 Versione web di RStudy: Flask, PostgreSQL, Docker Compose, Gunicorn, Traefik in produzione.
-Non è ancora utilizzabile: per ora esistono solo lo scheletro dell'app e il layout.
 L'app desktop resta in `../studyforge/`.
 
 A differenza del desktop, questa versione conserva i dati sul server.
 
 ## Stato
 
-Disponibile (incremento 0):
-- application factory, configurazione da variabili d'ambiente, avvio bloccato senza `SECRET_KEY` o `DATABASE_URL`;
-- layout ripreso dal desktop (menu laterale, topbar, card, tema chiaro/scuro);
-- intestazioni di sicurezza (CSP senza script inline), cookie sicuri di default;
-- fiducia negli header `X-Forwarded-*` disattivata finché non viene configurata;
-- `/healthz` per il controllo del processo.
+Disponibile:
+- landing pubblica su `/` (porting di `../web/`), con accesso e registrazione; l'app parte da `/dashboard`;
+- abbonamento Paddle: 15 giorni di prova senza carta dalla registrazione, poi 4,99 €/mese o 39,90 €/anno;
+  stato aggiornato solo dai webhook firmati; a prova scaduta resta aperta solo la pagina `/abbonamento`;
+- impostazioni: profilo (università, facoltà), utilizzo AI, tema, backup JSON nel formato del desktop
+  (import con upsert per id limitato ai dati dell'account; export disponibile anche a prova scaduta);
+- account (registrazione con università e facoltà, accesso, rate limit, CSRF, CSP senza script inline);
+- corsi con filtri e ricerca, lezioni con appunti, dashboard con le metriche del desktop;
+- generazione AI in background (`flask ai-worker`): studio AI (riepilogo, punti chiave, schema,
+  domande di autoverifica, flashcard) ed esercizi a scelta multipla e risposta aperta, corretti dal server;
+  stessi appunti = risultato riusato senza nuova chiamata; limite giornaliero per utente (`AI_DAILY_LIMIT`);
+- flashcard: lista paginata (30 per pagina) con filtri, editor, duplica, ripasso con gli stessi intervalli del desktop (1/3/7 giorni);
+- produzione con Traefik e certificati Let's Encrypt (`compose.prod.yaml`).
 
-Non ancora disponibile: account, corsi, lezioni, esercizi, ripasso, produzione con Traefik.
-
-Limiti provvisori già decisi per il primo percorso, da superare in seguito:
+Limiti provvisori, da superare in seguito:
 - colori predefiniti di daisyUI invece del tema del desktop, in attesa di una verifica di licenza;
-- appunti in un'area di testo semplice invece dell'editor TipTap;
-- niente esercizi di codice;
-- testo delle domande senza Markdown né LaTeX;
-- generazione con un provider AI simulato, indicato come tale nell'interfaccia.
+- appunti in un'area di testo semplice con salvataggio esplicito, invece dell'editor TipTap con autosave;
+- testo generato mostrato senza Markdown, LaTeX né diagramma Mermaid;
+- niente esercizi di codice; esercizi in un unico form invece del quiz a passi;
+- provider AI `fake` (simulato, indicato come tale nell'interfaccia) di default in sviluppo.
+
+Non ancora migrato dal desktop: materiali (upload ed estrazione testo), "Chiedi al corso" (RAG),
+riassunto del corso, presentazioni, sessione studio in PDF, dettatura.
 
 ## Avvio locale
 
@@ -33,7 +40,21 @@ docker compose up --build
 ```
 
 L'app risponde su `http://127.0.0.1:5080` (porta configurabile con `RSTUDY_WEB_PORT`).
-Il servizio `assets` ricompila il CSS quando cambiano template o JavaScript.
+Il servizio `assets` ricompila il CSS quando cambiano template o JavaScript,
+il servizio `worker` esegue le generazioni AI (provider simulato, salvo `AI_PROVIDER=openai` in `.env`).
+
+## Produzione
+
+Su un server con Docker e le porte 80/443 libere, con il DNS di `DOMAIN` che punta al server:
+
+```bash
+cd saas
+cp .env.example .env.prod   # compila SECRET_KEY, POSTGRES_PASSWORD, AI_*; aggiungi DOMAIN e ACME_EMAIL
+docker compose -f compose.prod.yaml --env-file .env.prod up -d --build
+```
+
+Il servizio `migrate` applica le migrazioni prima che partano `web` e `worker`.
+Postgres non è esposto; l'app riceve traffico solo da Traefik, che è l'unico proxy fidato (`PROXY_FIX_X_*=1`).
 
 ## Test
 
@@ -43,12 +64,13 @@ npm ci && npm run build          # i test di layout leggono le icone compilate
 .venv/bin/pytest
 ```
 
-I test che useranno PostgreSQL leggono `TEST_DATABASE_URL` e girano sul servizio `db-test`,
-che tiene i dati in memoria e non usa volumi:
+Senza `TEST_DATABASE_URL` i test che usano PostgreSQL vengono saltati. Girano sul Postgres usa e getta
+di `compose.test.yaml`, che tiene i dati in memoria e non usa volumi:
 
 ```bash
-docker compose --profile test up -d db-test
+docker compose -f compose.test.yaml up -d --wait
 TEST_DATABASE_URL=postgresql+psycopg://rstudy:<TEST_POSTGRES_PASSWORD>@127.0.0.1:55433/rstudy_test .venv/bin/pytest
+docker compose -f compose.test.yaml down
 ```
 
 ## Variabili

@@ -8,8 +8,10 @@
   } catch (e) {}
 
   document.addEventListener("click", function (event) {
-    if (!event.target.closest("[data-theme-toggle]")) return;
-    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    // data-theme-set="light|dark" sceglie un tema preciso (Impostazioni), data-theme-toggle lo alterna.
+    var set = event.target.closest("[data-theme-set]");
+    if (!set && !event.target.closest("[data-theme-toggle]")) return;
+    var next = set ? set.getAttribute("data-theme-set") : root.getAttribute("data-theme") === "dark" ? "light" : "dark";
     root.setAttribute("data-theme", next);
     try {
       localStorage.setItem(KEY, next);

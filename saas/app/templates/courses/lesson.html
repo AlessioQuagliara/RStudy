@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% from "_ui.html" import topbar, card, empty_state, csrf %}
+{% block title %}Lezione {{ lesson.lesson_number }} · {{ lesson.course.title }} · RStudy{% endblock %}
+{% block head %}{% if tab == "ai" and ai_active %}<meta http-equiv="refresh" content="3" />{% endif %}{% endblock %}
+{% block content %}
+{{ topbar("Lezione " ~ lesson.lesson_number ~ ": " ~ lesson.title, lesson.course.title, url_for("courses.detail", course_id=lesson.course_id, tab="lessons")) }}
+
+<div role="tablist" class="tabs tabs-border col-span-12">
+  <a role="tab" class="tab {{ 'tab-active' if tab == 'notes' }}" href="{{ url_for('courses.lesson', course_id=lesson.course_id, lesson_id=lesson.id) }}">Appunti</a>
+  <a role="tab" class="tab {{ 'tab-active' if tab == 'ai' }}" href="{{ url_for('courses.lesson', course_id=lesson.course_id, lesson_id=lesson.id, tab='ai') }}">Studio AI</a>
+</div>
+
+{% if tab == "notes" %}
+{# Barra di LessonPage.tsx. shortcut: salvataggio esplicito invece dell'autosave del desktop. #}
+<form method="post" class="col-span-12 flex flex-col gap-3" data-dirty-guard>
+  {{ csrf() }}
+  <div class="flex flex-wrap items-center gap-3">
+    <input name="title" class="input input-bordered input-sm grow sm:max-w-sm" value="{{ lesson.title }}" maxlength="200" required aria-label="Titolo lezione" />
+    <select name="status" class="select select-bordered select-sm w-auto" aria-label="Stato lezione">
+      {% for value, label in lesson_statuses.items() %}<option value="{{ value }}" {{ 'selected' if lesson.status == value }}>{{ label }}</option>{% endfor %}
+    </select>
+    <input type="date" name="lesson_date" class="input input-bordered input-sm w-auto" value="{{ lesson.lesson_date or '' }}" aria-label="Data lezione" />
+    <div class="ml-auto flex flex-wrap gap-2">
+      <button type="submit" class="btn btn-sm">{{ icon("save") }} Salva</button>
+      {% if ai_label %}
+      <button type="submit" name="generate" value="study_pack" class="btn btn-primary btn-sm">{{ icon("sparkles") }} Salva e genera studio AI</button>
+      <button type="submit" name="generate" value="exercise_set" class="btn btn-sm" aria-label="Salva e genera esercizi dagli appunti di questa lezione">{{ icon("list-checks") }} Genera esercizi</button>
+      {% endif %}
+    </div>
+  </div>
+  <label class="form-control">
+    <span class="sr-only">Appunti</span>
+    <textarea name="notes" class="textarea textarea-bordered min-h-[60vh] w-full text-sm leading-relaxed" placeholder="Scrivi qui gli appunti della lezione...">{{ lesson.notes }}</textarea>
+  </label>
+</form>
+
+{% else %}
+{% set pack_job = jobs.get("study_pack") %}
+{% set ex_job = jobs.get("exercise_set") %}
+<div class="col-span-12 flex flex-wrap items-center gap-2 text-sm">
+  {% if ai_label %}
+  <span class="badge badge-ghost">Modello: {{ ai_label }}</span>
+  <span class="text-base-content/60">Generazioni rimaste oggi: {{ ai_remaining }}</span>
+  {% else %}
+  <div role="alert" class="alert alert-warning">Il servizio AI non è configurato su questo server.</div>
+  {% endif %}
+</div>
+
+{% macro job_status(job, what) %}
+  {% if job.status in ("queued", "running") %}
+  <div class="flex items-center gap-2 text-sm" role="status"><span class="loading loading-spinner loading-sm"></span> {{ what }}: {{ "in coda" if job.status == "queued" else "generazione in corso" }}… la pagina si aggiorna da sola.</div>
+  {% elif job.status == "failed" %}
+  <div role="alert" class="alert alert-error text-sm">{{ what }}: {{ job.error }}</div>
+  {% endif %}
+{% endmacro %}
+
+{% call card() %}
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="card-title">Esercizi</h2>
+    {% if ex_job and ex_job.result %}<a class="btn btn-primary btn-sm" href="{{ url_for('courses.exercises', course_id=lesson.course_id, lesson_id=lesson.id) }}">{{ icon("list-checks") }} Apri esercizi</a>{% endif %}
+  </div>
+  {% if ex_job %}{{ job_status(ex_job, "Esercizi") }}{% else %}<p class="text-base-content/60 text-sm">Usa “Genera esercizi” nella scheda Appunti.</p>{% endif %}
+{% endcall %}
+
+{# Contenuto di AiOutputPanel.tsx; shortcut: testo semplice invece di Markdown e senza diagramma Mermaid. #}
+{% set pack = ready_pack.result if ready_pack else None %}
+{% call card() %}
+  <h2 class="card-title">Studio AI</h2>
+  {% if pack_job %}{{ job_status(pack_job, "Studio AI") }}{% endif %}
+  {% if pack %}
+  <h3 class="mt-2 font-semibold">Riepilogo</h3>
+  <p class="text-sm whitespace-pre-wrap">{{ pack.summary_markdown }}</p>
+  {% if pack.key_points %}
+  <h3 class="mt-4 font-semibold">Punti chiave</h3>
+  <ul class="list-disc pl-5 text-sm">
+    {% for kp in pack.key_points %}<li><strong>{{ kp.title }}</strong>: {{ kp.explanation }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  {% if pack.study_outline %}
+  <h3 class="mt-4 font-semibold">Schema di studio</h3>
+  <ul class="list-disc pl-5 text-sm">
+    {% for t in pack.study_outline %}<li>{{ t.topic }}{% if t.subtopics %}<ul class="list-[circle] pl-5">{% for st in t.subtopics %}<li>{{ st }}</li>{% endfor %}</ul>{% endif %}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  {% if pack.self_check_questions %}
+  <h3 class="mt-4 font-semibold">Domande di autoverifica</h3>
+  <div class="flex flex-col gap-2">
+    {% for q in pack.self_check_questions %}
+    <details class="collapse collapse-arrow bg-base-100">
+      <summary class="collapse-title text-sm font-medium">{{ q.question }}</summary>
+      <div class="collapse-content text-sm">{{ q.answer }}</div>
+    </details>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <p class="text-base-content/60 mt-4 text-sm">Sono state create {{ pack.flashcards | length }} flashcard per questa lezione.</p>
+  {% elif not pack_job %}
+  {{ empty_state("sparkles", "Nessuno studio AI", "Scrivi gli appunti e usa “Salva e genera studio AI” per ottenere riepilogo, punti chiave, domande e flashcard.") }}
+  {% endif %}
+{% endcall %}
+{% endif %}
+{% endblock %}

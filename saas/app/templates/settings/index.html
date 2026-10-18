@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% from "_ui.html" import topbar, card, csrf %}
+{% block title %}Impostazioni · RStudy{% endblock %}
+{# Porting di SettingsPage.tsx: restano le sezioni che sul web dipendono dall'utente. #}
+{% block content %}
+{{ topbar("Impostazioni") }}
+
+{% call card(6) %}
+  <h2 class="card-title">{{ icon("user") }} Account</h2>
+  <p class="text-base-content/60 text-sm">{{ current_user.email }}</p>
+  <form method="post" action="{{ url_for('settings.profile') }}" class="flex flex-col gap-3">
+    {{ csrf() }}
+    <label class="form-control">
+      <span class="label-text mb-1 text-xs">Università</span>
+      <input type="text" name="university" class="input input-bordered input-sm w-full" value="{{ current_user.university or '' }}" maxlength="200" autocomplete="organization" required />
+    </label>
+    <label class="form-control">
+      <span class="label-text mb-1 text-xs">Facoltà o corso di laurea</span>
+      <input type="text" name="faculty" class="input input-bordered input-sm w-full" value="{{ current_user.faculty or '' }}" maxlength="200" required />
+    </label>
+    <button type="submit" class="btn btn-primary btn-sm self-start">Salva profilo</button>
+  </form>
+{% endcall %}
+
+{% call card(6) %}
+  <h2 class="card-title">{{ icon("gauge") }} Utilizzo AI</h2>
+  {% set pct = (ai_used / ai_limit * 100) if ai_limit else 100 %}
+  <p class="text-sm">{{ ai_used }} / {{ ai_limit }} generazioni utilizzate oggi</p>
+  <progress class="progress w-full {{ 'progress-error' if pct >= 100 else 'progress-warning' if pct >= 80 else 'progress-primary' }}" value="{{ ai_used }}" max="{{ ai_limit }}"></progress>
+  <p class="text-base-content/60 text-xs">{{ ai_limit - ai_used }} generazioni disponibili. Il limite si rinnova ogni giorno a mezzanotte. Rigenerare con gli stessi appunti non lo consuma.</p>
+  {% if ai_label %}<p class="text-base-content/40 text-xs">Modello: {{ ai_label }}</p>{% endif %}
+{% endcall %}
+
+{% call card(6) %}
+  <h2 class="card-title">{{ icon("credit-card") }} Abbonamento</h2>
+  <p class="text-base-content/60 text-sm">
+    {% if current_user.is_subscribed %}Piano {{ "annuale" if current_user.subscription_plan == "yearly" else "mensile" }} attivo.
+    {% else %}Prova gratuita: {{ current_user.trial_days_left }} {{ "giorno" if current_user.trial_days_left == 1 else "giorni" }} rimasti.{% endif %}
+  </p>
+  <a href="{{ url_for('billing.index') }}" class="btn btn-sm self-start">Gestisci abbonamento</a>
+{% endcall %}
+
+{% call card(6) %}
+  <h2 class="card-title">Aspetto</h2>
+  <div class="join">
+    <button type="button" class="btn btn-sm join-item" data-theme-set="light">{{ icon("sun") }} Chiaro</button>
+    <button type="button" class="btn btn-sm join-item" data-theme-set="dark">{{ icon("moon") }} Scuro</button>
+  </div>
+  <p class="text-base-content/40 text-xs">La scelta resta salvata in questo browser.</p>
+{% endcall %}
+
+{% call card() %}
+  <h2 class="card-title">Backup</h2>
+  <p class="text-base-content/60 text-sm">
+    Il backup esporta corsi, lezioni, flashcard e studi AI in un file JSON nello stesso formato dell'app desktop.
+    Puoi importare qui il backup esportato dall'app desktop (Impostazioni → Esporta backup JSON): i dati con lo stesso
+    id vengono aggiornati, gli altri aggiunti. Materiali e riassunti del corso non sono ancora disponibili nella versione web.
+  </p>
+  <div class="flex flex-wrap items-end gap-3">
+    <a href="{{ url_for('settings.export') }}" class="btn btn-sm">{{ icon("download") }} Esporta backup JSON</a>
+    <form method="post" action="{{ url_for('settings.import_') }}" enctype="multipart/form-data" class="flex flex-wrap items-center gap-2"
+      data-confirm="Importare il backup? I dati con lo stesso id verranno sovrascritti.">
+      {{ csrf() }}
+      <input type="file" name="backup" accept="application/json,.json" class="file-input file-input-bordered file-input-sm" aria-label="File di backup JSON" required />
+      <button type="submit" class="btn btn-sm">{{ icon("upload") }} Importa backup JSON</button>
+    </form>
+  </div>
+{% endcall %}
+{% endblock %}

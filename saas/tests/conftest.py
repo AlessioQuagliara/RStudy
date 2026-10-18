@@ -65,10 +65,16 @@ def db_client(db_app):
     return db_app.test_client()
 
 
-def register(client, email="a@example.com", password="password-sicura-1", confirm=None):
+def register(client, email="a@example.com", password="password-sicura-1", confirm=None, university="Politecnico di Milano", faculty="Ingegneria informatica"):
     return client.post(
         "/register",
-        data={"email": email, "password": password, "password_confirm": confirm if confirm is not None else password},
+        data={
+            "email": email,
+            "password": password,
+            "password_confirm": confirm if confirm is not None else password,
+            "university": university,
+            "faculty": faculty,
+        },
     )
 
 

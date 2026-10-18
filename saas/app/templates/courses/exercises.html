@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "_ui.html" import topbar, card, csrf %}
+{% block title %}Esercizi · Lezione {{ lesson.lesson_number }} · RStudy{% endblock %}
+{% block content %}
+{{ topbar(exercise_set.title, "Lezione " ~ lesson.lesson_number ~ ": " ~ lesson.title, url_for("courses.lesson", course_id=lesson.course_id, lesson_id=lesson.id, tab="ai")) }}
+{# shortcut: tutte le domande in un solo form corretto dal server, invece del quiz a passi di DuolingoQuiz.tsx. #}
+{% if graded %}
+{% set right = graded.values() | selectattr("correct") | list | length %}
+<div role="status" class="alert {{ 'alert-success' if right == graded | length else 'alert-info' }} col-span-12">Risposte corrette: {{ right }} su {{ graded | length }}</div>
+{% endif %}
+<form method="post" class="col-span-12 flex flex-col gap-4">
+  {{ csrf() }}
+  {% for ex in exercise_set.exercises %}
+  {% set g = graded[ex.id] if graded else None %}
+  {% call card(class="border " ~ ("border-success" if g and g.correct else "border-error" if g else "border-transparent")) %}
+    <fieldset>
+      <legend class="mb-2 font-medium">{{ loop.index }}. {{ ex.question }} <span class="badge badge-ghost badge-sm ml-1">Livello {{ ex.difficulty }}</span></legend>
+      {% if ex.type == "multiple_choice" %}
+      <div class="flex flex-col gap-2">
+        {% for opt in ex.options %}
+        <label class="flex cursor-pointer items-center gap-2 text-sm">
+          <input type="radio" class="radio radio-sm" name="answer-{{ ex.id }}" value="{{ opt }}" {{ 'checked' if g and g.answer == opt }} {{ 'disabled' if g }} required />
+          <span class="{{ 'text-success font-medium' if g and opt == ex.correctAnswer }}">{{ opt }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      {% else %}
+      <input class="input input-bordered w-full" name="answer-{{ ex.id }}" value="{{ g.answer if g else '' }}" aria-label="Risposta" autocomplete="off" {{ 'disabled' if g }} required />
+      {% endif %}
+    </fieldset>
+    {% if g %}
+    <p class="text-sm {{ 'text-success' if g.correct else 'text-error' }}">{{ "Corretto!" if g.correct else "Non corretto." }}
+      {% if not g.correct and ex.type == "open_answer" %} Risposta attesa: {{ ex.acceptedAnswers[0] }}.{% endif %}</p>
+    <p class="text-base-content/70 text-sm">{{ ex.explanation }}</p>
+    {% endif %}
+  {% endcall %}
+  {% endfor %}
+  <div class="flex justify-end gap-2">
+    {% if graded %}
+    <a class="btn" href="{{ url_for('courses.exercises', course_id=lesson.course_id, lesson_id=lesson.id) }}">Riprova</a>
+    {% else %}
+    <button type="submit" class="btn btn-primary">Verifica risposte</button>
+    {% endif %}
+  </div>
+</form>
+<p class="text-base-content/50 col-span-12 text-xs">Generato con: {{ job.model }}</p>
+{% endblock %}

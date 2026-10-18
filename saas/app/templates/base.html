@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='dist/app.css') }}" />
     {# Bloccante di proposito: applica il tema salvato prima del primo paint. #}
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
     <title>{% block title %}RStudy{% endblock %}</title>
+    {% block head %}{% endblock %}
   </head>
   <body>
     {% block body %}
@@ -15,7 +17,15 @@
     <div class="drawer lg:drawer-open min-h-screen">
       <input id="app-drawer" type="checkbox" class="drawer-toggle" aria-label="Attiva/disattiva menu" />
       <main class="drawer-content bg-base-100">
-        <div class="grid grid-cols-12 gap-6 p-4 lg:p-8">{% block content %}{% endblock %}</div>
+        <div class="grid grid-cols-12 gap-6 p-4 lg:p-8">
+          {% block content %}{% endblock %}
+        </div>
+        {# Equivalente di ToastHost del desktop. #}
+        <div class="toast toast-end z-30" aria-live="polite">
+          {% for category, message in get_flashed_messages(with_categories=true) %}
+          <div role="status" class="alert {{ {'error': 'alert-error', 'success': 'alert-success'}.get(category, 'alert-info') }} text-sm" data-autohide="{{ 0 if category == 'error' else 1 }}">{{ message }}</div>
+          {% endfor %}
+        </div>
       </main>
       <aside class="drawer-side z-20">
         <label for="app-drawer" class="drawer-overlay" aria-label="Chiudi menu"></label>
@@ -25,14 +35,19 @@
             <span>RStudy</span>
           </div>
           <ul class="menu w-full grow">
-            {% for endpoint, label, icon_name in [("main.dashboard", "Dashboard", "layout-dashboard")] %}
+            {% for endpoint, label, icon_name in [("main.dashboard", "Dashboard", "layout-dashboard"), ("courses.index", "Corsi", "graduation-cap"), ("flashcards.index", "Flashcard", "layers"), ("billing.index", "Abbonamento", "credit-card"), ("settings.index", "Impostazioni", "settings")] %}
             <li>
-              <a href="{{ url_for(endpoint) }}" class="{{ 'menu-active' if request.endpoint == endpoint }}">
+              <a href="{{ url_for(endpoint) }}" class="{{ 'menu-active' if request.blueprint == endpoint.split('.')[0] }}">
                 {{ icon(icon_name) }} {{ label }}
               </a>
             </li>
             {% endfor %}
           </ul>
+          {% if not current_user.is_subscribed and current_user.has_access %}
+          <a href="{{ url_for('billing.index') }}" class="badge badge-warning badge-outline mx-3">
+            Prova: {{ current_user.trial_days_left }} {{ "giorno" if current_user.trial_days_left == 1 else "giorni" }}
+          </a>
+          {% endif %}
           <div class="mx-3 flex items-center gap-2 text-sm">
             <span class="text-base-content/60 min-w-0 grow truncate" title="{{ current_user.email }}">{{ current_user.email }}</span>
             <form method="post" action="{{ url_for('auth.logout') }}">

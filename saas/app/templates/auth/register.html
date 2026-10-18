@@ -9,6 +9,16 @@
     <input type="email" name="email" class="input input-bordered w-full" value="{{ email or '' }}" autocomplete="email" required autofocus />
   </label>
   <label class="form-control">
+    <span class="label-text mb-1 text-xs">Università</span>
+    <input type="text" name="university" class="input input-bordered w-full" value="{{ university or '' }}" list="universities" maxlength="200" autocomplete="organization" placeholder="Es. Politecnico di Milano" required />
+  </label>
+  <label class="form-control">
+    <span class="label-text mb-1 text-xs">Facoltà o corso di laurea</span>
+    <input type="text" name="faculty" class="input input-bordered w-full" value="{{ faculty or '' }}" list="faculties" maxlength="200" placeholder="Es. Ingegneria informatica" required />
+  </label>
+  <datalist id="universities">{% for value in universities %}<option value="{{ value }}">{% endfor %}</datalist>
+  <datalist id="faculties">{% for value in faculties %}<option value="{{ value }}">{% endfor %}</datalist>
+  <label class="form-control">
     <span class="label-text mb-1 text-xs">Password (almeno 10 caratteri)</span>
     <input type="password" name="password" class="input input-bordered w-full" autocomplete="new-password" minlength="10" maxlength="128" required />
   </label>
@@ -16,7 +26,8 @@
     <span class="label-text mb-1 text-xs">Ripeti la password</span>
     <input type="password" name="password_confirm" class="input input-bordered w-full" autocomplete="new-password" required />
   </label>
-  <button type="submit" class="btn btn-primary">{{ icon("user-plus") }} Registrati</button>
+  <button type="submit" class="btn btn-primary">{{ icon("user-plus") }} Inizia la prova gratuita</button>
+  <p class="text-base-content/60 text-xs">15 giorni gratis, senza carta. Poi 4,99 € al mese o 39,90 € all'anno.</p>
 </form>
 <p class="text-base-content/60 mt-2 text-sm">Hai già un account? <a class="link link-primary" href="{{ url_for('auth.login') }}">Accedi</a></p>
 {% endblock %}

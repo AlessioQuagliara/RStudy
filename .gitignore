@@ -9,3 +9,6 @@
 # riferimento di design per web/, mai committati in un repo pubblico.
 /html-dashboard@2/
 /saas-landingpage-html@2/
+
+# Backup JSON con dati personali esportati dall'app desktop: mai nel repo.
+/dati-app-desktop.json

@@ -5,7 +5,7 @@
   <div class="card bg-base-100 w-full max-w-md shadow-xl">
     <div class="card-body">
       <div class="mb-2 flex items-center gap-2">
-        <img src="{{ url_for('static', filename='logo-mark.svg') }}" alt="" class="size-8 rounded-md" />
+        <a href="{{ url_for('main.landing') }}" aria-label="Torna alla home di RStudy"><img src="{{ url_for('static', filename='logo-mark.svg') }}" alt="" class="size-8 rounded-md" /></a>
         <h1 class="text-lg font-semibold">{% block heading %}{% endblock %}</h1>
       </div>
       {% for category, message in get_flashed_messages(with_categories=true) %}

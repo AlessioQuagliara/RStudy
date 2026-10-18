@@ -12,7 +12,7 @@ def test_register_logs_in_and_stores_only_a_hash(db_app, db_client):
     response = register(db_client, email="  Mario@Example.COM ")
     assert response.status_code == 302
 
-    dashboard = db_client.get("/")
+    dashboard = db_client.get("/dashboard")
     assert dashboard.status_code == 200
     html = dashboard.get_data(as_text=True)
     assert "mario@example.com" in html
@@ -51,14 +51,16 @@ def test_login_errors_do_not_reveal_whether_email_exists(db_client):
 def test_login_and_logout(db_client):
     register(db_client)
     db_client.post("/logout")
-    assert db_client.get("/").status_code == 302
+    assert db_client.get("/dashboard").status_code == 302
 
     assert login(db_client, email="A@example.com").status_code == 302
-    assert db_client.get("/").status_code == 200
+    assert db_client.get("/dashboard").status_code == 200
+    assert db_client.get("/").headers["Location"] == "/dashboard"
 
     assert db_client.get("/logout").status_code == 405  # solo POST
-    db_client.post("/logout")
-    assert db_client.get("/").headers["Location"].startswith("/login")
+    assert db_client.post("/logout").headers["Location"] == "/"
+    assert db_client.get("/dashboard").headers["Location"].startswith("/login")
+    assert db_client.get("/").status_code == 200  # landing pubblica
 
 
 def test_login_replaces_existing_session(db_client):

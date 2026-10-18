@@ -160,6 +160,24 @@ describe("generateLessonExerciseSet", () => {
     expect(saved).toHaveLength(1); // nessuna riga duplicata
   });
 
+  it("cacheOnly: non chiama mai il provider, restituisce not_found senza cache e il set dopo la generazione", async () => {
+    const generator = new FakeAiStudyGenerator({
+      status: "success",
+      data: { ...VALID_EXERCISE_SET, sourceLessonId: lessonId },
+    });
+
+    const before = await generateLessonExerciseSet(db, handleFor(generator), { ...baseInput, cacheOnly: true });
+    expect(before.status).toBe("error");
+    if (before.status === "error") expect(before.error.code).toBe("not_found");
+    expect(generator.callCount).toBe(0);
+
+    await generateLessonExerciseSet(db, handleFor(generator), baseInput);
+    const after = await generateLessonExerciseSet(db, handleFor(generator), { ...baseInput, cacheOnly: true });
+    expect(after.status).toBe("success");
+    expect(after.fromCache).toBe(true);
+    expect(generator.callCount).toBe(1);
+  });
+
   it("appunti diversi (hash diverso) -> cache miss anche con la stessa lezione", async () => {
     const generator = new FakeAiStudyGenerator({
       status: "success",

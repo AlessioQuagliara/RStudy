@@ -324,7 +324,7 @@ describe("exerciseSetGenerationResultSchema (envelope IPC)", () => {
 describe("generateLessonExercisesInputSchema / generateLessonPresentationInputSchema (boundary IPC)", () => {
   it("applica i default (requestedCount, locale) quando il renderer manda solo lessonId", () => {
     const exercises = generateLessonExercisesInputSchema.parse({ lessonId: "lesson-1" });
-    expect(exercises.requestedCount).toBe(5);
+    expect(exercises.requestedCount).toBe(8);
     expect(exercises.locale).toBe("it-IT");
 
     const presentation = generateLessonPresentationInputSchema.parse({ lessonId: "lesson-1" });

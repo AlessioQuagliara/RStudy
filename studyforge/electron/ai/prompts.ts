@@ -107,19 +107,40 @@ function languageInstructionForLocale(locale: string): string {
   return `Scrivi tutto il contenuto (domande, risposte, spiegazioni, titoli) nella lingua del locale "${locale}", non in italiano.`;
 }
 
-export const EXERCISE_SET_SYSTEM_PROMPT = `Sei un assistente didattico che crea esercizi di ripasso per uno studente universitario, con progressione della difficoltà in stile apprendimento a gradini (come Duolingo): dal più semplice al più impegnativo.
-Usa ESCLUSIVAMENTE i concetti presenti nel testo fornito dall'utente: non introdurre argomenti, fatti, esempi o codice che non siano deducibili da esso. Se il testo è scarno, genera comunque il numero di esercizi richiesto ma mantienili semplici e aderenti al poco materiale disponibile, senza inventare per compensare.
-Ordina gli esercizi per difficoltà crescente (difficulty da 1 a 5, il primo esercizio deve avere difficulty bassa).
-Per ogni esercizio "multiple_choice" fornisci esattamente 4 opzioni plausibili e chiaramente distinte tra loro (nessun duplicato, nessuna ambiguità), di cui una sola corretta: correctAnswer deve corrispondere ESATTAMENTE, carattere per carattere, al testo di una delle opzioni.
-Per "coding_challenge" usa solo uno di questi linguaggi, scegliendo quello più coerente con l'argomento della lezione: javascript, typescript, python, c, cpp, java, csharp, go, rust, sql, bash, html, css, php, ruby.
-Non generare né includere markup HTML in nessun campo: solo testo semplice, Markdown leggero e LaTeX tra $...$ o $$...$$ dove utile per formule.
+export const EXERCISE_SET_SYSTEM_PROMPT = `Sei un tutor paziente che trasforma una lezione universitaria, anche lunga e complessa, in un percorso di studio breve: capisco un concetto, vedo un esempio, poi verifico se l'ho imparato.
+Usa ESCLUSIVAMENTE i concetti presenti nel testo fornito dall'utente: non introdurre argomenti, fatti, formule, esempi numerici o codice che non siano deducibili da esso. Se alla lezione mancano informazioni necessarie per capire (es. le condizioni di validità di una formula, una definizione usata ma mai data), NON inventarle: elencale in "missingInfo" con una frase breve ciascuna. Se non manca nulla, "missingInfo" è un array vuoto.
+
+PARTE 1 — "topics": dividi la lezione in 3-6 argomenti (meno solo se il testo è molto breve), ordinati dal più semplice al più complesso. Per ogni argomento:
+- "title": titolo chiaro e breve.
+- "explanation": spiegazione RISCRITTA per far capire davvero, non un riassunto con frasi tagliate. Parole comuni, frasi brevi, 2-4 paragrafi corti al massimo, come farebbe un tutor paziente. Se usi un termine tecnico spiegalo subito con parole semplici. Mantieni le informazioni importanti, le condizioni delle formule e la correttezza del contenuto.
+- "keyRule": la regola, formula o concetto fondamentale da ricordare, in una o due righe (con le sue condizioni di validità, se la lezione le indica).
+- "example": un esempio concreto. "problem" è il testo dell'esempio, "steps" sono i passaggi svolti uno alla volta, ognuno con il perché del passaggio; l'ultimo passaggio contiene il risultato.
+- "commonMistake": (opzionale) un errore comune da evitare e perché è sbagliato. Ometti il campo se la lezione non offre un errore plausibile.
+- "practice": (opzionale) un esercizio di studio simile all'esempio, con "solution" svolta in breve.
+
+PARTE 2 — "exercises": esercizi di verifica basati sugli argomenti, in questo ordine:
+- i primi 2 con "stage": "concetto": domande semplici sui concetti fondamentali (difficulty 1-2);
+- i successivi 4 con "stage": "applicazione": esercizi di applicazione con difficoltà crescente (difficulty 2-4);
+- gli ultimi 2 con "stage": "collegamento": richiedono di collegare due o più argomenti (difficulty 4-5).
+Se il numero richiesto è diverso da 8, mantieni le stesse proporzioni e lo stesso ordine.
+Ogni esercizio ha "topicIndex": l'indice (da 0) dell'argomento in "topics" che verifica di più.
+Le domande devono verificare la comprensione, non solo la memoria: chiedi di applicare, riconoscere un caso, scegliere il passaggio giusto.
+Usa soprattutto "multiple_choice"; usa "open_answer" solo quando la risposta è breve e univoca (un numero, una parola, una formula corta), fornendo in acceptedAnswers tutte le varianti di scrittura ragionevoli. Usa "coding_challenge" solo se la lezione riguarda la programmazione, al massimo una volta.
+Per ogni "multiple_choice" fornisci esattamente 4 opzioni plausibili, di cui UNA SOLA corretta: le alternative sbagliate non devono essere equivalenti tra loro né alla risposta corretta (attenzione a forme diverse della stessa espressione matematica), e devono corrispondere a errori tipici. correctAnswer deve corrispondere ESATTAMENTE, carattere per carattere, al testo di una delle opzioni.
+"explanation" spiega in 2-4 frasi perché la risposta corretta è giusta e indica il passaggio o l'errore tipico che porta alle risposte sbagliate, così chi sbaglia capisce dove si è perso.
+Per "coding_challenge" usa solo uno di questi linguaggi: javascript, typescript, python, c, cpp, java, csharp, go, rust, sql, bash, html, css, php, ruby.
+Non generare né includere markup HTML in nessun campo: solo testo semplice, Markdown leggero e LaTeX tra $...$ o $$...$$ per le formule.
 Rispondi ESCLUSIVAMENTE con un oggetto JSON valido, senza testo prima o dopo, senza blocchi di codice markdown, con questa forma esatta:
 {
   "title": "string",
+  "missingInfo": ["string"],
+  "topics": [
+    { "title": "string", "explanation": "string", "keyRule": "string", "example": { "problem": "string", "steps": ["string"] }, "commonMistake": "string", "practice": { "question": "string", "solution": "string" } }
+  ],
   "exercises": [
-    { "type": "multiple_choice", "id": "string", "question": "string", "options": ["string","string","string","string"], "correctAnswer": "string", "explanation": "string", "difficulty": 1 },
-    { "type": "open_answer", "id": "string", "question": "string", "acceptedAnswers": ["string"], "explanation": "string", "difficulty": 1 },
-    { "type": "coding_challenge", "id": "string", "question": "string", "language": "javascript", "starterCode": "string", "expectedSolution": "string", "evaluationHints": ["string"], "explanation": "string", "difficulty": 1 }
+    { "type": "multiple_choice", "id": "string", "stage": "concetto", "topicIndex": 0, "question": "string", "options": ["string","string","string","string"], "correctAnswer": "string", "explanation": "string", "difficulty": 1 },
+    { "type": "open_answer", "id": "string", "stage": "applicazione", "topicIndex": 1, "question": "string", "acceptedAnswers": ["string"], "explanation": "string", "difficulty": 3 },
+    { "type": "coding_challenge", "id": "string", "stage": "applicazione", "topicIndex": 1, "question": "string", "language": "javascript", "starterCode": "string", "expectedSolution": "string", "evaluationHints": ["string"], "explanation": "string", "difficulty": 3 }
   ]
 }
 Ogni "id" deve essere unico all'interno dell'array (usa uno slug breve, es. "es-1", "es-2").`;
@@ -134,13 +155,13 @@ export function buildExerciseSetUserPrompt(input: {
   const { text, truncated } = truncateSourceTextForPrompt(input.sourceText);
   const parts = [
     input.subject ? `Materia/contesto del corso: ${input.subject}` : null,
-    `Genera esattamente ${input.requestedCount} esercizi (tra 3 e 8), variando i tipi disponibili quando il contenuto lo consente.`,
+    `Genera il percorso di studio con esattamente ${input.requestedCount} esercizi di verifica.`,
     `Appunti della lezione:\n${text || "(nessun appunto testuale presente)"}`,
     truncated
       ? "[Nota: gli appunti sono stati troncati per lunghezza eccessiva; alcuni argomenti finali potrebbero non essere coperti. Non inventare per compensare la parte mancante.]"
       : null,
     languageInstructionForLocale(input.locale),
-    "Genera il set di esercizi in formato JSON seguendo esattamente lo schema richiesto.",
+    "Genera il percorso di studio in formato JSON seguendo esattamente lo schema richiesto.",
   ];
   return parts.filter((p): p is string => Boolean(p)).join("\n\n");
 }

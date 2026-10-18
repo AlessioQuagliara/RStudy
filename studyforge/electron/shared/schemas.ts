@@ -468,6 +468,18 @@ export const supportedCodeLanguageSchema = z.enum([
 ]);
 export type SupportedCodeLanguage = z.infer<typeof supportedCodeLanguageSchema>;
 
+// Ruolo dell'esercizio nel percorso di studio (2 concetto, 4 applicazione, 2 collegamento):
+// opzionale perché i set salvati prima del percorso di studio non lo hanno.
+export const exerciseStageSchema = z.enum(["concetto", "applicazione", "collegamento"]);
+export type ExerciseStage = z.infer<typeof exerciseStageSchema>;
+
+/** Campi comuni a tutti gli esercizi per legarli a un argomento del percorso di studio. */
+const exercisePathFields = {
+  stage: exerciseStageSchema.optional(),
+  // Indice in ExerciseSet.topics: un indice fuori range viene ignorato dalla UI.
+  topicIndex: z.number().int().min(0).optional(),
+};
+
 export const multipleChoiceExerciseSchema = z.object({
   type: z.literal("multiple_choice"),
   id: z.string().min(1),
@@ -477,6 +489,7 @@ export const multipleChoiceExerciseSchema = z.object({
   correctAnswer: z.string().min(1),
   explanation: z.string().min(1),
   difficulty: exerciseDifficultySchema,
+  ...exercisePathFields,
 });
 export type MultipleChoiceExercise = z.infer<typeof multipleChoiceExerciseSchema>;
 
@@ -487,6 +500,7 @@ export const openAnswerExerciseSchema = z.object({
   acceptedAnswers: z.array(z.string().min(1)).min(1),
   explanation: z.string().min(1),
   difficulty: exerciseDifficultySchema,
+  ...exercisePathFields,
 });
 export type OpenAnswerExercise = z.infer<typeof openAnswerExerciseSchema>;
 
@@ -501,6 +515,7 @@ export const codingChallengeExerciseSchema = z.object({
   evaluationHints: z.array(z.string().min(1)).optional(),
   explanation: z.string().min(1),
   difficulty: exerciseDifficultySchema,
+  ...exercisePathFields,
 });
 export type CodingChallengeExercise = z.infer<typeof codingChallengeExerciseSchema>;
 
@@ -536,6 +551,20 @@ export const exerciseSchema = exerciseUnionSchema.superRefine((exercise, ctx) =>
 });
 export type Exercise = z.infer<typeof exerciseSchema>;
 
+/** Un argomento del percorso di studio: spiegazione da tutor, regola, esempio svolto. */
+export const studyTopicSchema = z.object({
+  title: z.string().min(1),
+  explanation: z.string().min(1),
+  keyRule: z.string().min(1),
+  example: z.object({
+    problem: z.string().min(1),
+    steps: z.array(z.string().min(1)).min(1),
+  }),
+  commonMistake: z.string().min(1).optional(),
+  practice: z.object({ question: z.string().min(1), solution: z.string().min(1) }).optional(),
+});
+export type StudyTopic = z.infer<typeof studyTopicSchema>;
+
 export const exerciseSetSchema = z.object({
   // Versione dello schema del contenuto generato (non il prompt_version del
   // modello AI, vedi electron/ai/prompts.ts): permette di far evolvere la
@@ -545,6 +574,10 @@ export const exerciseSetSchema = z.object({
   title: z.string().min(1),
   generatedAt: z.string().min(1),
   exercises: z.array(exerciseSchema).min(3).max(8),
+  // Percorso di studio (dalla versione 2): assenti nei set più vecchi.
+  topics: z.array(studyTopicSchema).max(8).optional(),
+  // Informazioni che la lezione non contiene e che il modello segnala invece di inventarle.
+  missingInfo: z.array(z.string().min(1)).optional(),
   // Hash del testo sorgente (appunti lezione) usato per la generazione, utile
   // in futuro per capire se il set è ancora coerente con gli appunti attuali.
   sourceContentHash: z.string().min(1).optional(),
@@ -578,8 +611,10 @@ export type GenerateExerciseSetInput = z.infer<typeof generateExerciseSetInputSc
 export const generateLessonExercisesInputSchema = z.object({
   lessonId: z.string().min(1),
   subject: z.string().min(1).max(200).optional(),
-  requestedCount: z.number().int().min(3).max(8).default(5),
+  requestedCount: z.number().int().min(3).max(8).default(8),
   locale: localeSchema.default("it-IT"),
+  // true: restituisce solo un set già in cache (errore not_found se assente), mai una nuova generazione.
+  cacheOnly: z.boolean().optional(),
 });
 /**
  * `z.input` (non `z.infer`/`z.output`) di proposito: è il tipo di ciò che il

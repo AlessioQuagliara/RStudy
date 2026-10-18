@@ -77,6 +77,8 @@ export class OpenAiCompatibleStudyGenerator implements AiStudyGenerator {
         generatedAt: new Date().toISOString(),
         title: model.title,
         exercises: model.exercises,
+        topics: model.topics,
+        missingInfo: model.missingInfo,
       }),
       exerciseSetSchema,
       "exercise_set",
@@ -122,7 +124,7 @@ export class OpenAiCompatibleStudyGenerator implements AiStudyGenerator {
   private async run<TModel, TFull>(
     systemPrompt: string,
     userPrompt: string,
-    modelSchema: z.ZodType<TModel>,
+    modelSchema: z.ZodType<TModel, z.ZodTypeDef, unknown>,
     buildFull: (model: TModel) => TFull,
     fullSchema: z.ZodType<TFull>,
     kind: "exercise_set" | "presentation",

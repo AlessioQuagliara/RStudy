@@ -2,6 +2,7 @@ import type { z } from "zod";
 import type { Db } from "../db/client";
 import { LessonAiGenerationsRepo, LessonsRepo } from "../db/repositories";
 import { computeSourceContentHash } from "./contentHash";
+import { EXERCISE_SET_SCHEMA_VERSION } from "./schemas";
 import type { StudyGeneratorHandle } from "./factory";
 import {
   exerciseSetGenerationOutcomeSchema,
@@ -14,8 +15,6 @@ import {
 /** Forma dopo l'applicazione dei default Zod (requestedCount/locale sempre presenti): vedi il commento su GenerateLessonExercisesInput in electron/shared/schemas.ts. */
 type ResolvedGenerateLessonExercisesInput = z.infer<typeof generateLessonExercisesInputSchema>;
 
-/** Versione target del contenuto per un tentativo "failed": non c'è payload da cui leggere `.version`. */
-const TARGET_EXERCISE_SET_SCHEMA_VERSION = 1;
 
 /**
  * Deduplica richieste concorrenti per lo stesso lessonId+hash contenuto:
@@ -52,8 +51,22 @@ export async function generateLessonExerciseSet(
   }
 
   const sourceText = lesson.notesPlainText ?? "";
-  const sourceContentHash = computeSourceContentHash(sourceText);
+  // La versione dello schema entra nell'hash: un set di una versione precedente
+  // diventa un cache miss (e non collide con l'indice unico delle righe "ready").
+  const sourceContentHash = computeSourceContentHash(`v${EXERCISE_SET_SCHEMA_VERSION}\n${sourceText}`);
   const inFlightKey = `${input.lessonId}:${sourceContentHash}`;
+
+  // Sola lettura: mai condivisa con una generazione in corso, mai una nuova chiamata AI.
+  if (input.cacheOnly) {
+    const cached = LessonAiGenerationsRepo.findCachedGeneration(db, {
+      lessonId: input.lessonId,
+      kind: "exercise_set",
+      sourceContentHash,
+    });
+    return cached
+      ? finalize({ status: "success", data: cached.payload }, true)
+      : finalize({ status: "error", error: { code: "not_found", message: "Nessun percorso di studio per questi appunti." } }, false);
+  }
 
   const existing = inFlightGenerations.get(inFlightKey);
   if (existing) return existing;
@@ -119,7 +132,7 @@ async function performGeneration(
         lessonId: input.lessonId,
         sourceContentHash,
         model: handle.model,
-        schemaVersion: TARGET_EXERCISE_SET_SCHEMA_VERSION,
+        schemaVersion: EXERCISE_SET_SCHEMA_VERSION,
         errorMessage: result.error.message,
       });
     }

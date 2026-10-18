@@ -3,6 +3,7 @@ import {
   lessonStudyPackSchema,
   studyOutlineTopicSchema,
   exerciseSchema,
+  studyTopicSchema,
   presentationSlideSchema,
 } from "../shared/schemas";
 
@@ -19,7 +20,8 @@ export { lessonStudyPackSchema };
  * noi dopo la validazione, per non dipendere dalla sua affidabilità su
  * metadati che dovremmo già conoscere con certezza).
  */
-export const EXERCISE_SET_SCHEMA_VERSION = 1;
+// 2: percorso di studio (topics/missingInfo + stage/topicIndex sugli esercizi).
+export const EXERCISE_SET_SCHEMA_VERSION = 2;
 export const PRESENTATION_SCHEMA_VERSION = 1;
 
 /**
@@ -33,6 +35,9 @@ export const PRESENTATION_SCHEMA_VERSION = 1;
 export const exerciseSetModelResponseSchema = z.object({
   title: z.string().min(1),
   exercises: z.array(exerciseSchema).min(3).max(8),
+  // Richiesti dal prompt, ma tolleranti: senza argomenti la UI mostra comunque il test.
+  topics: z.array(studyTopicSchema).max(8).default([]),
+  missingInfo: z.array(z.string().min(1)).default([]),
 });
 export type ExerciseSetModelResponse = z.infer<typeof exerciseSetModelResponseSchema>;
 
@@ -63,7 +68,7 @@ export type CourseSummaryResponse = z.infer<typeof courseSummaryResponseSchema>;
  * valido, ma il parsing resta difensivo nel caso il modello aggiunga testo o
  * blocchi markdown attorno.
  */
-export function parseModelJson<T>(raw: string, schema: z.ZodType<T>): T {
+export function parseModelJson<T>(raw: string, schema: z.ZodType<T, z.ZodTypeDef, unknown>): T {
   const stripped = raw
     .trim()
     .replace(/^```json\s*/i, "")

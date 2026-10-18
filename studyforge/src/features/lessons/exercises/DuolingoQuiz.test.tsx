@@ -85,15 +85,15 @@ function scoreText(): string {
 }
 
 describe("DuolingoQuiz", () => {
-  it("mostra la prima domanda con l'avanzamento 1/3 e il bottone Verifica disabilitato senza risposta", () => {
+  it("mostra la prima domanda con l'avanzamento 1/3 e il bottone Controlla disabilitato senza risposta", () => {
     renderQuiz();
 
     expect(screen.getByText("Quanto fa 2 + 2?")).toBeInTheDocument();
     expect(screen.getAllByText("1/3").length).toBeGreaterThan(0);
-    expect(screen.getByRole("button", { name: /verifica/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /controlla/i })).toBeDisabled();
   });
 
-  it("multiple_choice: selezionare un'opzione abilita Verifica; risposta corretta mostra feedback verde e blocca nuove selezioni", async () => {
+  it("multiple_choice: selezionare un'opzione abilita Controlla; risposta corretta mostra feedback verde e blocca nuove selezioni", async () => {
     const user = userEvent.setup();
     renderQuiz();
 
@@ -101,7 +101,7 @@ describe("DuolingoQuiz", () => {
     await user.click(correctOption);
     expect(correctOption).toHaveAttribute("aria-pressed", "true");
 
-    const verifyButton = screen.getByRole("button", { name: /verifica/i });
+    const verifyButton = screen.getByRole("button", { name: /controlla/i });
     expect(verifyButton).toBeEnabled();
     await user.click(verifyButton);
 
@@ -122,7 +122,7 @@ describe("DuolingoQuiz", () => {
     renderQuiz();
 
     await user.click(screen.getByRole("button", { name: "3" }));
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
 
     expect(screen.getByText("Non proprio...")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "3" })).toHaveClass("btn-error");
@@ -134,7 +134,7 @@ describe("DuolingoQuiz", () => {
     renderQuiz();
 
     await user.click(screen.getByRole("button", { name: "4" }));
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
     await user.click(screen.getByRole("button", { name: /continua/i }));
 
     expect(screen.getByText("Cos'è un limite?")).toBeInTheDocument();
@@ -146,12 +146,12 @@ describe("DuolingoQuiz", () => {
     renderQuiz();
 
     await user.click(screen.getByRole("button", { name: "4" }));
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
     await user.click(screen.getByRole("button", { name: /continua/i }));
 
     const textarea = screen.getByLabelText(/la tua risposta/i);
     await user.type(textarea, "   IL   VALORE a cui TENDE una funzione  ");
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
 
     expect(screen.getByText("Corretto!")).toBeInTheDocument();
     expect(textarea).toBeDisabled();
@@ -162,15 +162,48 @@ describe("DuolingoQuiz", () => {
     renderQuiz();
 
     await user.click(screen.getByRole("button", { name: "4" }));
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
     await user.click(screen.getByRole("button", { name: /continua/i }));
 
     const textarea = screen.getByLabelText(/la tua risposta/i);
     await user.type(textarea, "una cosa a caso");
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
 
     expect(screen.getByText("Non proprio...")).toBeInTheDocument();
     expect(screen.getByText(/il valore a cui tende una funzione/i)).toBeInTheDocument();
+  });
+
+  it("con argomenti: la schermata finale separa capiti/da ripassare e permette di rivedere la spiegazione", async () => {
+    const user = userEvent.setup();
+    const onReviewTopic = vi.fn();
+    const onFinish = vi.fn();
+    const topic = (title: string) => ({ title, explanation: "e", keyRule: "r", example: { problem: "p", steps: ["s"] } });
+    const set: ExerciseSet = {
+      ...EXERCISE_SET,
+      topics: [topic("Somme"), topic("Limiti")],
+      exercises: [
+        { ...EXERCISE_SET.exercises[0]!, topicIndex: 0, stage: "concetto" },
+        { ...EXERCISE_SET.exercises[2]!, topicIndex: 1, stage: "applicazione" },
+        { ...EXERCISE_SET.exercises[0]!, id: "ex-4", topicIndex: 1, stage: "collegamento" },
+      ],
+    };
+    render(<DuolingoQuiz exerciseSet={set} onClose={vi.fn()} onReviewTopic={onReviewTopic} onFinish={onFinish} />);
+
+    expect(screen.getByText("Concetto base")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "4" }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
+    await user.click(screen.getByRole("button", { name: /continua/i }));
+    await user.click(screen.getByRole("button", { name: "5" })); // sbagliata: argomento "Limiti"
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
+    await user.click(screen.getByRole("button", { name: /continua/i }));
+    await user.click(screen.getByRole("button", { name: "4" }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
+    await user.click(screen.getByRole("button", { name: /termina/i }));
+
+    expect(onFinish).toHaveBeenCalledWith({ correct: 2, total: 3, topicsToReview: [1] });
+    expect(screen.getByText("Somme")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /rivedi la spiegazione/i }));
+    expect(onReviewTopic).toHaveBeenCalledWith(1);
   });
 
   it("ultimo esercizio: il bottone diventa 'Termina' e porta alla schermata finale con il punteggio", async () => {
@@ -179,18 +212,18 @@ describe("DuolingoQuiz", () => {
 
     // Esercizio 1/3 (multiple_choice) - corretto
     await user.click(screen.getByRole("button", { name: "4" }));
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
     await user.click(screen.getByRole("button", { name: /continua/i }));
 
     // Esercizio 2/3 (open_answer) - corretto
     await user.type(screen.getByLabelText(/la tua risposta/i), "il valore a cui tende una funzione");
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
     await user.click(screen.getByRole("button", { name: /continua/i }));
 
     // Esercizio 3/3 (multiple_choice) - errato di proposito
     expect(screen.getByText("Quanto fa 3 + 3?")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "5" }));
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
     const finishButton = screen.getByRole("button", { name: /termina/i });
     await user.click(finishButton);
 
@@ -203,13 +236,13 @@ describe("DuolingoQuiz", () => {
     renderQuiz();
 
     await user.click(screen.getByRole("button", { name: "4" }));
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
     await user.click(screen.getByRole("button", { name: /continua/i }));
     await user.type(screen.getByLabelText(/la tua risposta/i), "il valore a cui tende una funzione");
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
     await user.click(screen.getByRole("button", { name: /continua/i }));
     await user.click(screen.getByRole("button", { name: "5" }));
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
     await user.click(screen.getByRole("button", { name: /termina/i }));
 
     await user.click(screen.getByRole("button", { name: /ricomincia/i }));
@@ -268,11 +301,11 @@ describe("DuolingoQuiz - coding_challenge", () => {
   /** Porta il quiz al terzo esercizio (coding_challenge) rispondendo correttamente ai primi due. */
   async function advanceToCodingExercise(user: ReturnType<typeof userEvent.setup>) {
     await user.click(screen.getByRole("button", { name: "4" }));
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
     await user.click(screen.getByRole("button", { name: /continua/i }));
 
     await user.type(screen.getByLabelText(/la tua risposta/i), "il valore a cui tende una funzione");
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
     await user.click(screen.getByRole("button", { name: /continua/i }));
 
     return screen.findByLabelText(/editor di codice/i);
@@ -288,13 +321,13 @@ describe("DuolingoQuiz - coding_challenge", () => {
     expect(screen.getByText("Deve gestire anche numeri negativi")).toBeInTheDocument();
   });
 
-  it("il bottone Verifica è disabilitato se il codice è vuoto", async () => {
+  it("il bottone Controlla è disabilitato se il codice è vuoto", async () => {
     const user = userEvent.setup();
     render(<DuolingoQuiz exerciseSet={EXERCISE_SET_WITH_CODING} onClose={vi.fn()} />);
 
     const editor = await advanceToCodingExercise(user);
     fireEvent.change(editor, { target: { value: "" } });
-    expect(screen.getByRole("button", { name: /verifica/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /controlla/i })).toBeDisabled();
   });
 
   it("non mostra mai la soluzione attesa prima della verifica", async () => {
@@ -311,7 +344,7 @@ describe("DuolingoQuiz - coding_challenge", () => {
 
     const editor = await advanceToCodingExercise(user);
     fireEvent.change(editor, { target: { value: "function sum(a, b) {\n  return a - b;\n}" } });
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
 
     expect(screen.getByText("Da rivedere")).toBeInTheDocument();
     expect(screen.getByText("Soluzione di riferimento")).toBeInTheDocument();
@@ -325,7 +358,7 @@ describe("DuolingoQuiz - coding_challenge", () => {
 
     const editor = await advanceToCodingExercise(user);
     fireEvent.change(editor, { target: { value: `  ${CODING_EXERCISE.expectedSolution}  ` } });
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
 
     expect(screen.getByText("Coincide con la soluzione di riferimento")).toBeInTheDocument();
     expect(screen.queryByText("Soluzione di riferimento")).not.toBeInTheDocument();
@@ -337,7 +370,7 @@ describe("DuolingoQuiz - coding_challenge", () => {
 
     const editor = await advanceToCodingExercise(user);
     fireEvent.change(editor, { target: { value: CODING_EXERCISE.expectedSolution } });
-    await user.click(screen.getByRole("button", { name: /verifica/i }));
+    await user.click(screen.getByRole("button", { name: /controlla/i }));
     await user.click(screen.getByRole("button", { name: /termina/i }));
 
     expect(screen.getByText("Sessione completata!")).toBeInTheDocument();

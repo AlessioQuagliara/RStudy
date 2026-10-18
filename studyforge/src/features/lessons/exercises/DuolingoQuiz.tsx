@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { AlertTriangle, ArrowLeft, Check, RotateCcw, Trophy, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, BookOpen, Check, RotateCcw, Trophy, X } from "lucide-react";
 import { cn } from "@/lib/cn";
-import type { Exercise, ExerciseSet } from "@shared/schemas";
+import type { Exercise, ExerciseSet, ExerciseStage } from "@shared/schemas";
 import { QuestionMarkdown } from "../shared/QuestionMarkdown";
 import { MultipleChoiceQuestion } from "./MultipleChoiceQuestion";
 import { OpenAnswerQuestion } from "./OpenAnswerQuestion";
@@ -59,6 +59,19 @@ const FEEDBACK_PANEL_CLASS: Record<FeedbackTone, string> = {
   warning: "border-warning/30 bg-warning/10",
 };
 
+const STAGE_LABEL: Record<ExerciseStage, string> = {
+  concetto: "Concetto base",
+  applicazione: "Applicazione",
+  collegamento: "Collegamento",
+};
+
+export interface QuizResult {
+  correct: number;
+  total: number;
+  /** Indici degli argomenti (ExerciseSet.topics) con almeno una risposta sbagliata. */
+  topicsToReview: number[];
+}
+
 export interface DuolingoQuizProps {
   exerciseSet: ExerciseSet;
   /** Se il set proviene dalla cache (nessuna nuova chiamata al provider AI): mostrato in modo discreto nell'header. */
@@ -73,6 +86,10 @@ export interface DuolingoQuizProps {
    * `CodingEvaluationResult`, mai i dettagli di come viene prodotta.
    */
   evaluateCodingChallenge?: CodingEvaluator;
+  /** Se presente, la schermata finale offre "Rivedi la spiegazione" per gli argomenti da ripassare. */
+  onReviewTopic?: (topicIndex: number) => void;
+  /** Chiamato una volta, quando l'ultimo esercizio è stato controllato e si passa alla schermata finale. */
+  onFinish?: (result: QuizResult) => void;
 }
 
 /**
@@ -86,6 +103,8 @@ export function DuolingoQuiz({
   fromCache,
   onClose,
   evaluateCodingChallenge = evaluateCodingChallengeByTextComparison,
+  onReviewTopic,
+  onFinish,
 }: DuolingoQuizProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [attempts, setAttempts] = useState<AttemptState[]>(() => createInitialAttempts(exerciseSet.exercises));
@@ -152,6 +171,7 @@ export function DuolingoQuiz({
   const handleContinue = () => {
     if (isLastExercise) {
       setPhase("finished");
+      onFinish?.({ correct: gradableCorrect, total: gradableExercises.length, topicsToReview });
       return;
     }
     setCurrentIndex((i) => i + 1);
@@ -184,6 +204,18 @@ export function DuolingoQuiz({
   ).length;
   const scorePercent = gradableExercises.length > 0 ? Math.round((gradableCorrect / gradableExercises.length) * 100) : 0;
   const radialStyle: CSSProperties & { "--value"?: number } = { "--value": scorePercent };
+
+  // Argomento "capito" se tutte le sue domande valutabili sono corrette, "da ripassare" altrimenti.
+  const topics = exerciseSet.topics ?? [];
+  const topicsToReview: number[] = [];
+  const topicsUnderstood: number[] = [];
+  topics.forEach((_, topicIndex) => {
+    const results = exerciseSet.exercises.flatMap((e, i) =>
+      e.type !== "coding_challenge" && e.topicIndex === topicIndex ? [attempts[i]!.correct === true] : [],
+    );
+    if (results.length === 0) return;
+    (results.every(Boolean) ? topicsUnderstood : topicsToReview).push(topicIndex);
+  });
 
   const codingExercises = exerciseSet.exercises.filter((e) => e.type === "coding_challenge");
   const codingMatches = attempts.filter(
@@ -220,6 +252,41 @@ export function DuolingoQuiz({
               con la soluzione di riferimento
             </p>
           )}
+          {topicsUnderstood.length + topicsToReview.length > 0 && (
+            <div className="grid w-full max-w-lg gap-3 text-left sm:grid-cols-2">
+              <div className="rounded-box bg-success/10 p-4">
+                <p className="text-success mb-2 flex items-center gap-2 text-sm font-semibold">
+                  <Check className="size-4" aria-hidden="true" />
+                  Argomenti capiti
+                </p>
+                {topicsUnderstood.length === 0 && <p className="text-base-content/60 text-sm">Ancora nessuno: ci arrivi!</p>}
+                <ul className="flex flex-col gap-1 text-sm">
+                  {topicsUnderstood.map((i) => (
+                    <li key={i}>{topics[i]!.title}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="rounded-box bg-warning/10 p-4">
+                <p className="text-warning mb-2 flex items-center gap-2 text-sm font-semibold">
+                  <BookOpen className="size-4" aria-hidden="true" />
+                  Da ripassare
+                </p>
+                {topicsToReview.length === 0 && <p className="text-base-content/60 text-sm">Niente: ottimo lavoro!</p>}
+                <ul className="flex flex-col gap-2 text-sm">
+                  {topicsToReview.map((i) => (
+                    <li key={i} className="flex flex-col items-start gap-1">
+                      <span>{topics[i]!.title}</span>
+                      {onReviewTopic && (
+                        <button type="button" className="btn btn-xs btn-outline" onClick={() => onReviewTopic(i)}>
+                          Rivedi la spiegazione
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
           <div className="mt-2 flex gap-3">
             <button type="button" className="btn btn-outline" onClick={handleRestart}>
               <RotateCcw className="size-4" aria-hidden="true" />
@@ -245,6 +312,9 @@ export function DuolingoQuiz({
       />
 
       <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+        {currentExercise.stage && (
+          <span className="badge badge-ghost mb-3">{STAGE_LABEL[currentExercise.stage]}</span>
+        )}
         <div
           ref={questionHeadingRef}
           tabIndex={-1}
@@ -285,7 +355,7 @@ export function DuolingoQuiz({
       <div className={cn("shrink-0 border-t p-4 sm:p-6", FEEDBACK_PANEL_CLASS[feedbackTone])}>
         {!showFeedback && (
           <button type="button" className="btn btn-primary btn-block" disabled={!canVerify} onClick={handleVerify}>
-            Verifica
+            Controlla
           </button>
         )}
         {showFeedback && (

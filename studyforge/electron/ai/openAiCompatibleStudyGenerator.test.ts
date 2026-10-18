@@ -96,7 +96,7 @@ describe("OpenAiCompatibleStudyGenerator.generateExerciseSet", () => {
     if (result.status === "success") {
       expect(result.data.exercises).toHaveLength(3);
       expect(result.data.sourceLessonId).toBe("lesson-1");
-      expect(result.data.version).toBe(1);
+      expect(result.data.version).toBe(2);
       expect(typeof result.data.generatedAt).toBe("string");
     }
   });

@@ -7,12 +7,17 @@ import { Tabs } from "@/components/ui/Tabs";
 import { Modal } from "@/components/ui/Modal";
 import { LessonEditor } from "@/features/lessons/LessonEditor";
 import { AiOutputPanel } from "@/features/lessons/AiOutputPanel";
+import { StudyPathPanel } from "@/features/lessons/studyPath/StudyPathPanel";
 import { DuolingoQuiz } from "@/features/lessons/exercises/DuolingoQuiz";
 import { PresentationPlayer } from "@/features/lessons/presentation/PresentationPlayer";
 import { useCourse } from "@/features/courses/api";
 import { useLesson, useSaveLessonNotes, useUpdateLesson } from "@/features/lessons/api";
 import { useGenerateLessonStudyPack, useLessonAiOutput } from "@/features/lessons/aiApi";
-import { useGenerateLessonExercises, useGenerateLessonPresentation } from "@/features/lessons/studyAiApi";
+import {
+  useGenerateLessonExercises,
+  useGenerateLessonPresentation,
+  useLessonStudyPath,
+} from "@/features/lessons/studyAiApi";
 import { useAutosave } from "@/hooks/useAutosave";
 import { toast } from "@/lib/toastStore";
 
@@ -33,6 +38,9 @@ export function LessonPage() {
   const generateStudyPack = useGenerateLessonStudyPack(courseId ?? "");
   const generateExercises = useGenerateLessonExercises();
   const generatePresentation = useGenerateLessonPresentation();
+  // Istanza separata da generateExercises: il suo risultato va nella scheda Studio, non nel modal del quiz.
+  const generateStudyPath = useGenerateLessonExercises();
+  const { data: studyPath, isLoading: loadingStudyPath } = useLessonStudyPath(lessonId);
 
   const [tab, setTab] = useState("editor");
   const [generating, setGenerating] = useState(false);
@@ -78,8 +86,24 @@ export function LessonPage() {
       toast.success("Study pack AI generato");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Generazione AI fallita");
+      return;
     } finally {
       setGenerating(false);
+    }
+    if (!studyPath) await handleGenerateStudyPath();
+  };
+
+  const handleGenerateStudyPath = async () => {
+    await saveNow();
+    if (!lesson.notesPlainText?.trim()) {
+      toast.error("Aggiungi prima degli appunti alla lezione: servono per preparare il percorso di studio.");
+      return;
+    }
+    try {
+      const outcome = await generateStudyPath.mutateAsync({ lessonId: lesson.id });
+      if (outcome.status === "error") toast.error(outcome.error.message);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Preparazione del percorso di studio non riuscita.");
     }
   };
 
@@ -207,8 +231,19 @@ export function LessonPage() {
         </div>
       )}
       {tab === "ai" && (
-        <div className="col-span-12">
-          <AiOutputPanel output={aiOutput} generating={generating || loadingAiOutput} />
+        <div className="col-span-12 flex flex-col gap-6">
+          <StudyPathPanel
+            exerciseSet={studyPath}
+            loading={loadingStudyPath}
+            generating={generateStudyPath.isPending}
+            onGenerate={handleGenerateStudyPath}
+          />
+          <details className="bg-base-100 rounded-2xl p-4" open={!studyPath}>
+            <summary className="cursor-pointer font-semibold">Riepilogo, schema e diagramma</summary>
+            <div className="mt-4">
+              <AiOutputPanel output={aiOutput} generating={generating || loadingAiOutput} />
+            </div>
+          </details>
         </div>
       )}
 

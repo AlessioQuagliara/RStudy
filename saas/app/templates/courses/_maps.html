@@ -1,0 +1,44 @@
+{# Scheda "Schemi": schema di studio, diagramma Mermaid dello studio AI e mappa concettuale costruita dallo schema.
+   Mermaid gira nel browser (static/diagrams.js); il codice resta copiabile sotto ogni disegno. #}
+{% macro diagram(title, code, description) %}
+{% call card() %}
+  <h2 class="card-title">{{ title }}</h2>
+  <p class="text-base-content/60 text-sm">{{ description }}</p>
+  <div data-mermaid class="flex flex-col gap-2">
+    <div data-mermaid-target class="overflow-x-auto [&_svg]:mx-auto [&_svg]:max-w-full"><span class="loading loading-spinner loading-sm" aria-label="Disegno in corso"></span></div>
+    <details class="text-sm">
+      <summary class="cursor-pointer opacity-70">Codice Mermaid</summary>
+      <pre class="bg-base-200 rounded-box mt-2 overflow-x-auto p-3 text-xs">{{ code }}</pre>
+    </details>
+  </div>
+{% endcall %}
+{% endmacro %}
+
+{% if pack_job and pack_job.status != "ready" %}
+<div class="col-span-12">{{ job_status(pack_job, "Studio AI") }}</div>
+{% endif %}
+
+{% if pack %}
+{% if pack.study_outline %}
+{% call card() %}
+  <h2 class="card-title">Schema di studio</h2>
+  <ul class="list-disc pl-5 text-sm">
+    {% for t in pack.study_outline %}<li>{{ t.topic }}{% if t.subtopics %}<ul class="list-[circle] pl-5">{% for st in t.subtopics %}<li>{{ st }}</li>{% endfor %}</ul>{% endif %}</li>{% endfor %}
+  </ul>
+{% endcall %}
+{{ diagram("Mappa concettuale", concept_map, "Gli argomenti dello schema di studio attorno alla lezione.") }}
+{% endif %}
+{% if pack.mermaid_diagram %}
+{{ diagram("Diagramma dei concetti", pack.mermaid_diagram, "Come si collegano i concetti della lezione.") }}
+{% else %}
+<div role="status" class="alert col-span-12 flex flex-wrap justify-between text-sm">
+  <span>Questo studio AI non ha il diagramma dei concetti: è stato generato prima che la versione web lo chiedesse.</span>
+  {% if ai_label and pack_job.status not in ("queued", "running") %}{{ generate_button("study_pack", "Rigenera studio AI", "btn-sm") }}{% endif %}
+</div>
+{% endif %}
+{% elif not pack_job %}
+<div class="col-span-12 flex flex-col items-center gap-3">
+  {{ empty_state("sparkles", "Nessuno schema", "Schema di studio, mappa concettuale e diagramma arrivano con lo studio AI della lezione.") }}
+  {% if ai_label %}{{ generate_button("study_pack", "Genera studio AI") }}{% endif %}
+</div>
+{% endif %}

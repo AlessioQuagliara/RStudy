@@ -19,16 +19,19 @@ from sqlalchemy import delete, func, select, update
 from sqlalchemy.exc import IntegrityError
 
 from ..db import db
-from ..models import AiJob, Flashcard, Lesson, utcnow
+from ..models import AiJob, CourseQuestion, Flashcard, Lesson, utcnow
 from . import prompts
 from .schemas import ExerciseSet, StudyPack
 
 log = logging.getLogger(__name__)
 
 ROME = ZoneInfo("Europe/Rome")
-REQUEST_TIMEOUT_S = 120
+# Il percorso di studio con un reasoning model richiede 1-3 minuti: sotto i 120 s andava in timeout.
+REQUEST_TIMEOUT_S = 300
 # I modelli cloud sono reasoning model: i token di ragionamento si sommano alla risposta (vedi factory.ts del desktop).
-MIN_MAX_TOKENS = 12_000
+# 12.000 come il desktop troncava il percorso di studio (finish_reason=length, verificato con deepseek-v4-pro):
+# si pagano solo i token usati, quindi il minimo alto non costa nulla quando la risposta è breve.
+MIN_MAX_TOKENS = 32_000
 STALE_AFTER = timedelta(minutes=15)
 
 KINDS: dict[str, tuple[str, type[BaseModel], callable]] = {
@@ -41,9 +44,15 @@ class AiError(Exception):
     """Errore con messaggio già sicuro da mostrare all'utente."""
 
 
-def source_hash(lesson: Lesson) -> str:
+# Versione dello schema nell'hash, come il desktop: un risultato di una versione precedente non viene riusato
+# (esercizi senza percorso di studio, studi AI senza diagramma).
+SCHEMA_VERSIONS = {"study_pack": 2, "exercise_set": 2}
+
+
+def source_hash(lesson: Lesson, kind: str = "study_pack") -> str:
     # Spazi normalizzati: riformattare gli appunti non invalida la cache.
-    return hashlib.sha256(" ".join(lesson.notes.split()).encode()).hexdigest()
+    version = f"v{SCHEMA_VERSIONS[kind]}\n" if kind in SCHEMA_VERSIONS else ""
+    return hashlib.sha256((version + " ".join(lesson.notes.split())).encode()).hexdigest()
 
 
 def today_start() -> datetime:
@@ -53,15 +62,19 @@ def today_start() -> datetime:
 
 
 async def used_today(user_id) -> int:
-    return await db().scalar(
-        select(func.count()).select_from(AiJob).where(AiJob.user_id == user_id, AiJob.created_at >= today_start())
+    """Generazioni e domande al corso di oggi: condividono lo stesso limite, come le chiamate cloud del desktop."""
+    since = today_start()
+    jobs = await db().scalar(select(func.count()).select_from(AiJob).where(AiJob.user_id == user_id, AiJob.created_at >= since))
+    questions = await db().scalar(
+        select(func.count()).select_from(CourseQuestion).where(CourseQuestion.user_id == user_id, CourseQuestion.created_at >= since)
     )
+    return jobs + questions
 
 
 # ---------- provider ----------
 
 
-def _openai_chat(system: str, user: str) -> str:
+def _openai_chat(system: str, user: str, json_mode: bool = True) -> str:
     cfg = current_app.config
     body = json.dumps(
         {
@@ -70,7 +83,7 @@ def _openai_chat(system: str, user: str) -> str:
             "temperature": 0.3,
             "max_tokens": max(cfg["AI_MAX_TOKENS"], MIN_MAX_TOKENS),
             "stream": False,
-            "response_format": {"type": "json_object"},
+            **({"response_format": {"type": "json_object"}} if json_mode else {}),
         }
     ).encode()
     req = urllib.request.Request(
@@ -100,12 +113,15 @@ def _openai_chat(system: str, user: str) -> str:
 
 def _fake_chat(system: str, user: str) -> str:
     """Provider simulato per sviluppo e test: risposte fisse e valide, indicate come tali nell'interfaccia."""
+    if system == prompts.COURSE_CHAT_SYSTEM:
+        return "[Simulato] Risposta generata senza un modello AI reale, basata su [Fonte 1]."
     if system == prompts.STUDY_PACK_SYSTEM:
         return json.dumps(
             {
                 "summary_markdown": "[Simulato] Riassunto generato senza un modello AI reale.",
                 "key_points": [{"title": "Punto chiave", "explanation": "Spiegazione simulata."}],
                 "study_outline": [{"topic": "Argomento", "subtopics": ["Sotto-argomento"]}],
+                "mermaid_diagram": "flowchart TB\n  A(Argomento simulato) --> B(Concetto collegato)",
                 "flashcards": [
                     {"front": f"Domanda simulata {i}", "back": f"Risposta simulata {i}", "tags": ["simulato"], "difficulty": "medium"}
                     for i in (1, 2, 3)
@@ -115,14 +131,21 @@ def _fake_chat(system: str, user: str) -> str:
         )
     return json.dumps(
         {
-            "title": "[Simulato] Esercizi di prova",
+            "title": "[Simulato] Percorso di prova",
+            "missingInfo": [],
+            "topics": [
+                {"title": f"Argomento simulato {i + 1}", "explanation": "Spiegazione simulata.", "keyRule": "Regola simulata.",
+                 "example": {"problem": "Esempio simulato.", "steps": ["Primo passaggio.", "Risultato."]}}
+                for i in (0, 1)
+            ],
             "exercises": [
-                {"type": "multiple_choice", "id": f"es-{i}", "question": f"Domanda simulata {i}?",
+                {"type": "multiple_choice", "id": f"es-{i}", "stage": "concetto", "topicIndex": i - 1, "question": f"Domanda simulata {i}?",
                  "options": ["Giusta", "Sbagliata A", "Sbagliata B", "Sbagliata C"], "correctAnswer": "Giusta",
                  "explanation": "La risposta giusta è sempre la prima nel provider simulato.", "difficulty": i}
                 for i in (1, 2)
             ]
-            + [{"type": "open_answer", "id": "es-3", "question": "Scrivi la parola: prova", "acceptedAnswers": ["prova"],
+            + [{"type": "open_answer", "id": "es-3", "stage": "collegamento", "topicIndex": 1,
+                "question": "Scrivi la parola: prova", "acceptedAnswers": ["prova"],
                 "explanation": "Risposta attesa: prova.", "difficulty": 3}],
         }
     )
@@ -132,10 +155,10 @@ def provider_label() -> str | None:
     return {"openai": current_app.config["AI_MODEL"], "fake": "simulato"}.get(current_app.config["AI_PROVIDER"])
 
 
-def chat(system: str, user: str) -> str:
+def chat(system: str, user: str, json_mode: bool = True) -> str:
     provider = current_app.config["AI_PROVIDER"]
     if provider == "openai":
-        return _openai_chat(system, user)
+        return _openai_chat(system, user, json_mode)
     if provider == "fake":
         return _fake_chat(system, user)
     raise AiError("Il servizio AI non è configurato.")
@@ -179,7 +202,7 @@ async def enqueue(user, lesson: Lesson, kind: str) -> AiJob:
         raise AiError("Aggiungi prima degli appunti alla lezione: servono per generare.")
     if current_app.config["AI_PROVIDER"] not in ("openai", "fake"):
         raise AiError("Il servizio AI non è configurato.")
-    digest = source_hash(lesson)
+    digest = source_hash(lesson, kind)
     existing = await db().scalar(
         select(AiJob)
         .where(AiJob.lesson_id == lesson.id, AiJob.kind == kind)

@@ -202,6 +202,8 @@ async def test_openai_client_request_and_errors(app):
             assert seen["path"] == "/v1/chat/completions" and seen["auth"] == "Bearer k"
             assert seen["body"]["max_tokens"] == ai.MIN_MAX_TOKENS
             assert seen["body"]["response_format"] == {"type": "json_object"}
+            ai.chat("sys", "usr", json_mode=False)  # "Chiedi al corso": risposta in testo libero
+            assert "response_format" not in seen["body"]
             Handler.status = 429
             with pytest.raises(ai.AiError, match="sovraccarico"):
                 ai.chat("sys", "usr")

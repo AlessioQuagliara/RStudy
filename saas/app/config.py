@@ -58,6 +58,9 @@ def load_config() -> dict:
         "SESSION_COOKIE_SECURE": secure_cookies,
         # Tetto assoluto di Quart: quello di backup e materiali. Il limite di 1 MB per il resto è in create_app.
         "MAX_CONTENT_LENGTH": 20 * 1024 * 1024,
+        # File statici con max-age=0 (Quart di default: 12 ore): gli URL non hanno versione, quindi dopo un rilascio
+        # il browser deve rivalidare con l'ETag (304 se invariati) invece di usare CSS e JS vecchi.
+        "SEND_FILE_MAX_AGE_DEFAULT": 0,
         # Numero di proxy fidati davanti all'app per gli header X-Forwarded-For/Proto/Host.
         # 0 = nessuna fiducia negli header inoltrati. Va impostato al deploy dopo aver verificato la catena reale.
         "PROXY_TRUSTED_HOPS": _int("PROXY_TRUSTED_HOPS", 0),

@@ -1,20 +1,22 @@
 {
   "name": "rstudy-saas-assets",
   "private": true,
-  "description": "Solo build degli asset statici (CSS e icone) per saas/app/static/dist. Non è codice eseguito dal server.",
+  "description": "Solo build degli asset statici (CSS, icone, Mermaid) per saas/app/static/dist. Non è codice eseguito dal server.",
   "config": {
-    "icons": "layout-dashboard menu sun moon graduation-cap log-out log-in user-plus plus search pencil trash-2 calendar-clock list-checks target circle circle-check book-open save sparkles layers copy notebook-pen arrow-right cloud credit-card settings download upload gauge user file-text"
+    "icons": "layout-dashboard menu sun moon graduation-cap log-out log-in user-plus plus search pencil trash-2 calendar-clock list-checks target circle circle-check book-open save sparkles layers copy notebook-pen arrow-right cloud credit-card settings download upload gauge user file-text send arrow-left lightbulb circle-x triangle-alert check"
   },
   "scripts": {
     "build:css": "tailwindcss -i assets/app.css -o app/static/dist/app.css --minify",
     "watch:css": "tailwindcss -i assets/app.css -o app/static/dist/app.css --watch=always",
     "build:icons": "mkdir -p app/static/dist/icons && for i in $npm_package_config_icons; do cp node_modules/lucide-static/icons/$i.svg app/static/dist/icons/; done",
-    "build": "npm run build:icons && npm run build:css"
+    "build": "npm run build:icons && npm run build:js && npm run build:css",
+    "build:js": "mkdir -p app/static/dist && cp node_modules/mermaid/dist/mermaid.min.js app/static/dist/"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.0",
     "daisyui": "^5.0.0",
     "lucide-static": "^0.469.0",
+    "mermaid": "11.17.2",
     "tailwindcss": "^4.1.0"
   }
 }

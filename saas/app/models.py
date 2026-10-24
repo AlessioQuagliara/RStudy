@@ -2,8 +2,8 @@ import math
 import uuid
 from datetime import date, datetime, timezone
 
-from sqlalchemy import DateTime, ForeignKey, Index, String, Text, Uuid, text
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Computed, DateTime, ForeignKey, Index, String, Text, Uuid, text
+from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -164,6 +164,8 @@ class AiJob(Base):
     source_hash: Mapped[str] = mapped_column(String(64))
     model: Mapped[str | None] = mapped_column(String(100))
     result: Mapped[dict | None] = mapped_column(JSONB)
+    # Solo percorso di studio: {"studied": [indici argomenti], "last_result": {...}}. Un nuovo percorso riparte da zero.
+    progress: Mapped[dict | None] = mapped_column(JSONB)
     # Solo messaggi sanificati per l'utente, mai l'errore grezzo del provider.
     error: Mapped[str | None] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
@@ -189,4 +191,36 @@ class Material(Base):
     material_type: Mapped[str] = mapped_column(String(20), default="other")
     extracted_text: Mapped[str | None] = mapped_column(Text)
     extraction_status: Mapped[str] = mapped_column(String(20), default="pending")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class DocumentChunk(Base):
+    """Passaggio di un materiale o degli appunti di una lezione, per "Chiedi al corso" (vedi app/rag.py)."""
+
+    __tablename__ = "document_chunks"
+    __table_args__ = (Index("ix_document_chunks_tsv", "tsv", postgresql_using="gin"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    course_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("courses.id", ondelete="CASCADE"), index=True)
+    # Uno solo dei due: appunti (lesson_id) o materiale (material_id). Eliminata la fonte, spariscono i suoi passaggi.
+    lesson_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("lessons.id", ondelete="CASCADE"), index=True)
+    material_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("materials.id", ondelete="CASCADE"), index=True)
+    source_label: Mapped[str] = mapped_column(String(500))
+    content: Mapped[str] = mapped_column(Text)
+    # Calcolata da Postgres: ricerca full-text in italiano al posto dell'embedding a hash del desktop.
+    tsv: Mapped[str] = mapped_column(TSVECTOR, Computed("to_tsvector('italian', content)", persisted=True))
+
+
+class CourseQuestion(Base):
+    """Domanda a "Chiedi al corso" con la risposta e le fonti: cronologia della scheda e conteggio del limite giornaliero."""
+
+    __tablename__ = "course_questions"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    course_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("courses.id", ondelete="CASCADE"), index=True)
+    question: Mapped[str] = mapped_column(String(2000))
+    answer: Mapped[str] = mapped_column(Text)
+    citations: Mapped[list] = mapped_column(JSONB, default=list)
+    model: Mapped[str | None] = mapped_column(String(100))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

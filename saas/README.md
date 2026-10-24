@@ -17,34 +17,42 @@ Disponibile:
 - account (registrazione con università e facoltà, accesso, rate limit, CSRF, CSP senza script inline);
 - corsi con filtri e ricerca, lezioni con appunti, dashboard con le metriche del desktop;
 - generazione AI in background (`quart --app asgi ai-worker`): studio AI (riepilogo, punti chiave, schema,
-  domande di autoverifica, flashcard) ed esercizi a scelta multipla e risposta aperta, corretti dal server;
+  diagramma, domande di autoverifica, flashcard) e percorso di studio, corretti dal server;
+- lezione divisa in schede: Appunti, Studio AI, "Studia passo passo" (argomenti con spiegazione, regola, esempio svolto
+  ed errore comune; "Ho capito" porta al successivo e dopo l'ultimo al test da 8 esercizi, con argomenti capiti e da
+  ripassare; progressi salvati sul server) e Schemi (schema di studio, mappa concettuale costruita dallo schema senza
+  chiamate AI, diagramma dei concetti; disegnati con Mermaid nel browser, codice copiabile);
   stessi appunti = risultato riusato senza nuova chiamata; limite giornaliero per utente (`AI_DAILY_LIMIT`);
 - materiali del corso: upload di PDF, DOCX, TXT e Markdown (al massimo 20 MB per invio) con estrazione del testo;
   come nel backup del desktop si conserva il testo estratto, non il file (`app/materials.py`);
+- "Chiedi al corso": domande sul testo di materiali e appunti, con le fonti citate sotto ogni risposta e la cronologia
+  salvata; i passaggi sono cercati con la ricerca full-text di Postgres in italiano (`app/rag.py`);
+  domande e generazioni condividono il limite giornaliero;
 - flashcard: lista paginata (30 per pagina) con filtri, editor, duplica, ripasso con gli stessi intervalli del desktop (1/3/7 giorni);
 - produzione con Traefik e certificati Let's Encrypt (`compose.prod.yaml`).
 
 Limiti provvisori, da superare in seguito:
 - colori predefiniti di daisyUI invece del tema del desktop, in attesa di una verifica di licenza;
 - appunti in un'area di testo semplice con salvataggio esplicito, invece dell'editor TipTap con autosave;
-- testo generato mostrato senza Markdown, LaTeX né diagramma Mermaid;
-- niente esercizi di codice; esercizi in un unico form invece del quiz a passi;
+- testo generato mostrato senza Markdown né LaTeX (il modello scrive le formule come testo);
+- niente esercizi di codice; il test del percorso è un unico form invece del quiz a passi;
 - provider AI `fake` (simulato, indicato come tale nell'interfaccia) di default in sviluppo.
 
-Non ancora migrato dal desktop: "Chiedi al corso" (RAG, che userà il testo estratto dai materiali),
-riassunto del corso, presentazioni, sessione studio in PDF, dettatura.
+Non ancora migrato dal desktop: riassunto del corso, presentazioni, sessione studio in PDF, dettatura.
 
 ## Come è fatto
 
 Un'app Quart (`app/__init__.py::create_app`) con un blueprint per area: `auth`, `main` (landing e dashboard),
 `courses` (corsi, lezioni, esercizi), `flashcards`, `billing` (Paddle), `settings` (profilo e backup).
-Template Jinja in `app/templates`, CSS e icone compilati da `npm run build` in `app/static/dist`.
+Template Jinja in `app/templates`, CSS, icone e Mermaid copiati/compilati da `npm run build` in `app/static/dist`.
+La CSP vieta script e stili inline; solo la scheda Schemi permette gli stili inline, che Mermaid scrive negli SVG.
 
 - `app/db.py`: SQLAlchemy async su psycopg. `db()` restituisce la sessione della richiesta, chiusa a fine richiesta.
   Le relazioni usate nei template sono `lazy="selectin"`: in async un caricamento implicito non è permesso.
 - `app/web.py`: utente corrente (`g.user`), `@login_required`, token CSRF in sessione, paginazione.
   Le chiavi di sessione sono quelle di Flask-Login: chi era collegato alla versione Flask resta collegato.
 - `app/ai/`: le pagine accodano soltanto; il processo `quart --app asgi ai-worker` chiama il provider.
+  Eccezione: "Chiedi al corso" (`app/rag.py`) chiama il provider nella richiesta, perché la risposta è testo breve.
 - Lavoro bloccante fuori dall'event loop: hash delle password (scrypt, al più 2 insieme) e chiamate HTTP
   verso AI e Paddle girano in un thread (`asyncio.to_thread`).
 - Migrazioni Alembic in `migrations/versions`: `alembic upgrade head` (legge `DATABASE_URL`).

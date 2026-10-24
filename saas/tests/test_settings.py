@@ -7,7 +7,7 @@ from sqlalchemy import func, select
 from werkzeug.datastructures import FileStorage
 
 from app.db import db
-from app.models import AiJob, Course, Flashcard, Lesson, User, utcnow
+from app.models import AiJob, Course, DocumentChunk, Flashcard, Lesson, User, utcnow
 
 from .conftest import register
 
@@ -63,6 +63,9 @@ async def test_import_desktop_backup_and_round_trip(db_app, db_client):
         job = await db().scalar(select(AiJob))
         assert job.status == "ready" and job.result["mermaid_diagram"] == "graph TD; A-->B"
         assert (await db().scalar(select(Flashcard))).review_count == 2
+        # Appunti e materiale importati sono consultabili da "Chiedi al corso".
+        labels = set(await db().scalars(select(DocumentChunk.source_label)))
+        assert labels == {"Appunti — Lezione 1: Puntatori", "Slide puntatori (Lezione 1: Puntatori)"}
 
     # Reimportare lo stesso file aggiorna, non duplica.
     backup["lessons"][0]["title"] = "Puntatori (rivista)"

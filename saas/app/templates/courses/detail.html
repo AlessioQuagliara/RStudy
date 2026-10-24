@@ -144,6 +144,46 @@
   </ul>
   {% endif %}
 </div>
+{% elif tab == "ask" %}
+{# CourseChatPanel.tsx; le domande restano salvate. shortcut: risposta come testo semplice, senza Markdown. #}
+<div class="col-span-12 flex flex-col gap-3">
+  {% if not questions %}
+  <p class="text-base-content/60 text-sm">
+    Fai una domanda sul materiale di questo corso (materiali importati e appunti delle lezioni). Le risposte citano
+    sempre le fonti usate; se il materiale non è sufficiente, l'assistente te lo dirà esplicitamente.
+  </p>
+  {% endif %}
+  {% for q in questions %}
+  <div class="flex flex-col gap-2">
+    <div class="chat chat-end"><div class="chat-bubble whitespace-pre-wrap">{{ q.question }}</div></div>
+    <div class="chat chat-start">
+      <div class="chat-bubble chat-bubble-neutral flex flex-col gap-2">
+        <p class="whitespace-pre-wrap">{{ q.answer }}</p>
+        {% if q.citations %}
+        <div class="border-base-content/20 mt-1 flex flex-col gap-1 border-t pt-2">
+          {% for c in q.citations %}
+          <details class="text-xs">
+            <summary class="flex cursor-pointer items-center gap-1 opacity-70">{{ icon("file-text", "size-3") }} Fonte {{ loop.index }}: {{ c.source_label }}</summary>
+            <p class="mt-1 whitespace-pre-wrap opacity-60">{{ c.excerpt }}</p>
+          </details>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  {% if ai_label %}
+  <form method="post" action="{{ url_for('courses.ask', course_id=course.id) }}" class="join">
+    {{ csrf() }}
+    <input name="question" class="input input-bordered join-item grow" placeholder="Chiedi al materiale del corso..." aria-label="Domanda al corso" maxlength="{{ question_max }}" required />
+    <button type="submit" class="btn btn-primary join-item" aria-label="Invia domanda">{{ icon("send") }}</button>
+  </form>
+  <p class="text-base-content/50 text-xs">Modello: {{ ai_label }}. La risposta può richiedere qualche decina di secondi.</p>
+  {% else %}
+  <div role="alert" class="alert alert-warning">Il servizio AI non è configurato su questo server.</div>
+  {% endif %}
+</div>
 {% elif tab == "flashcards" %}
 <div class="col-span-12 flex flex-col gap-4">
   <div class="flex flex-wrap gap-2">

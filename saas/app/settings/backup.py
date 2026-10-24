@@ -13,6 +13,7 @@ from pydantic import AwareDatetime, BaseModel, Field, ValidationError, field_val
 from sqlalchemy import select
 
 from ..ai import source_hash
+from ..rag import index_lesson_notes, index_material
 from ..db import db
 from ..materials import TEXT_MAX
 from ..models import COURSE_COLORS, EXTRACTION_STATUSES, MATERIAL_TYPES, AiJob, Course, Flashcard, Lesson, Material, utcnow
@@ -165,6 +166,7 @@ async def import_backup(user, raw: bytes) -> dict[str, int]:
         card.created_at, card.updated_at = f.createdAt, f.updatedAt
         db().add(card)
 
+    imported_materials = []
     for m in data.materials:
         material = materials.get(m.id) or Material(id=m.id)
         material.course_id, material.lesson_id, material.title = m.courseId, m.lessonId, m.title
@@ -174,6 +176,13 @@ async def import_backup(user, raw: bytes) -> dict[str, int]:
         material.extracted_text = m.extractedText.replace("\x00", "") if m.extractedText else None
         material.extraction_status = m.extractionStatus
         db().add(material)
+        imported_materials.append(material)
+    await db().flush()
+    # Passaggi per "Chiedi al corso" di appunti e materiali importati.
+    for lesson in lesson_by_id.values():
+        await index_lesson_notes(lesson)
+    for material in imported_materials:
+        await index_material(material)
 
     for a in data.lessonAiOutputs:
         lesson = lesson_by_id.get(a.lessonId) or await db().get(Lesson, a.lessonId)

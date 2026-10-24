@@ -58,6 +58,9 @@ services:
       context: .
       target: runtime
     command: ["quart", "--app", "asgi", "ai-worker"]
+    # Non è un server web: il controllo HTTP del Dockerfile fallirebbe sempre (come in compose.prod.yaml).
+    healthcheck:
+      disable: true
     environment:
       SECRET_KEY: ${SECRET_KEY}
       DATABASE_URL: postgresql+psycopg://rstudy:${POSTGRES_PASSWORD}@db:5432/rstudy
@@ -77,7 +80,7 @@ services:
   assets:
     image: node:22-alpine
     working_dir: /src
-    command: ["sh", "-c", "npm ci --no-audit --no-fund && npm run build:icons && npm run watch:css"]
+    command: ["sh", "-c", "npm ci --no-audit --no-fund && npm run build:icons && npm run build:js && npm run watch:css"]
     volumes:
       - .:/src
       - /src/node_modules

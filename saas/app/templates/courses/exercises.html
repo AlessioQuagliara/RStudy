@@ -2,11 +2,35 @@
 {% from "_ui.html" import topbar, card, csrf %}
 {% block title %}Esercizi · Lezione {{ lesson.lesson_number }} · RStudy{% endblock %}
 {% block content %}
-{{ topbar(exercise_set.title, "Lezione " ~ lesson.lesson_number ~ ": " ~ lesson.title, url_for("courses.lesson", course_id=lesson.course_id, lesson_id=lesson.id, tab="ai")) }}
+{{ topbar(exercise_set.title, "Lezione " ~ lesson.lesson_number ~ ": " ~ lesson.title, url_for("courses.lesson", course_id=lesson.course_id, lesson_id=lesson.id, tab="path")) }}
 {# shortcut: tutte le domande in un solo form corretto dal server, invece del quiz a passi di DuolingoQuiz.tsx. #}
+{% set topics = exercise_set.topics or [] %}
+{% set stages = {"concetto": "Concetto base", "applicazione": "Applicazione", "collegamento": "Collegamento"} %}
 {% if graded %}
 {% set right = graded.values() | selectattr("correct") | list | length %}
 <div role="status" class="alert {{ 'alert-success' if right == graded | length else 'alert-info' }} col-span-12">Risposte corrette: {{ right }} su {{ graded | length }}</div>
+{# Schermata finale di DuolingoQuiz.tsx: argomento capito se tutte le sue domande sono corrette. #}
+{% if understood or to_review %}
+<div class="col-span-12 grid gap-3 sm:grid-cols-2">
+  <div class="rounded-box bg-success/10 p-4">
+    <p class="text-success mb-2 flex items-center gap-2 text-sm font-semibold">{{ icon("check", "size-4") }} Argomenti capiti</p>
+    {% if not understood %}<p class="text-base-content/60 text-sm">Ancora nessuno: ci arrivi!</p>{% endif %}
+    <ul class="flex flex-col gap-1 text-sm">{% for i in understood %}<li>{{ topics[i].title }}</li>{% endfor %}</ul>
+  </div>
+  <div class="rounded-box bg-warning/10 p-4">
+    <p class="text-warning mb-2 flex items-center gap-2 text-sm font-semibold">{{ icon("book-open", "size-4") }} Da ripassare</p>
+    {% if not to_review %}<p class="text-base-content/60 text-sm">Niente: ottimo lavoro!</p>{% endif %}
+    <ul class="flex flex-col gap-2 text-sm">
+      {% for i in to_review %}
+      <li class="flex flex-col items-start gap-1">
+        <span>{{ topics[i].title }}</span>
+        <a class="btn btn-xs btn-outline" href="{{ url_for('courses.lesson', course_id=lesson.course_id, lesson_id=lesson.id, tab='path', topic=i) }}">Rivedi la spiegazione</a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endif %}
 {% endif %}
 <form method="post" class="col-span-12 flex flex-col gap-4">
   {{ csrf() }}
@@ -14,7 +38,7 @@
   {% set g = graded[ex.id] if graded else None %}
   {% call card(class="border " ~ ("border-success" if g and g.correct else "border-error" if g else "border-transparent")) %}
     <fieldset>
-      <legend class="mb-2 font-medium">{{ loop.index }}. {{ ex.question }} <span class="badge badge-ghost badge-sm ml-1">Livello {{ ex.difficulty }}</span></legend>
+      <legend class="mb-2 font-medium">{{ loop.index }}. {{ ex.question }} <span class="badge badge-ghost badge-sm ml-1">{{ stages.get(ex.stage) or "Livello " ~ ex.difficulty }}</span></legend>
       {% if ex.type == "multiple_choice" %}
       <div class="flex flex-col gap-2">
         {% for opt in ex.options %}
@@ -37,9 +61,10 @@
   {% endfor %}
   <div class="flex justify-end gap-2">
     {% if graded %}
-    <a class="btn" href="{{ url_for('courses.exercises', course_id=lesson.course_id, lesson_id=lesson.id) }}">Riprova</a>
+    <a class="btn" href="{{ url_for('courses.lesson', course_id=lesson.course_id, lesson_id=lesson.id, tab='path') }}">Torna al percorso</a>
+    <a class="btn btn-primary" href="{{ url_for('courses.exercises', course_id=lesson.course_id, lesson_id=lesson.id) }}">Riprova</a>
     {% else %}
-    <button type="submit" class="btn btn-primary">Verifica risposte</button>
+    <button type="submit" class="btn btn-primary">Controlla</button>
     {% endif %}
   </div>
 </form>

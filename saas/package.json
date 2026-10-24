@@ -3,7 +3,7 @@
   "private": true,
   "description": "Solo build degli asset statici (CSS e icone) per saas/app/static/dist. Non è codice eseguito dal server.",
   "config": {
-    "icons": "layout-dashboard menu sun moon graduation-cap log-out log-in user-plus plus search pencil trash-2 calendar-clock list-checks target circle circle-check book-open save sparkles layers copy notebook-pen arrow-right cloud credit-card settings download upload gauge user"
+    "icons": "layout-dashboard menu sun moon graduation-cap log-out log-in user-plus plus search pencil trash-2 calendar-clock list-checks target circle circle-check book-open save sparkles layers copy notebook-pen arrow-right cloud credit-card settings download upload gauge user file-text"
   },
   "scripts": {
     "build:css": "tailwindcss -i assets/app.css -o app/static/dist/app.css --minify",

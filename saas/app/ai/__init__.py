@@ -1,24 +1,24 @@
 """Generazione AI lato server: client OpenAI-compatibile, coda in Postgres e worker.
 
 Le richieste web accodano soltanto (enqueue); le chiamate al provider, che possono durare minuti,
-le fa il processo `flask ai-worker`, così i worker Gunicorn non restano bloccati.
+le fa il processo `quart ai-worker`, così il server web non resta occupato.
 """
 
+import asyncio
 import hashlib
 import json
 import logging
-import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from flask import current_app
+from quart import current_app
 from pydantic import BaseModel, ValidationError
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.exc import IntegrityError
 
-from ..extensions import db
+from ..db import db
 from ..models import AiJob, Flashcard, Lesson, utcnow
 from . import prompts
 from .schemas import ExerciseSet, StudyPack
@@ -52,8 +52,8 @@ def today_start() -> datetime:
     return now.replace(hour=0, minute=0, second=0, microsecond=0)
 
 
-def used_today(user_id) -> int:
-    return db.session.scalar(
+async def used_today(user_id) -> int:
+    return await db().scalar(
         select(func.count()).select_from(AiJob).where(AiJob.user_id == user_id, AiJob.created_at >= today_start())
     )
 
@@ -168,19 +168,19 @@ def generate(kind: str, user: str) -> BaseModel:
 # ---------- coda ----------
 
 
-def latest_jobs(lesson: Lesson) -> dict[str, AiJob]:
-    jobs = db.session.scalars(select(AiJob).where(AiJob.lesson_id == lesson.id).order_by(AiJob.created_at)).all()
+async def latest_jobs(lesson: Lesson) -> dict[str, AiJob]:
+    jobs = (await db().scalars(select(AiJob).where(AiJob.lesson_id == lesson.id).order_by(AiJob.created_at))).all()
     return {job.kind: job for job in jobs}
 
 
-def enqueue(user, lesson: Lesson, kind: str) -> AiJob:
+async def enqueue(user, lesson: Lesson, kind: str) -> AiJob:
     """Accoda una generazione, o restituisce quella attiva / quella già pronta per gli stessi appunti."""
     if not lesson.notes.strip():
         raise AiError("Aggiungi prima degli appunti alla lezione: servono per generare.")
     if current_app.config["AI_PROVIDER"] not in ("openai", "fake"):
         raise AiError("Il servizio AI non è configurato.")
     digest = source_hash(lesson)
-    existing = db.session.scalar(
+    existing = await db().scalar(
         select(AiJob)
         .where(AiJob.lesson_id == lesson.id, AiJob.kind == kind)
         .where((AiJob.status.in_(("queued", "running"))) | ((AiJob.status == "ready") & (AiJob.source_hash == digest)))
@@ -189,96 +189,98 @@ def enqueue(user, lesson: Lesson, kind: str) -> AiJob:
     )
     if existing:
         return existing
-    if used_today(user.id) >= current_app.config["AI_DAILY_LIMIT"]:
+    if await used_today(user.id) >= current_app.config["AI_DAILY_LIMIT"]:
         raise AiError("Hai raggiunto il limite giornaliero di generazioni AI. Si azzera a mezzanotte.")
     job = AiJob(user_id=user.id, lesson_id=lesson.id, kind=kind, status="queued", source_hash=digest)
-    db.session.add(job)
+    db().add(job)
     try:
-        db.session.commit()
+        await db().commit()
     except IntegrityError:
         # Due richieste contemporanee: l'indice unico parziale ne lascia passare una sola.
-        db.session.rollback()
-        return db.session.scalar(select(AiJob).where(AiJob.lesson_id == lesson.id, AiJob.kind == kind, AiJob.status.in_(("queued", "running"))))
+        await db().rollback()
+        return await db().scalar(select(AiJob).where(AiJob.lesson_id == lesson.id, AiJob.kind == kind, AiJob.status.in_(("queued", "running"))))
     return job
 
 
-def _claim() -> AiJob | None:
-    job = db.session.scalar(
+async def _claim() -> AiJob | None:
+    job = await db().scalar(
         select(AiJob).where(AiJob.status == "queued").order_by(AiJob.created_at).limit(1).with_for_update(skip_locked=True)
     )
     if job:
         job.status = "running"
-        db.session.commit()
+        await db().commit()
     return job
 
 
-def _store_result(job: AiJob, course_id, lesson_id, result: BaseModel) -> None:
+async def _store_result(job: AiJob, course_id, lesson_id, result: BaseModel) -> None:
     job.result = result.model_dump()
     if job.kind == "study_pack":
         # Le flashcard AI mai ripassate della lezione vengono sostituite, quelle già studiate restano.
-        db.session.execute(
+        await db().execute(
             delete(Flashcard).where(Flashcard.lesson_id == lesson_id, Flashcard.source == "ai", Flashcard.review_count == 0)
         )
-        db.session.add_all(
+        db().add_all(
             Flashcard(course_id=course_id, lesson_id=lesson_id, front=f.front[:1000], back=f.back[:2000],
                       tags=f.tags, difficulty=f.difficulty, source="ai")
             for f in result.flashcards
         )
 
 
-def process_next() -> bool:
+async def process_next() -> bool:
     """Esegue un job in coda. False se la coda è vuota."""
-    job = _claim()
+    job = await _claim()
     if job is None:
         return False
-    lesson = db.session.get(Lesson, job.lesson_id)
+    lesson = await db().get(Lesson, job.lesson_id)
     try:
         if lesson is None:
             raise AiError("La lezione è stata eliminata.")
         course_id, lesson_id = lesson.course_id, lesson.id
         user_prompt = KINDS[job.kind][2](lesson.course, lesson)
         # Chiude la transazione: la chiamata al provider può durare minuti e non deve tenere lock o connessioni.
-        db.session.commit()
-        result = generate(job.kind, user_prompt)
-        if db.session.get(Lesson, lesson_id) is None:
+        await db().commit()
+        # Chiamata HTTP bloccante (urllib): in un thread, il contesto dell'app viene copiato.
+        result = await asyncio.to_thread(generate, job.kind, user_prompt)
+        if await db().get(Lesson, lesson_id, populate_existing=True) is None:
             return True  # lezione eliminata nel frattempo: anche il job è stato cancellato a cascata
-        _store_result(job, course_id, lesson_id, result)
+        await _store_result(job, course_id, lesson_id, result)
         job.status, job.model = "ready", provider_label()
     except AiError as e:
-        db.session.rollback()
+        await db().rollback()
         job.status, job.error = "failed", str(e)
     except Exception:
         log.exception("job AI %s fallito", job.id)
-        db.session.rollback()
+        await db().rollback()
         job.status, job.error = "failed", "Si è verificato un errore imprevisto."
-    db.session.commit()
+    await db().commit()
     return True
 
 
-def fail_stale_jobs() -> int:
+async def fail_stale_jobs() -> int:
     """Job rimasti 'running' dopo un crash del worker: segnati falliti così l'utente può riprovare."""
-    res = db.session.execute(
+    res = await db().execute(
         update(AiJob)
         .where(AiJob.status == "running", AiJob.updated_at < utcnow() - STALE_AFTER)
         .values(status="failed", error="Generazione interrotta. Riprova.", updated_at=utcnow())
     )
-    db.session.commit()
+    await db().commit()
     return res.rowcount
 
 
-def run_worker(idle_sleep: float = 1.0) -> None:
-    log.info("worker AI avviato (provider=%s)", current_app.config["AI_PROVIDER"] or "nessuno")
+async def run_worker(app, idle_sleep: float = 1.0) -> None:
+    log.info("worker AI avviato (provider=%s)", app.config["AI_PROVIDER"] or "nessuno")
     last_sweep = 0.0
+    loop = asyncio.get_running_loop()
     while True:
-        if time.monotonic() - last_sweep > 60:
-            fail_stale_jobs()
-            last_sweep = time.monotonic()
-        try:
-            busy = process_next()
-        except Exception:
-            log.exception("errore del worker AI")
-            db.session.rollback()
-            busy = False
-        db.session.remove()
+        # Un app context (e quindi una sessione del database) nuovo per ogni giro.
+        async with app.app_context():
+            try:
+                if loop.time() - last_sweep > 60:
+                    await fail_stale_jobs()
+                    last_sweep = loop.time()
+                busy = await process_next()
+            except Exception:
+                log.exception("errore del worker AI")
+                busy = False
         if not busy:
-            time.sleep(idle_sleep)
+            await asyncio.sleep(idle_sleep)

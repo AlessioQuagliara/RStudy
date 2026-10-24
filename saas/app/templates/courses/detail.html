@@ -63,7 +63,7 @@
 
 {% elif tab == "lessons" %}
 <div class="col-span-12 flex flex-col gap-4">
-  {% set next_number = (course.lessons | map(attribute="lesson_number") | max | default(0)) + 1 %}
+  {% set next_number = (course.lessons | map(attribute="lesson_number") | list | max | default(0)) + 1 %}
   <form method="post" action="{{ url_for('courses.create_lesson', course_id=course.id) }}" class="join">
     {{ csrf() }}
     <input name="title" class="input input-bordered join-item grow" placeholder="Titolo lezione {{ next_number }}..." aria-label="Titolo nuova lezione" maxlength="200" required />
@@ -84,6 +84,59 @@
         <form method="post" action="{{ url_for('courses.delete_lesson', course_id=course.id, lesson_id=lesson.id) }}" data-confirm="Eliminare la lezione &quot;{{ lesson.title }}&quot;?">
           {{ csrf() }}
           <button type="submit" class="btn btn-ghost btn-xs text-error" aria-label="Elimina lezione {{ lesson.title }}">{{ icon("trash-2", "size-3.5") }}</button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+{% elif tab == "materials" %}
+{# MaterialsPage.tsx: un form multipart al posto di dropzone e finestra di selezione. #}
+{% set extraction = {
+  "pending": ("In elaborazione", "badge-info"),
+  "done": ("Testo estratto", "badge-success"),
+  "unsupported": ("Testo non estraibile", "badge-warning"),
+  "failed": ("Estrazione fallita", "badge-error"),
+} %}
+<div class="col-span-12 flex flex-col gap-4">
+  <form method="post" action="{{ url_for('courses.upload_materials', course_id=course.id) }}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-3">
+    {{ csrf() }}
+    <label class="form-control">
+      <span class="label-text mb-1 block text-xs">Tipo materiale</span>
+      <select name="material_type" class="select select-bordered select-sm">
+        {% for value, label in material_types.items() %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="form-control">
+      <span class="label-text mb-1 block text-xs">Collega a lezione (opzionale)</span>
+      <select name="lesson_id" class="select select-bordered select-sm">
+        <option value="">Nessuna lezione specifica</option>
+        {% for lesson in course.lessons %}<option value="{{ lesson.id }}">Lezione {{ lesson.lesson_number }}: {{ lesson.title }}</option>{% endfor %}
+      </select>
+    </label>
+    <input type="file" name="files" multiple required accept=".txt,.md,.markdown,.pdf,.docx" class="file-input file-input-bordered file-input-sm" aria-label="File da importare (PDF, DOCX, TXT, Markdown, al massimo 20 MB in tutto)" />
+    <button type="submit" class="btn btn-primary btn-sm">{{ icon("upload") }} Importa</button>
+  </form>
+  {% if not materials %}
+  {{ empty_state("file-text", "Nessun materiale", "Importa PDF, DOCX, TXT o Markdown per questo corso.") }}
+  {% else %}
+  <ul class="divide-base-300 divide-y">
+    {% for m in materials %}
+    {% set label, badge = extraction.get(m.extraction_status, extraction.pending) %}
+    <li class="flex items-center justify-between gap-3 py-2">
+      <div class="flex min-w-0 items-center gap-2">
+        {{ icon("file-text", "text-base-content/40 size-4 shrink-0") }}
+        <div class="min-w-0">
+          <p class="truncate text-sm font-medium">{{ m.title }}</p>
+          <p class="text-base-content/50 text-xs">{{ material_types.get(m.material_type, "Altro") }} · {{ (m.file_size / 1024) | round | int }} KB</p>
+        </div>
+      </div>
+      <div class="flex shrink-0 items-center gap-2">
+        <span class="badge badge-sm {{ badge }}">{{ label }}</span>
+        <form method="post" action="{{ url_for('courses.delete_material', course_id=course.id, material_id=m.id) }}" data-confirm="Eliminare il materiale &quot;{{ m.title }}&quot;?">
+          {{ csrf() }}
+          <button type="submit" class="btn btn-ghost btn-xs text-error" aria-label="Elimina {{ m.title }}">{{ icon("trash-2", "size-3.5") }}</button>
         </form>
       </div>
     </li>

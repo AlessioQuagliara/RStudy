@@ -5,13 +5,13 @@ Provider AI, modello locale, cartella file, licenza e aggiornamenti sono gestiti
 
 import json
 
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
-from flask_login import current_user, login_required
+from quart import Blueprint, current_app, flash, g, redirect, render_template, request, url_for
 
 from ..ai import provider_label, used_today
 from ..auth import SCHOOL_MAX, _clean
-from ..extensions import db
+from ..db import db
 from ..models import utcnow
+from ..web import login_required
 from .backup import BackupError, export_backup, import_backup
 
 bp = Blueprint("settings", __name__, url_prefix="/settings")
@@ -22,29 +22,30 @@ MAX_BACKUP_BYTES = 20 * 1024 * 1024
 
 @bp.get("/")
 @login_required
-def index():
+async def index():
     limit = current_app.config["AI_DAILY_LIMIT"]
-    used = min(used_today(current_user.id), limit)
-    return render_template("settings/index.html", ai_used=used, ai_limit=limit, ai_label=provider_label())
+    used = min(await used_today(g.user.id), limit)
+    return await render_template("settings/index.html", ai_used=used, ai_limit=limit, ai_label=provider_label())
 
 
 @bp.post("/profile")
 @login_required
-def profile():
-    university, faculty = _clean(request.form.get("university", "")), _clean(request.form.get("faculty", ""))
+async def profile():
+    form = await request.form
+    university, faculty = _clean(form.get("university", "")), _clean(form.get("faculty", ""))
     if not (university and faculty) or max(len(university), len(faculty)) > SCHOOL_MAX:
-        flash(f"Indica università e facoltà (al massimo {SCHOOL_MAX} caratteri).", "error")
+        await flash(f"Indica università e facoltà (al massimo {SCHOOL_MAX} caratteri).", "error")
         return redirect(url_for("settings.index"))
-    current_user.university, current_user.faculty = university, faculty
-    db.session.commit()
-    flash("Profilo salvato.", "success")
+    g.user.university, g.user.faculty = university, faculty
+    await db().commit()
+    await flash("Profilo salvato.", "success")
     return redirect(url_for("settings.index"))
 
 
 @bp.get("/backup.json")
 @login_required
-def export():
-    body = json.dumps(export_backup(current_user), ensure_ascii=False)
+async def export():
+    body = json.dumps(await export_backup(g.user), ensure_ascii=False)
     return current_app.response_class(
         body,
         mimetype="application/json",
@@ -54,26 +55,25 @@ def export():
 
 @bp.post("/backup")
 @login_required
-def import_():
-    upload = request.files.get("backup")
+async def import_():
+    upload = (await request.files).get("backup")
     if not upload or not upload.filename:
-        flash("Scegli un file di backup JSON.", "error")
+        await flash("Scegli un file di backup JSON.", "error")
         return redirect(url_for("settings.index"))
     try:
-        counts = import_backup(current_user, upload.read())
+        counts = await import_backup(g.user, upload.read())
     except BackupError as exc:
-        db.session.rollback()
-        flash(str(exc), "error")
+        await db().rollback()
+        await flash(str(exc), "error")
         return redirect(url_for("settings.index"))
     message = (
-        f"Importati {counts['courses']} corsi, {counts['lessons']} lezioni, "
+        f"Importati {counts['courses']} corsi, {counts['lessons']} lezioni, {counts['materials']} materiali, "
         f"{counts['flashcards']} flashcard e {counts['studies']} studi AI."
     )
-    skipped = counts["skipped_materials"] + counts["skipped_course_summaries"]
-    if skipped:
+    if counts["skipped_course_summaries"]:
         message += (
-            f" Non importati {counts['skipped_materials']} materiali e {counts['skipped_course_summaries']} riassunti"
-            " del corso: non sono ancora disponibili nella versione web."
+            f" Non importati {counts['skipped_course_summaries']} riassunti del corso:"
+            " non sono ancora disponibili nella versione web."
         )
-    flash(message, "success")
+    await flash(message, "success")
     return redirect(url_for("settings.index"))

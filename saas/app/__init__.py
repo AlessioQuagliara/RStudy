@@ -1,16 +1,20 @@
+"""App Quart di RStudy web: `create_app()` monta configurazione, database, controlli comuni e blueprint."""
+
+import asyncio
 import logging
-import uuid
 from functools import lru_cache
 from pathlib import Path
 
-from flask import Flask, request
+from hypercorn.middleware import ProxyFixMiddleware
 from markupsafe import Markup
-from werkzeug.middleware.proxy_fix import ProxyFix
+from quart import Quart, abort, g, request
 
 from .config import load_config
-from .extensions import csrf, db, login_manager, migrate
+from .db import close_db, init_db
+from .web import check_csrf, csrf_token, load_user
 
 ICONS_DIR = Path(__file__).parent / "static" / "dist" / "icons"
+MAX_REQUEST_BYTES = 1 * 1024 * 1024
 
 CONTENT_SECURITY_POLICY = (
     "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; "
@@ -37,43 +41,46 @@ def date_it(value) -> str:
     return f"{value.day:02d} {_MONTHS_IT[value.month - 1]} {value.year}" if value else ""
 
 
-def create_app(overrides: dict | None = None) -> Flask:
-    app = Flask(__name__)
+def create_app(overrides: dict | None = None) -> Quart:
+    app = Quart(__name__)
     app.config.update(load_config())
     if overrides:
         app.config.update(overrides)
 
-    proxy = {k: app.config[f"PROXY_FIX_X_{k.upper()}"] for k in ("for", "proto", "host")}
-    if any(proxy.values()):
-        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=proxy["for"], x_proto=proxy["proto"], x_host=proxy["host"])
+    if hops := app.config["PROXY_TRUSTED_HOPS"]:
+        app.asgi_app = ProxyFixMiddleware(app.asgi_app, mode="legacy", trusted_hops=hops)
 
-    db.init_app(app)
-    migrate.init_app(app, db)
+    init_db(app.config["DATABASE_URL"])
+
+    @app.teardown_appcontext
+    async def close_session(_exc):
+        await close_db()
+
+    # Controlli eseguiti prima di ogni richiesta, in quest'ordine (il blocco a prova scaduta sta in billing).
     @app.before_request
-    def upload_limits():
-        # Registrato prima della CSRF, che legge il form: il limite va alzato prima che venga letto.
-        if request.endpoint == "settings.import_":
-            from .settings import MAX_BACKUP_BYTES
+    async def upload_limits():
+        # Prima della CSRF, che legge il form. In Quart il limite si fissa alla creazione della richiesta (qui
+        # MAX_CONTENT_LENGTH, quello di backup e materiali), quindi il limite di 1 MB per il resto dell'app si controlla qui.
+        if request.endpoint in ("settings.import_", "courses.upload_materials"):
+            return
+        size = request.content_length
+        if size is None:  # richiesta chunked: si misura il corpo (al più MAX_CONTENT_LENGTH, poi Quart risponde 413)
+            size = len(await request.get_data())
+        if size > MAX_REQUEST_BYTES:
+            abort(413)
 
-            request.max_content_length = MAX_BACKUP_BYTES
+    app.before_request(load_user)
+    app.before_request(check_csrf)
 
-    csrf.init_app(app)
-    login_manager.init_app(app)
-
-    from . import models
-
-    @login_manager.user_loader
-    def load_user(user_id: str):
-        try:
-            return db.session.get(models.User, uuid.UUID(user_id))
-        except ValueError:
-            return None
-
-    app.jinja_env.globals["icon"] = icon
+    app.jinja_env.globals.update(icon=icon, csrf_token=csrf_token)
     app.jinja_env.filters["date_it"] = date_it
 
+    @app.context_processor
+    async def user():
+        return {"current_user": g.get("user")}
+
     @app.after_request
-    def security_headers(response):
+    async def security_headers(response):
         response.headers.setdefault("Content-Security-Policy", CONTENT_SECURITY_POLICY)
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         response.headers.setdefault("Referrer-Policy", "same-origin")
@@ -86,12 +93,8 @@ def create_app(overrides: dict | None = None) -> Flask:
     from .main import bp as main_bp
     from .settings import bp as settings_bp
 
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(billing_bp)
-    app.register_blueprint(courses_bp)
-    app.register_blueprint(flashcards_bp)
-    app.register_blueprint(main_bp)
-    app.register_blueprint(settings_bp)
+    for bp in (auth_bp, billing_bp, courses_bp, flashcards_bp, main_bp, settings_bp):
+        app.register_blueprint(bp)
 
     @app.cli.command("ai-worker")
     def ai_worker():
@@ -99,6 +102,6 @@ def create_app(overrides: dict | None = None) -> Flask:
         from .ai import run_worker
 
         logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
-        run_worker()
+        asyncio.run(run_worker(app))
 
     return app

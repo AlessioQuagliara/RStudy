@@ -1,4 +1,4 @@
-# PRODUZIONE: Traefik (TLS Let's Encrypt) → Gunicorn, worker AI, Postgres.
+# PRODUZIONE: Traefik (TLS Let's Encrypt) → Hypercorn (Quart), worker AI, Postgres.
 # Avvio:        docker compose -f compose.prod.yaml --env-file .env.prod up -d --build
 # Migrazioni:   passo esplicito, eseguito dal servizio one-shot `migrate` prima di web e worker.
 name: rstudy-saas-prod
@@ -63,7 +63,7 @@ services:
   migrate:
     build: {context: ., target: runtime}
     image: rstudy-saas:prod
-    command: ["flask", "--app", "wsgi", "db", "upgrade"]
+    command: ["alembic", "upgrade", "head"]
     environment: *app-env
     networks: [internal]
     depends_on:
@@ -76,9 +76,7 @@ services:
     environment:
       <<: *app-env
       # Un solo proxy fidato davanti all'app: Traefik. Gli X-Forwarded-* arrivano solo da lui (nessuna porta esposta).
-      PROXY_FIX_X_FOR: "1"
-      PROXY_FIX_X_PROTO: "1"
-      PROXY_FIX_X_HOST: "1"
+      PROXY_TRUSTED_HOPS: "1"
     networks: [internal, edge]
     labels:
       - traefik.enable=true
@@ -96,7 +94,7 @@ services:
   worker:
     build: {context: ., target: runtime}
     image: rstudy-saas:prod
-    command: ["flask", "--app", "wsgi", "ai-worker"]
+    command: ["quart", "--app", "asgi", "ai-worker"]
     environment: *app-env
     networks: [internal]
     # Serve uscita verso il provider AI: la rete internal non è "internal: true" per questo.

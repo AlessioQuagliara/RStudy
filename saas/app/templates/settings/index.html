@@ -52,9 +52,9 @@
 {% call card() %}
   <h2 class="card-title">Backup</h2>
   <p class="text-base-content/60 text-sm">
-    Il backup esporta corsi, lezioni, flashcard e studi AI in un file JSON nello stesso formato dell'app desktop.
+    Il backup esporta corsi, lezioni, materiali, flashcard e studi AI in un file JSON nello stesso formato dell'app desktop.
     Puoi importare qui il backup esportato dall'app desktop (Impostazioni → Esporta backup JSON): i dati con lo stesso
-    id vengono aggiornati, gli altri aggiunti. Materiali e riassunti del corso non sono ancora disponibili nella versione web.
+    id vengono aggiornati, gli altri aggiunti. Dei materiali si importa il testo estratto, non il file; i riassunti del corso non sono ancora disponibili nella versione web.
   </p>
   <div class="flex flex-wrap items-end gap-3">
     <a href="{{ url_for('settings.export') }}" class="btn btn-sm">{{ icon("download") }} Esporta backup JSON</a>

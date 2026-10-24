@@ -2,19 +2,18 @@ import math
 import uuid
 from datetime import date, datetime, timezone
 
-from flask_login import UserMixin
 from sqlalchemy import DateTime, ForeignKey, Index, String, Text, Uuid, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .extensions import db
+from .db import Base
 
 
 def utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 
-class User(UserMixin, db.Model):
+class User(Base):
     __tablename__ = "users"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
@@ -50,7 +49,7 @@ class User(UserMixin, db.Model):
         return max(0, math.ceil((self.trial_ends_at - utcnow()).total_seconds() / 86400))
 
 
-class AuthAttempt(db.Model):
+class AuthAttempt(Base):
     """Tentativi di autenticazione per il rate limit. `key_hash` è un HMAC di email o IP: nessun dato in chiaro."""
 
     __tablename__ = "auth_attempts"
@@ -73,7 +72,7 @@ COURSE_COLORS = {
 }
 
 
-class Course(db.Model):
+class Course(Base):
     __tablename__ = "courses"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
@@ -90,8 +89,10 @@ class Course(db.Model):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
+    # lazy="selectin": caricate insieme al corso, perché in async un accesso pigro (es. dal template) fallirebbe.
     lessons: Mapped[list["Lesson"]] = relationship(
-        back_populates="course", order_by="Lesson.lesson_number", cascade="all, delete-orphan", passive_deletes=True
+        back_populates="course", order_by="Lesson.lesson_number", cascade="all, delete-orphan", passive_deletes=True,
+        lazy="selectin",
     )
 
     @property
@@ -106,7 +107,7 @@ class Course(db.Model):
         return completed, total, round(completed / total * 100) if total else 0
 
 
-class Lesson(db.Model):
+class Lesson(Base):
     __tablename__ = "lessons"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
@@ -120,10 +121,10 @@ class Lesson(db.Model):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
-    course: Mapped[Course] = relationship(back_populates="lessons")
+    course: Mapped[Course] = relationship(back_populates="lessons", lazy="selectin")
 
 
-class Flashcard(db.Model):
+class Flashcard(Base):
     __tablename__ = "flashcards"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
@@ -139,13 +140,13 @@ class Flashcard(db.Model):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
-    course: Mapped[Course] = relationship()
+    course: Mapped[Course] = relationship(lazy="selectin")
 
 
 AI_JOB_KINDS = {"study_pack": "Studio AI", "exercise_set": "Esercizi"}
 
 
-class AiJob(db.Model):
+class AiJob(Base):
     """Una riga per generazione AI: coda del worker, cache (stesso hash appunti = stesso risultato) e conteggio del limite giornaliero."""
 
     __tablename__ = "ai_jobs"
@@ -167,3 +168,25 @@ class AiJob(db.Model):
     error: Mapped[str | None] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+MATERIAL_TYPES = {"lecture": "Lezione", "notes": "Appunti", "exercise": "Esercizio", "deepening": "Approfondimento", "other": "Altro"}
+EXTRACTION_STATUSES = {"pending", "done", "unsupported", "failed"}
+
+
+class Material(Base):
+    """File caricato in un corso. Come nel backup del desktop si conserva il testo estratto, non il file."""
+
+    __tablename__ = "materials"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    course_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("courses.id", ondelete="CASCADE"), index=True)
+    lesson_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("lessons.id", ondelete="SET NULL"), index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    original_filename: Mapped[str] = mapped_column(String(255))
+    mime_type: Mapped[str] = mapped_column(String(100))
+    file_size: Mapped[int]
+    material_type: Mapped[str] = mapped_column(String(20), default="other")
+    extracted_text: Mapped[str | None] = mapped_column(Text)
+    extraction_status: Mapped[str] = mapped_column(String(20), default="pending")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

@@ -16,10 +16,11 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt \
     && useradd --system --uid 10001 --home-dir /srv rstudy
 COPY app ./app
-COPY wsgi.py ./
+COPY asgi.py alembic.ini ./
 COPY migrations ./migrations
 COPY --from=assets /src/app/static/dist ./app/static/dist
 USER rstudy
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)"
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--access-logfile", "-", "wsgi:app"]
+# Hypercorn, il server ASGI di Quart: 2 processi, ognuno con il suo event loop.
+CMD ["hypercorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--access-logfile", "-", "asgi:app"]

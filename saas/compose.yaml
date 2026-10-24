@@ -25,7 +25,7 @@ services:
       context: .
       target: runtime
     # In sviluppo applica le migrazioni a ogni avvio. In produzione sarà un passo esplicito.
-    command: ["sh", "-c", "flask --app wsgi db upgrade && flask --app wsgi run --debug --host 0.0.0.0 --port 8000"]
+    command: ["sh", "-c", "alembic upgrade head && quart --app asgi run --reload --host 0.0.0.0 --port 8000"]
     environment:
       SECRET_KEY: ${SECRET_KEY:?imposta SECRET_KEY in .env}
       DATABASE_URL: postgresql+psycopg://rstudy:${POSTGRES_PASSWORD}@db:5432/rstudy
@@ -45,7 +45,8 @@ services:
       - "127.0.0.1:${RSTUDY_WEB_PORT:-5080}:8000"
     volumes:
       - ./app:/srv/app
-      - ./wsgi.py:/srv/wsgi.py
+      - ./asgi.py:/srv/asgi.py
+      - ./alembic.ini:/srv/alembic.ini
       - ./migrations:/srv/migrations
     depends_on:
       db:
@@ -56,7 +57,7 @@ services:
     build:
       context: .
       target: runtime
-    command: ["flask", "--app", "wsgi", "ai-worker"]
+    command: ["quart", "--app", "asgi", "ai-worker"]
     environment:
       SECRET_KEY: ${SECRET_KEY}
       DATABASE_URL: postgresql+psycopg://rstudy:${POSTGRES_PASSWORD}@db:5432/rstudy
@@ -67,7 +68,7 @@ services:
       AI_DAILY_LIMIT: ${AI_DAILY_LIMIT:-35}
     volumes:
       - ./app:/srv/app
-      - ./wsgi.py:/srv/wsgi.py
+      - ./asgi.py:/srv/asgi.py
     depends_on:
       web:
         condition: service_started

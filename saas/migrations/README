@@ -1,1 +1,1 @@
-Single-database configuration for Flask.
+Migrazioni Alembic del database (configurazione in ../alembic.ini, ambiente in env.py).

@@ -3,6 +3,7 @@
 Lo stato dell'abbonamento arriva solo dai webhook firmati: il ritorno dal checkout non sblocca nulla.
 """
 
+import asyncio
 import hashlib
 import hmac
 import json
@@ -13,12 +14,12 @@ import urllib.request
 import uuid
 from datetime import datetime
 
-from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
-from flask_login import current_user, login_required
+from quart import Blueprint, abort, current_app, flash, g, redirect, render_template, request, url_for
 from sqlalchemy import select
 
-from ..extensions import csrf, db
+from ..db import db
 from ..models import User
+from ..web import login_required
 
 bp = Blueprint("billing", __name__)
 log = logging.getLogger(__name__)
@@ -39,8 +40,8 @@ _OPEN_ENDPOINTS = {"static", "main.landing", "main.healthz", "settings.export"}
 
 
 @bp.before_app_request
-def require_access():
-    if not current_user.is_authenticated or current_user.has_access:
+async def require_access():
+    if g.user is None or g.user.has_access:
         return None
     if request.blueprint in ("billing", "auth") or request.endpoint in _OPEN_ENDPOINTS:
         return None
@@ -49,10 +50,10 @@ def require_access():
 
 @bp.get("/abbonamento")
 @login_required
-def index():
+async def index():
     cfg = current_app.config
-    response = current_app.make_response(
-        render_template(
+    response = await current_app.make_response(
+        await render_template(
             "billing/index.html",
             plans=PLANS,
             prices={"monthly": cfg["PADDLE_PRICE_MONTHLY"], "yearly": cfg["PADDLE_PRICE_YEARLY"]},
@@ -66,24 +67,30 @@ def index():
 
 @bp.post("/abbonamento/portale")
 @login_required
-def portal():
+async def portal():
     """Portale clienti Paddle: disdetta, cambio piano, metodo di pagamento e fatture."""
     cfg = current_app.config
-    if not (cfg["PADDLE_ENVIRONMENT"] and current_user.paddle_customer_id):
+    user = g.user
+    if not (cfg["PADDLE_ENVIRONMENT"] and user.paddle_customer_id):
         abort(404)
-    body = {"subscription_ids": [current_user.paddle_subscription_id]} if current_user.paddle_subscription_id else {}
+    body = {"subscription_ids": [user.paddle_subscription_id]} if user.paddle_subscription_id else {}
     req = urllib.request.Request(
-        f"{_PADDLE_API[cfg['PADDLE_ENVIRONMENT']]}/customers/{current_user.paddle_customer_id}/portal-sessions",
+        f"{_PADDLE_API[cfg['PADDLE_ENVIRONMENT']]}/customers/{user.paddle_customer_id}/portal-sessions",
         data=json.dumps(body).encode(),
         headers={"Authorization": f"Bearer {cfg['PADDLE_API_KEY']}", "Content-Type": "application/json"},
         method="POST",
     )
-    try:
+
+    def call() -> str:
         with urllib.request.urlopen(req, timeout=10) as resp:
-            url = json.load(resp)["data"]["urls"]["general"]["overview"]
+            return json.load(resp)["data"]["urls"]["general"]["overview"]
+
+    try:
+        # urllib è bloccante: in un thread, così le altre richieste non aspettano Paddle.
+        url = await asyncio.to_thread(call)
     except (urllib.error.URLError, TimeoutError, KeyError, ValueError):
         log.exception("Creazione sessione portale Paddle fallita")
-        flash("Il portale di Paddle non risponde. Riprova tra poco.", "error")
+        await flash("Il portale di Paddle non risponde. Riprova tra poco.", "error")
         return redirect(url_for("billing.index"))
     return redirect(url)
 
@@ -102,13 +109,13 @@ def _parse_time(value: str | None) -> datetime | None:
     return datetime.fromisoformat(value) if value else None
 
 
-def _find_user(data: dict) -> User | None:
-    user = db.session.scalar(select(User).where(User.paddle_subscription_id == data["id"]))
+async def _find_user(data: dict) -> User | None:
+    user = await db().scalar(select(User).where(User.paddle_subscription_id == data["id"]))
     if user:
         return user
     # Primo evento di un abbonamento: l'utente arriva dal customData passato al checkout.
     try:
-        user = db.session.get(User, uuid.UUID(str((data.get("custom_data") or {}).get("user_id"))))
+        user = await db().get(User, uuid.UUID(str((data.get("custom_data") or {}).get("user_id"))))
     except ValueError:
         return None
     # Un secondo abbonamento non sostituisce quello già attivo: la pagina abbonamento non lo permette,
@@ -116,10 +123,10 @@ def _find_user(data: dict) -> User | None:
     return None if user and user.is_subscribed else user
 
 
-def apply_subscription_event(event: dict) -> None:
+async def apply_subscription_event(event: dict) -> None:
     data = event["data"]
     occurred_at = _parse_time(event["occurred_at"])
-    user = _find_user(data)
+    user = await _find_user(data)
     if not user:
         log.warning("Webhook %s per un abbonamento senza utente: %s", event["event_type"], data.get("id"))
         return
@@ -135,17 +142,17 @@ def apply_subscription_event(event: dict) -> None:
     user.subscription_period_end = _parse_time((data.get("current_billing_period") or {}).get("ends_at"))
     user.subscription_cancel_at = _parse_time(scheduled.get("effective_at")) if scheduled.get("action") == "cancel" else None
     user.subscription_updated_at = occurred_at
-    db.session.commit()
+    await db().commit()
 
 
+# Senza CSRF (vedi web.check_csrf): l'autenticità la garantisce la firma Paddle.
 @bp.post("/paddle/webhook")
-@csrf.exempt
-def webhook():
+async def webhook():
     secret = current_app.config["PADDLE_WEBHOOK_SECRET"]
-    raw = request.get_data()
+    raw = await request.get_data()
     if not secret or not verify_signature(raw, request.headers.get("Paddle-Signature", ""), secret):
         abort(401)
     event = json.loads(raw)
     if event.get("event_type", "").startswith("subscription."):
-        apply_subscription_event(event)
+        await apply_subscription_event(event)
     return "", 200

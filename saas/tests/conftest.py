@@ -1,16 +1,19 @@
 import os
+from pathlib import Path
 from urllib.parse import urlparse
 
 import pytest
-from flask_migrate import downgrade, upgrade
+from alembic import command
+from alembic.config import Config
 from sqlalchemy import text
 
 from app import create_app
-from app.extensions import db
+from app.db import Base, Session, db
 
 # Valori solo per i test, mai usati fuori da pytest.
 TEST_SECRET_KEY = "test-only-secret-key"
 TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL", "")
+ALEMBIC = Config(str(Path(__file__).parent.parent / "alembic.ini"))
 
 
 def _set_env(monkeypatch, database_url):
@@ -38,26 +41,24 @@ def _migrated_db():
     assert urlparse(TEST_DATABASE_URL).path.endswith("_test"), "TEST_DATABASE_URL deve puntare a un database *_test"
     mp = pytest.MonkeyPatch()
     _set_env(mp, TEST_DATABASE_URL)
-    app = create_app({"TESTING": True})
-    with app.app_context():
-        upgrade()
-        yield
-        db.session.remove()
-        downgrade(revision="base")
+    command.upgrade(ALEMBIC, "head")
+    yield
+    command.downgrade(ALEMBIC, "base")
     mp.undo()
 
 
 @pytest.fixture
-def db_app(_migrated_db, monkeypatch):
+async def db_app(_migrated_db, monkeypatch):
     _set_env(monkeypatch, TEST_DATABASE_URL)
     # CSRF disattivato qui per leggibilità; un test dedicato lo verifica attivo.
-    app = create_app({"TESTING": True, "WTF_CSRF_ENABLED": False})
+    app = create_app({"TESTING": True, "CSRF_ENABLED": False})
     yield app
-    with app.app_context():
-        db.session.remove()
-        tables = ", ".join(t.name for t in db.metadata.sorted_tables)
-        db.session.execute(text(f"TRUNCATE {tables} RESTART IDENTITY CASCADE"))
-        db.session.commit()
+    async with app.app_context():
+        tables = ", ".join(t.name for t in Base.metadata.sorted_tables)
+        await db().execute(text(f"TRUNCATE {tables} RESTART IDENTITY CASCADE"))
+        await db().commit()
+    # Ogni test ha il suo event loop: le connessioni del pool non devono passare al test successivo.
+    await Session.kw["bind"].dispose()
 
 
 @pytest.fixture
@@ -65,10 +66,10 @@ def db_client(db_app):
     return db_app.test_client()
 
 
-def register(client, email="a@example.com", password="password-sicura-1", confirm=None, university="Politecnico di Milano", faculty="Ingegneria informatica"):
-    return client.post(
+async def register(client, email="a@example.com", password="password-sicura-1", confirm=None, university="Politecnico di Milano", faculty="Ingegneria informatica"):
+    return await client.post(
         "/register",
-        data={
+        form={
             "email": email,
             "password": password,
             "password_confirm": confirm if confirm is not None else password,
@@ -78,5 +79,5 @@ def register(client, email="a@example.com", password="password-sicura-1", confir
     )
 
 
-def login(client, email="a@example.com", password="password-sicura-1"):
-    return client.post("/login", data={"email": email, "password": password})
+async def login(client, email="a@example.com", password="password-sicura-1"):
+    return await client.post("/login", form={"email": email, "password": password})

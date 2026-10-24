@@ -13,8 +13,9 @@ from pydantic import AwareDatetime, BaseModel, Field, ValidationError, field_val
 from sqlalchemy import select
 
 from ..ai import source_hash
-from ..extensions import db
-from ..models import COURSE_COLORS, AiJob, Course, Flashcard, Lesson, utcnow
+from ..db import db
+from ..materials import TEXT_MAX
+from ..models import COURSE_COLORS, EXTRACTION_STATUSES, MATERIAL_TYPES, AiJob, Course, Flashcard, Lesson, Material, utcnow
 
 MAX_ITEMS = 20_000
 
@@ -48,6 +49,21 @@ class LessonIn(_Row):
     lessonDate: date | None
     status: Literal["draft", "completed"]
     notesPlainText: str | None = Field(None, max_length=500_000)
+
+
+class MaterialIn(BaseModel):
+    # Come nel backup del desktop: senza il file e senza updatedAt.
+    id: uuid.UUID
+    courseId: uuid.UUID
+    lessonId: uuid.UUID | None
+    title: str = Field(min_length=1, max_length=255)
+    originalFilename: str = Field(min_length=1, max_length=255)
+    mimeType: str = Field(max_length=100)
+    fileSize: int = Field(ge=0)
+    materialType: Literal[tuple(MATERIAL_TYPES)]
+    extractedText: str | None = Field(None, max_length=TEXT_MAX)
+    extractionStatus: Literal[tuple(EXTRACTION_STATUSES)]
+    createdAt: AwareDatetime
 
 
 class FlashcardIn(_Row):
@@ -86,37 +102,40 @@ class BackupIn(BaseModel):
     lessons: list[LessonIn] = Field(max_length=MAX_ITEMS)
     flashcards: list[FlashcardIn] = Field(max_length=MAX_ITEMS)
     lessonAiOutputs: list[LessonAiOutputIn] = Field(max_length=MAX_ITEMS)
+    materials: list[MaterialIn] = Field(default=[], max_length=MAX_ITEMS)
     # Non ancora nella versione web: contati per dirlo all'utente, non importati.
-    materials: list[dict] = Field(default=[], max_length=MAX_ITEMS)
     courseAiOutputs: list[dict] = Field(default=[], max_length=MAX_ITEMS)
 
 
-def _existing(model, ids: list[uuid.UUID], owned) -> dict:
+async def _existing(model, ids: list[uuid.UUID], owned) -> dict:
     """Righe già presenti con questi id; errore se anche una sola non è dell'utente."""
-    rows = db.session.scalars(select(model).where(model.id.in_(ids))).all() if ids else []
+    rows = (await db().scalars(select(model).where(model.id.in_(ids)))).all() if ids else []
     if any(not owned(row) for row in rows):
         raise BackupError("Il file contiene dati che appartengono a un altro account: import annullato.")
     return {row.id: row for row in rows}
 
 
-def import_backup(user, raw: bytes) -> dict[str, int]:
+async def import_backup(user, raw: bytes) -> dict[str, int]:
     try:
         data = BackupIn.model_validate_json(raw)
     except ValidationError as exc:
         where = ".".join(str(p) for p in exc.errors()[0]["loc"])
         raise BackupError(f"Il file non è un backup RStudy valido (campo {where}).") from None
 
-    owned_course_ids = set(db.session.scalars(select(Course.id).where(Course.user_id == user.id)))
-    courses = _existing(Course, [c.id for c in data.courses], lambda r: r.user_id == user.id)
+    owned_course_ids = set(await db().scalars(select(Course.id).where(Course.user_id == user.id)))
+    courses = await _existing(Course, [c.id for c in data.courses], lambda r: r.user_id == user.id)
     course_ids = owned_course_ids | {c.id for c in data.courses}
-    lessons = _existing(Lesson, [x.id for x in data.lessons], lambda r: r.course_id in owned_course_ids)
-    owned_lesson_ids = set(db.session.scalars(select(Lesson.id).where(Lesson.course_id.in_(owned_course_ids))))
+    lessons = await _existing(Lesson, [x.id for x in data.lessons], lambda r: r.course_id in owned_course_ids)
+    owned_lesson_ids = set(await db().scalars(select(Lesson.id).where(Lesson.course_id.in_(owned_course_ids))))
     lesson_ids = owned_lesson_ids | {x.id for x in data.lessons}
-    cards = _existing(Flashcard, [f.id for f in data.flashcards], lambda r: r.course_id in owned_course_ids)
-    jobs = _existing(AiJob, [a.id for a in data.lessonAiOutputs], lambda r: r.user_id == user.id)
+    cards = await _existing(Flashcard, [f.id for f in data.flashcards], lambda r: r.course_id in owned_course_ids)
+    materials = await _existing(Material, [m.id for m in data.materials], lambda r: r.course_id in owned_course_ids)
+    jobs = await _existing(AiJob, [a.id for a in data.lessonAiOutputs], lambda r: r.user_id == user.id)
     if any(x.courseId not in course_ids for x in data.lessons) or any(
         f.courseId not in course_ids or (f.lessonId and f.lessonId not in lesson_ids) for f in data.flashcards
-    ) or any(a.lessonId not in lesson_ids for a in data.lessonAiOutputs):
+    ) or any(a.lessonId not in lesson_ids for a in data.lessonAiOutputs) or any(
+        m.courseId not in course_ids or (m.lessonId and m.lessonId not in lesson_ids) for m in data.materials
+    ):
         raise BackupError("Il file fa riferimento a corsi o lezioni che non contiene: import annullato.")
 
     for c in data.courses:
@@ -125,8 +144,8 @@ def import_backup(user, raw: bytes) -> dict[str, int]:
         course.introduction, course.objectives, course.target_lessons = c.introduction, c.objectives, c.targetLessons
         course.status, course.color = c.status, c.color if c.color in COURSE_COLORS else "#6366f1"
         course.created_at, course.updated_at = c.createdAt, c.updatedAt
-        db.session.add(course)
-    db.session.flush()
+        db().add(course)
+    await db().flush()
 
     lesson_by_id = {}
     for x in data.lessons:
@@ -134,9 +153,9 @@ def import_backup(user, raw: bytes) -> dict[str, int]:
         lesson.course_id, lesson.lesson_number, lesson.title = x.courseId, x.lessonNumber, x.title
         lesson.lesson_date, lesson.status, lesson.notes = x.lessonDate, x.status, x.notesPlainText or ""
         lesson.created_at, lesson.updated_at = x.createdAt, x.updatedAt
-        db.session.add(lesson)
+        db().add(lesson)
         lesson_by_id[x.id] = lesson
-    db.session.flush()
+    await db().flush()
 
     for f in data.flashcards:
         card = cards.get(f.id) or Flashcard(id=f.id)
@@ -144,10 +163,20 @@ def import_backup(user, raw: bytes) -> dict[str, int]:
         card.tags, card.difficulty, card.source = json.loads(f.tagsJson), f.difficulty, f.source
         card.next_review_at, card.review_count = f.nextReviewAt, f.reviewCount
         card.created_at, card.updated_at = f.createdAt, f.updatedAt
-        db.session.add(card)
+        db().add(card)
+
+    for m in data.materials:
+        material = materials.get(m.id) or Material(id=m.id)
+        material.course_id, material.lesson_id, material.title = m.courseId, m.lessonId, m.title
+        material.original_filename, material.mime_type, material.file_size = m.originalFilename, m.mimeType, m.fileSize
+        material.material_type, material.created_at = m.materialType, m.createdAt
+        # NUL rifiutato da Postgres, come in materials._normalize.
+        material.extracted_text = m.extractedText.replace("\x00", "") if m.extractedText else None
+        material.extraction_status = m.extractionStatus
+        db().add(material)
 
     for a in data.lessonAiOutputs:
-        lesson = lesson_by_id.get(a.lessonId) or db.session.get(Lesson, a.lessonId)
+        lesson = lesson_by_id.get(a.lessonId) or await db().get(Lesson, a.lessonId)
         try:
             pack = {
                 "summary_markdown": a.summaryMarkdown,
@@ -168,15 +197,15 @@ def import_backup(user, raw: bytes) -> dict[str, int]:
         # Stesso hash del worker: rigenerare con gli stessi appunti riusa questo risultato.
         job.source_hash, job.result = source_hash(lesson), pack
         job.created_at, job.updated_at = a.createdAt, a.updatedAt
-        db.session.add(job)
+        db().add(job)
 
-    db.session.commit()
+    await db().commit()
     return {
         "courses": len(data.courses),
         "lessons": len(data.lessons),
         "flashcards": len(data.flashcards),
         "studies": len(data.lessonAiOutputs),
-        "skipped_materials": len(data.materials),
+        "materials": len(data.materials),
         "skipped_course_summaries": len(data.courseAiOutputs),
     }
 
@@ -193,14 +222,15 @@ def _tiptap(text: str) -> str:
     return json.dumps({"type": "doc", "content": paragraphs}, ensure_ascii=False)
 
 
-def export_backup(user) -> dict:
-    courses = db.session.scalars(select(Course).where(Course.user_id == user.id).order_by(Course.created_at)).all()
+async def export_backup(user) -> dict:
+    courses = (await db().scalars(select(Course).where(Course.user_id == user.id).order_by(Course.created_at))).all()
     course_ids = [c.id for c in courses]
-    lessons = db.session.scalars(select(Lesson).where(Lesson.course_id.in_(course_ids)).order_by(Lesson.created_at)).all()
-    cards = db.session.scalars(select(Flashcard).where(Flashcard.course_id.in_(course_ids)).order_by(Flashcard.created_at)).all()
+    lessons = (await db().scalars(select(Lesson).where(Lesson.course_id.in_(course_ids)).order_by(Lesson.created_at))).all()
+    cards = (await db().scalars(select(Flashcard).where(Flashcard.course_id.in_(course_ids)).order_by(Flashcard.created_at))).all()
+    materials = (await db().scalars(select(Material).where(Material.course_id.in_(course_ids)).order_by(Material.created_at))).all()
     # Ultimo studio AI pronto per lezione, come lesson_ai_outputs del desktop (uno per lezione).
     packs = {}
-    for job in db.session.scalars(
+    for job in await db().scalars(
         select(AiJob).where(AiJob.user_id == user.id, AiJob.kind == "study_pack", AiJob.status == "ready").order_by(AiJob.created_at)
     ):
         packs[job.lesson_id] = job
@@ -220,7 +250,13 @@ def export_backup(user) -> dict:
              "createdAt": _iso(x.created_at), "updatedAt": _iso(x.updated_at)}
             for x in lessons
         ],
-        "materials": [],
+        "materials": [
+            {"id": str(m.id), "courseId": str(m.course_id), "lessonId": str(m.lesson_id) if m.lesson_id else None,
+             "title": m.title, "originalFilename": m.original_filename, "mimeType": m.mime_type, "fileSize": m.file_size,
+             "materialType": m.material_type, "extractedText": m.extracted_text, "extractionStatus": m.extraction_status,
+             "createdAt": _iso(m.created_at)}
+            for m in materials
+        ],
         "flashcards": [
             {"id": str(f.id), "courseId": str(f.course_id), "lessonId": str(f.lesson_id) if f.lesson_id else None,
              "front": f.front, "back": f.back, "tagsJson": json.dumps(f.tags, ensure_ascii=False),

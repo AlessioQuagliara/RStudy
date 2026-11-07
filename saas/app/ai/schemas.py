@@ -122,3 +122,66 @@ def is_open_answer_correct(user_text: str, accepted: list[str]) -> bool:
     """Come isOpenAnswerCorrect del desktop: uguaglianza dopo normalizzazione, mai vera per una risposta vuota."""
     normalized = normalize_answer(user_text)
     return bool(normalized) and any(normalized == normalize_answer(a) for a in accepted)
+
+
+# ---------- reel ----------
+# Scene dichiarative disegnate da static/reels.js: il modello non scrive codice, solo cosa mostrare e dove.
+
+ReelColor = Literal["primary", "secondary", "accent", "success", "warning", "error", "neutral"]
+# Coordinate in percentuale dell'area di disegno (0 = sinistra/alto, 100 = destra/basso), centro dell'elemento.
+Coord = Annotated[float, Field(ge=0, le=100)]
+
+
+class ReelText(BaseModel):
+    type: Literal["text"]
+    text: NonEmpty
+    x: Coord = 50
+    y: Coord = 50
+    size: Literal["s", "m", "l"] = "m"
+    color: ReelColor = "neutral"
+
+
+class ReelBox(BaseModel):
+    type: Literal["box"]
+    id: NonEmpty
+    label: NonEmpty
+    x: Coord
+    y: Coord
+    color: ReelColor = "primary"
+
+
+class ReelArrow(BaseModel):
+    # Tra due box della stessa scena; un id inesistente viene ignorato dal disegno.
+    type: Literal["arrow"]
+    start: NonEmpty
+    end: NonEmpty
+    label: str = ""
+
+
+class ReelBar(BaseModel):
+    label: NonEmpty
+    value: float = Field(ge=0)
+
+
+class ReelBars(BaseModel):
+    type: Literal["bars"]
+    items: list[ReelBar] = Field(min_length=1, max_length=6)
+    color: ReelColor = "accent"
+
+
+ReelElement = Annotated[ReelText | ReelBox | ReelArrow | ReelBars, Field(discriminator="type")]
+
+
+class ReelScene(BaseModel):
+    caption: NonEmpty
+    elements: list[ReelElement] = Field(min_length=1, max_length=10)
+    seconds: int = Field(5, ge=3, le=10)
+
+
+class Reel(BaseModel):
+    title: NonEmpty
+    scenes: list[ReelScene] = Field(min_length=1, max_length=6)
+
+
+class ReelSet(BaseModel):
+    reels: list[Reel] = Field(min_length=1, max_length=8)

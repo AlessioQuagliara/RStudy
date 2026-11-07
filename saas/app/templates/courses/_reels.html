@@ -1,0 +1,19 @@
+{# Scheda "Reel": brevi animazioni verticali, una per concetto della lezione. #}
+{% from "reels/_feed.html" import reel_feed %}
+{% set reels_job = jobs.get("reels") %}
+{% if reels_job and reels_job.status != "ready" %}
+<div class="col-span-12">{{ job_status(reels_job, "Reel") }}</div>
+{% endif %}
+
+{% if reels %}
+<div class="col-span-12 flex flex-wrap items-center justify-between gap-2 text-sm">
+  <span class="text-base-content/60">Scorri per il reel successivo. Tocca a sinistra o a destra per la scena precedente o successiva, al centro per mettere in pausa.</span>
+  {% if ai_label and reels_job.status not in ("queued", "running") %}{{ generate_button("reels", "Rigenera reel", "btn-sm") }}{% endif %}
+</div>
+{{ reel_feed(reels) }}
+{% elif not reels_job %}
+<div class="col-span-12 flex flex-col items-center gap-3">
+  {{ empty_state("clapperboard", "Nessun reel", "Brevi animazioni verticali, una per concetto della lezione, da scorrere come i reel.") }}
+  {% if ai_label %}{{ generate_button("reels", "Crea reel") }}{% endif %}
+</div>
+{% endif %}

@@ -56,7 +56,7 @@ def create_app(overrides: dict | None = None) -> Quart:
     async def close_session(_exc):
         await close_db()
 
-    # Controlli eseguiti prima di ogni richiesta, in quest'ordine (il blocco a prova scaduta sta in billing).
+    # Controlli eseguiti prima di ogni richiesta, in quest'ordine.
     @app.before_request
     async def upload_limits():
         # Prima della CSRF, che legge il form. In Quart il limite si fissa alla creazione della richiesta (qui
@@ -91,9 +91,10 @@ def create_app(overrides: dict | None = None) -> Quart:
     from .courses import bp as courses_bp
     from .flashcards import bp as flashcards_bp
     from .main import bp as main_bp
+    from .reels import bp as reels_bp
     from .settings import bp as settings_bp
 
-    for bp in (auth_bp, billing_bp, courses_bp, flashcards_bp, main_bp, settings_bp):
+    for bp in (auth_bp, billing_bp, courses_bp, flashcards_bp, main_bp, reels_bp, settings_bp):
         app.register_blueprint(bp)
 
     @app.cli.command("ai-worker")

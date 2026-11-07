@@ -10,8 +10,9 @@ A differenza del desktop, questa versione conserva i dati sul server.
 
 Disponibile:
 - landing pubblica su `/` (porting di `../web/`), con accesso e registrazione; l'app parte da `/dashboard`;
-- abbonamento Paddle: 15 giorni di prova senza carta dalla registrazione, poi 4,99 €/mese o 39,90 €/anno;
-  stato aggiornato solo dai webhook firmati; a prova scaduta resta aperta solo la pagina `/abbonamento`;
+- piani: 15 giorni di prova completa senza carta dalla registrazione, poi piano gratis (tutta l'app, 5 richieste AI
+  al mese, `ai.FREE_MONTHLY_LIMIT`) o abbonamento Paddle a 4,99 €/mese o 39,90 €/anno (`AI_DAILY_LIMIT` al giorno);
+  stato dell'abbonamento aggiornato solo dai webhook firmati;
 - impostazioni: profilo (università, facoltà), utilizzo AI, tema, backup JSON nel formato del desktop
   (import con upsert per id limitato ai dati dell'account; export disponibile anche a prova scaduta);
 - account (registrazione con università e facoltà, accesso, rate limit, CSRF, CSP senza script inline);
@@ -28,6 +29,9 @@ Disponibile:
 - "Chiedi al corso": domande sul testo di materiali e appunti, con le fonti citate sotto ogni risposta e la cronologia
   salvata; i passaggi sono cercati con la ricerca full-text di Postgres in italiano (`app/rag.py`);
   domande e generazioni condividono il limite giornaliero;
+- reel (scheda Reel della lezione): l'AI genera 3-6 brevi animazioni verticali, una per concetto, come JSON dichiarativo
+  (testi, riquadri, frecce, barre con coordinate in percentuale; `ai/schemas.py::ReelSet`); `static/reels.js` le disegna
+  su canvas con i colori del tema, una alla volta mentre sono visibili nel feed; testo equivalente per gli screen reader;
 - flashcard: lista paginata (30 per pagina) con filtri, editor, duplica, ripasso con gli stessi intervalli del desktop (1/3/7 giorni);
 - produzione con Traefik e certificati Let's Encrypt (`compose.prod.yaml`).
 
@@ -98,6 +102,26 @@ docker compose -f compose.test.yaml up -d --wait
 TEST_DATABASE_URL=postgresql+psycopg://rstudy:<TEST_POSTGRES_PASSWORD>@127.0.0.1:55433/rstudy_test .venv/bin/pytest
 docker compose -f compose.test.yaml down
 ```
+
+## Costo dell'AI
+
+Ogni generazione (`ai_jobs.usage`) e ogni domanda a "Chiedi al corso" (`course_questions.usage`) salva i token
+riportati dal provider, riparazioni e tentativi falliti compresi: `calls`, `prompt_tokens`, `completion_tokens`
+(con dentro `reasoning_tokens`) e `prompt_cache_hit_tokens`. Media per tipo e modello negli ultimi 30 giorni:
+
+```sql
+SELECT kind, model, count(*) AS n,
+       round(avg((usage->>'prompt_tokens')::int)) AS prompt,
+       round(avg((usage->>'completion_tokens')::int)) AS completion,
+       round(avg((usage->>'reasoning_tokens')::int)) AS reasoning,
+       round(avg((usage->>'calls')::int), 2) AS calls
+FROM (SELECT kind, model, usage, created_at FROM ai_jobs
+      UNION ALL SELECT 'course_chat', model, usage, created_at FROM course_questions) t
+WHERE usage IS NOT NULL AND created_at > now() - interval '30 days'
+GROUP BY kind, model ORDER BY kind, model;
+```
+
+In locale: `docker compose exec db psql -U rstudy -d rstudy`. Moltiplica per i prezzi per milione di token del provider.
 
 ## Variabili
 

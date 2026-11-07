@@ -31,7 +31,7 @@
   {% elif current_user.has_access %}
   <p>Sei in prova gratuita: {{ current_user.trial_days_left }} {{ "giorno" if current_user.trial_days_left == 1 else "giorni" }} rimasti (fino al {{ current_user.trial_ends_at | date_it }}).</p>
   {% else %}
-  <div role="alert" class="alert alert-warning text-sm">La prova gratuita è terminata. I tuoi corsi e appunti sono salvati: abbonati per tornare a usarli, oppure <a class="link" href="{{ url_for('settings.export') }}">scarica un backup JSON</a>.</div>
+  <div role="status" class="alert text-sm">Sei nel piano gratis: corsi, appunti e flashcard restano tutti disponibili, con {{ free_limit }} richieste AI al mese. Abbonati per averne {{ config.AI_DAILY_LIMIT }} al giorno.</div>
   {% endif %}
   {% if enabled %}
   <span id="paddle-config" hidden

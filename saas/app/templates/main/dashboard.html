@@ -6,12 +6,13 @@
   <a href="{{ url_for('courses.new') }}" class="btn btn-primary btn-sm">{{ icon("plus") }} Nuovo corso</a>
   <a href="{{ url_for('flashcards.study') }}" class="btn btn-sm">{{ icon("layers") }} Apri modalità focus</a>
 </div>
-<div class="col-span-12 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+<div class="col-span-12 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
   {{ stat("graduation-cap", "Corsi attivi", active_count) }}
   {{ stat("book-open", "CFU in corso", total_cfu) }}
   {{ stat("calendar-clock", "Prossimo esame", next_exam.exam_date | date_it if next_exam else "—", next_exam.title if next_exam) }}
   {{ stat("list-checks", "Lezioni completate", completed_lessons ~ "/" ~ total_lessons) }}
   {{ stat("layers", "Flashcard da ripassare oggi", due_today) }}
+  {{ stat("clapperboard", "Reel da guardare", reel_count, "Apri il feed" if reel_count else "Creali da una lezione", url_for("reels.watch") if reel_count else url_for("reels.index")) }}
 </div>
 {% call card() %}
   <h2 class="card-title">Attività recenti</h2>

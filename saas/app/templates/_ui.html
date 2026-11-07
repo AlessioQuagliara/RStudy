@@ -46,13 +46,15 @@
 {% endmacro %}
 
 {# Stat del desktop (components/ui/StatCard.tsx). #}
-{% macro stat(icon_name, title, value, desc=None) %}
-<div class="stat bg-base-200 rounded-box shadow-xs">
+{% macro stat(icon_name, title, value, desc=None, href=None) %}
+{% set body %}
   <div class="stat-figure">{{ icon(icon_name, "size-5 opacity-40") }}</div>
   <div class="stat-title">{{ title }}</div>
   <div class="stat-value text-2xl">{{ value }}</div>
   {% if desc %}<div class="stat-desc truncate">{{ desc }}</div>{% endif %}
-</div>
+{% endset %}
+{% if href %}<a href="{{ href }}" class="stat bg-base-200 rounded-box hover:bg-base-300 shadow-xs transition-colors">{{ body }}</a>
+{% else %}<div class="stat bg-base-200 rounded-box shadow-xs">{{ body }}</div>{% endif %}
 {% endmacro %}
 
 {% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />{% endmacro %}

@@ -100,16 +100,16 @@ async def ask(user, course, question: str) -> CourseQuestion:
         raise NoContext("Il materiale caricato non contiene informazioni sufficienti per rispondere a questa domanda.")
     if current_app.config["AI_PROVIDER"] not in ("openai", "fake"):
         raise ai.AiError("Il servizio AI non è configurato.")
-    if await ai.used_today(user.id) >= current_app.config["AI_DAILY_LIMIT"]:
-        raise ai.AiError("Hai raggiunto il limite giornaliero di richieste AI. Si azzera a mezzanotte.")
+    await ai.check_quota(user)
     context = "\n\n---\n\n".join(f"[Fonte {i}: {c.source_label}]\n{c.content}" for i, c in enumerate(chunks, 1))
     citations = [{"source_label": c.source_label, "excerpt": c.content[:EXCERPT_CHARS]} for c in chunks]
     # Nessuna transazione aperta durante la chiamata, che può durare a lungo (come process_next).
     await db().commit()
-    answer = await asyncio.to_thread(ai.chat, prompts.COURSE_CHAT_SYSTEM, prompts.course_chat_user(question, context), False)
+    usage: dict = {}
+    answer = await asyncio.to_thread(ai.chat, prompts.COURSE_CHAT_SYSTEM, prompts.course_chat_user(question, context), False, usage)
     entry = CourseQuestion(
         user_id=user.id, course_id=course.id, question=question, answer=answer.strip(), citations=citations,
-        model=ai.provider_label(),
+        model=ai.provider_label(), usage=usage or None,
     )
     db().add(entry)
     await db().commit()

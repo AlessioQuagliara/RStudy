@@ -21,7 +21,7 @@ from sqlalchemy.exc import IntegrityError
 from ..db import db
 from ..models import AiJob, CourseQuestion, Flashcard, Lesson, utcnow
 from . import prompts
-from .schemas import ExerciseSet, StudyPack
+from .schemas import ExerciseSet, ReelSet, StudyPack
 
 log = logging.getLogger(__name__)
 
@@ -37,6 +37,7 @@ STALE_AFTER = timedelta(minutes=15)
 KINDS: dict[str, tuple[str, type[BaseModel], callable]] = {
     "study_pack": (prompts.STUDY_PACK_SYSTEM, StudyPack, prompts.study_pack_user),
     "exercise_set": (prompts.EXERCISE_SET_SYSTEM, ExerciseSet, prompts.exercise_set_user),
+    "reels": (prompts.REELS_SYSTEM, ReelSet, prompts.reels_user),
 }
 
 
@@ -46,7 +47,7 @@ class AiError(Exception):
 
 # Versione dello schema nell'hash, come il desktop: un risultato di una versione precedente non viene riusato
 # (esercizi senza percorso di studio, studi AI senza diagramma).
-SCHEMA_VERSIONS = {"study_pack": 2, "exercise_set": 2}
+SCHEMA_VERSIONS = {"study_pack": 2, "exercise_set": 2, "reels": 1}
 
 
 def source_hash(lesson: Lesson, kind: str = "study_pack") -> str:
@@ -61,9 +62,12 @@ def today_start() -> datetime:
     return now.replace(hour=0, minute=0, second=0, microsecond=0)
 
 
-async def used_today(user_id) -> int:
-    """Generazioni e domande al corso di oggi: condividono lo stesso limite, come le chiamate cloud del desktop."""
-    since = today_start()
+# Piano gratis (prova finita, nessun abbonamento): poche richieste al mese invece di AI_DAILY_LIMIT al giorno.
+FREE_MONTHLY_LIMIT = 5
+
+
+async def used_since(user_id, since: datetime) -> int:
+    """Generazioni e domande al corso: condividono lo stesso limite, come le chiamate cloud del desktop."""
     jobs = await db().scalar(select(func.count()).select_from(AiJob).where(AiJob.user_id == user_id, AiJob.created_at >= since))
     questions = await db().scalar(
         select(func.count()).select_from(CourseQuestion).where(CourseQuestion.user_id == user_id, CourseQuestion.created_at >= since)
@@ -71,10 +75,45 @@ async def used_today(user_id) -> int:
     return jobs + questions
 
 
+async def quota(user) -> tuple[int, int, str]:
+    """(usate, limite, periodo): AI_DAILY_LIMIT al giorno in prova e con l'abbonamento, FREE_MONTHLY_LIMIT al mese nel piano gratis."""
+    if user.has_access:
+        return await used_since(user.id, today_start()), current_app.config["AI_DAILY_LIMIT"], "oggi"
+    return await used_since(user.id, today_start().replace(day=1)), FREE_MONTHLY_LIMIT, "questo mese"
+
+
+async def check_quota(user) -> None:
+    used, limit, _ = await quota(user)
+    if used < limit:
+        return
+    if user.has_access:
+        raise AiError("Hai raggiunto il limite giornaliero di richieste AI. Si azzera a mezzanotte.")
+    raise AiError(
+        f"Hai usato le {limit} richieste AI gratuite di questo mese. Abbonati per averne "
+        f"{current_app.config['AI_DAILY_LIMIT']} al giorno, oppure aspetta il primo del mese."
+    )
+
+
 # ---------- provider ----------
 
 
-def _openai_chat(system: str, user: str, json_mode: bool = True) -> str:
+def _add_usage(usage: dict, reported: dict) -> None:
+    """Somma i token riportati dal provider (OpenAI-compatibile, campi DeepSeek inclusi) in `usage`."""
+    usage["calls"] = usage.get("calls", 0) + 1
+    fields = {
+        "prompt_tokens": reported.get("prompt_tokens"),
+        "completion_tokens": reported.get("completion_tokens"),
+        # Token di ragionamento: già compresi in completion_tokens, utili per capire dove va il costo.
+        "reasoning_tokens": (reported.get("completion_tokens_details") or {}).get("reasoning_tokens"),
+        # DeepSeek: parte del prompt servita dalla cache, a prezzo ridotto.
+        "prompt_cache_hit_tokens": reported.get("prompt_cache_hit_tokens"),
+    }
+    for name, value in fields.items():
+        if isinstance(value, int):
+            usage[name] = usage.get(name, 0) + value
+
+
+def _openai_chat(system: str, user: str, json_mode: bool = True, usage: dict | None = None) -> str:
     cfg = current_app.config
     body = json.dumps(
         {
@@ -102,6 +141,8 @@ def _openai_chat(system: str, user: str, json_mode: bool = True) -> str:
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as e:
         log.warning("provider AI irraggiungibile: %s", type(e).__name__)
         raise AiError("Il servizio AI non ha risposto in tempo. Riprova.") from None
+    if usage is not None:
+        _add_usage(usage, data.get("usage") or {})
     choice = (data.get("choices") or [{}])[0]
     content = (choice.get("message") or {}).get("content") or ""
     if choice.get("finish_reason") == "length":
@@ -115,6 +156,21 @@ def _fake_chat(system: str, user: str) -> str:
     """Provider simulato per sviluppo e test: risposte fisse e valide, indicate come tali nell'interfaccia."""
     if system == prompts.COURSE_CHAT_SYSTEM:
         return "[Simulato] Risposta generata senza un modello AI reale, basata su [Fonte 1]."
+    if system == prompts.REELS_SYSTEM:
+        return json.dumps({"reels": [
+            {"title": f"[Simulato] Reel {i}", "scenes": [
+                {"caption": "Scena simulata: due concetti collegati.", "seconds": 4, "elements": [
+                    {"type": "text", "text": "Concetto simulato", "x": 50, "y": 12, "size": "l"},
+                    {"type": "box", "id": "a", "label": "Causa", "x": 30, "y": 50},
+                    {"type": "box", "id": "b", "label": "Effetto", "x": 70, "y": 50, "color": "accent"},
+                    {"type": "arrow", "start": "a", "end": "b", "label": "porta a"},
+                ]},
+                {"caption": "Scena simulata: un confronto.", "seconds": 4, "elements": [
+                    {"type": "bars", "items": [{"label": "A", "value": 2}, {"label": "B", "value": 5}]},
+                ]},
+            ]}
+            for i in (1, 2)
+        ]})
     if system == prompts.STUDY_PACK_SYSTEM:
         return json.dumps(
             {
@@ -155,11 +211,14 @@ def provider_label() -> str | None:
     return {"openai": current_app.config["AI_MODEL"], "fake": "simulato"}.get(current_app.config["AI_PROVIDER"])
 
 
-def chat(system: str, user: str, json_mode: bool = True) -> str:
+def chat(system: str, user: str, json_mode: bool = True, usage: dict | None = None) -> str:
+    """Una chiamata al provider. `usage`, se passato, accumula i token consumati (anche dei tentativi falliti)."""
     provider = current_app.config["AI_PROVIDER"]
     if provider == "openai":
-        return _openai_chat(system, user, json_mode)
+        return _openai_chat(system, user, json_mode, usage)
     if provider == "fake":
+        if usage is not None:
+            _add_usage(usage, {})
         return _fake_chat(system, user)
     raise AiError("Il servizio AI non è configurato.")
 
@@ -173,15 +232,15 @@ def parse_model_json(raw: str, schema: type[BaseModel]) -> BaseModel:
     return schema.model_validate_json(text)
 
 
-def generate(kind: str, user: str) -> BaseModel:
+def generate(kind: str, user: str, usage: dict | None = None) -> BaseModel:
     """Un tentativo più una riparazione mostrando al modello l'errore di validazione, come il desktop."""
     system, schema, _ = KINDS[kind]
-    raw = chat(system, user)
+    raw = chat(system, user, usage=usage)
     try:
         return parse_model_json(raw, schema)
     except ValidationError as e:
         log.info("%s: risposta non valida, ritento con riparazione", kind)
-        raw = chat(system, user + "\n\n" + prompts.repair(raw, str(e)[:2000]))
+        raw = chat(system, user + "\n\n" + prompts.repair(raw, str(e)[:2000]), usage=usage)
     try:
         return parse_model_json(raw, schema)
     except ValidationError:
@@ -212,8 +271,7 @@ async def enqueue(user, lesson: Lesson, kind: str) -> AiJob:
     )
     if existing:
         return existing
-    if await used_today(user.id) >= current_app.config["AI_DAILY_LIMIT"]:
-        raise AiError("Hai raggiunto il limite giornaliero di generazioni AI. Si azzera a mezzanotte.")
+    await check_quota(user)
     job = AiJob(user_id=user.id, lesson_id=lesson.id, kind=kind, status="queued", source_hash=digest)
     db().add(job)
     try:
@@ -254,6 +312,7 @@ async def process_next() -> bool:
     job = await _claim()
     if job is None:
         return False
+    usage: dict = {}
     lesson = await db().get(Lesson, job.lesson_id)
     try:
         if lesson is None:
@@ -263,7 +322,7 @@ async def process_next() -> bool:
         # Chiude la transazione: la chiamata al provider può durare minuti e non deve tenere lock o connessioni.
         await db().commit()
         # Chiamata HTTP bloccante (urllib): in un thread, il contesto dell'app viene copiato.
-        result = await asyncio.to_thread(generate, job.kind, user_prompt)
+        result = await asyncio.to_thread(generate, job.kind, user_prompt, usage)
         if await db().get(Lesson, lesson_id, populate_existing=True) is None:
             return True  # lezione eliminata nel frattempo: anche il job è stato cancellato a cascata
         await _store_result(job, course_id, lesson_id, result)
@@ -275,6 +334,8 @@ async def process_next() -> bool:
         log.exception("job AI %s fallito", job.id)
         await db().rollback()
         job.status, job.error = "failed", "Si è verificato un errore imprevisto."
+    # Anche le generazioni fallite hanno un costo: i token si salvano comunque.
+    job.usage = usage or None
     await db().commit()
     return True
 

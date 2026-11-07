@@ -25,9 +25,9 @@
 {% call card(6) %}
   <h2 class="card-title">{{ icon("gauge") }} Utilizzo AI</h2>
   {% set pct = (ai_used / ai_limit * 100) if ai_limit else 100 %}
-  <p class="text-sm">{{ ai_used }} / {{ ai_limit }} generazioni utilizzate oggi</p>
+  <p class="text-sm">{{ ai_used }} / {{ ai_limit }} richieste AI utilizzate {{ ai_period }}</p>
   <progress class="progress w-full {{ 'progress-error' if pct >= 100 else 'progress-warning' if pct >= 80 else 'progress-primary' }}" value="{{ ai_used }}" max="{{ ai_limit }}"></progress>
-  <p class="text-base-content/60 text-xs">{{ ai_limit - ai_used }} generazioni disponibili. Il limite si rinnova ogni giorno a mezzanotte. Rigenerare con gli stessi appunti non lo consuma.</p>
+  <p class="text-base-content/60 text-xs">{{ ai_limit - ai_used }} disponibili. {{ "Il limite si rinnova ogni giorno a mezzanotte." if current_user.has_access else "Piano gratis: il limite si rinnova il primo del mese." }} Generazioni e domande a "Chiedi al corso" contano allo stesso modo; rigenerare con gli stessi appunti non consuma il limite.</p>
   {% if ai_label %}<p class="text-base-content/40 text-xs">Modello: {{ ai_label }}</p>{% endif %}
 {% endcall %}
 
@@ -35,7 +35,8 @@
   <h2 class="card-title">{{ icon("credit-card") }} Abbonamento</h2>
   <p class="text-base-content/60 text-sm">
     {% if current_user.is_subscribed %}Piano {{ "annuale" if current_user.subscription_plan == "yearly" else "mensile" }} attivo.
-    {% else %}Prova gratuita: {{ current_user.trial_days_left }} {{ "giorno" if current_user.trial_days_left == 1 else "giorni" }} rimasti.{% endif %}
+    {% elif current_user.has_access %}Prova gratuita: {{ current_user.trial_days_left }} {{ "giorno" if current_user.trial_days_left == 1 else "giorni" }} rimasti.
+    {% else %}Piano gratis: {{ ai_limit }} richieste AI al mese.{% endif %}
   </p>
   <a href="{{ url_for('billing.index') }}" class="btn btn-sm self-start">Gestisci abbonamento</a>
 {% endcall %}

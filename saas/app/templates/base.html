@@ -35,7 +35,7 @@
             <span>RStudy</span>
           </div>
           <ul class="menu w-full grow">
-            {% for endpoint, label, icon_name in [("main.dashboard", "Dashboard", "layout-dashboard"), ("courses.index", "Corsi", "graduation-cap"), ("flashcards.index", "Flashcard", "layers"), ("billing.index", "Abbonamento", "credit-card"), ("settings.index", "Impostazioni", "settings")] %}
+            {% for endpoint, label, icon_name in [("main.dashboard", "Dashboard", "layout-dashboard"), ("courses.index", "Corsi", "graduation-cap"), ("flashcards.index", "Flashcard", "layers"), ("reels.index", "Reel", "clapperboard"), ("billing.index", "Abbonamento", "credit-card"), ("settings.index", "Impostazioni", "settings")] %}
             <li>
               <a href="{{ url_for(endpoint) }}" class="{{ 'menu-active' if request.blueprint == endpoint.split('.')[0] }}">
                 {{ icon(icon_name) }} {{ label }}

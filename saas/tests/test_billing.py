@@ -94,17 +94,16 @@ async def test_university_suggestions_need_three_users(db_app, db_client):
     assert "Ateneo segreto" not in html
 
 
-async def test_expired_trial_locks_app_but_not_billing(db_app, db_client):
+async def test_expired_trial_moves_to_free_plan(db_app, db_client):
     await register(db_client)
     async with db_app.app_context():
         (await db().scalar(select(User))).trial_ends_at = utcnow() - timedelta(minutes=1)
         await db().commit()
-    for path in ("/dashboard", "/courses/", "/flashcards/"):
-        assert (await db_client.get(path)).headers["Location"] == "/abbonamento"
-    page = await db_client.get("/abbonamento")
-    assert page.status_code == 200
-    assert "La prova gratuita è terminata" in (await page.get_data(as_text=True))
-    assert (await db_client.post("/logout")).status_code == 302
+    # Piano gratis: l'app resta aperta, cambiano solo i limiti AI (test_ai.py::test_free_plan_monthly_quota).
+    for path in ("/dashboard", "/courses/", "/flashcards/", "/settings/"):
+        assert (await db_client.get(path)).status_code == 200
+    page = await (await db_client.get("/abbonamento")).get_data(as_text=True)
+    assert "Sei nel piano gratis" in page and "5 richieste AI al mese" in page
 
 
 async def test_webhook_activates_and_orders_events(db_app, monkeypatch):
@@ -116,10 +115,11 @@ async def test_webhook_activates_and_orders_events(db_app, monkeypatch):
         user.trial_ends_at = utcnow() - timedelta(days=1)
         await db().commit()
         user_id = user.id
-    assert (await client.get("/dashboard")).status_code == 302
+    assert "Sei nel piano gratis" in (await (await client.get("/abbonamento")).get_data(as_text=True))
 
     assert (await _post(client, _event(user_id, event_type="subscription.created"))).status_code == 200
-    assert (await client.get("/dashboard")).status_code == 200
+    async with app.app_context():
+        assert (await db().get(User, user_id)).has_access
     page = await (await client.get("/abbonamento")).get_data(as_text=True)
     assert "Piano annuale" in page and "18 ott 2027" in page
 
@@ -130,10 +130,14 @@ async def test_webhook_activates_and_orders_events(db_app, monkeypatch):
 
     # Un evento più vecchio consegnato in ritardo non torna indietro.
     await _post(client, _event(user_id, status="canceled", occurred_at="2026-10-17T10:00:00Z"))
-    assert (await client.get("/dashboard")).status_code == 200
+    async with app.app_context():
+        assert (await db().get(User, user_id)).has_access
 
+    # Disdetta effettiva: si torna al piano gratis.
     await _post(client, _event(user_id, status="canceled", occurred_at="2026-10-20T10:00:00Z", current_billing_period=None))
-    assert (await client.get("/dashboard")).headers["Location"] == "/abbonamento"
+    async with app.app_context():
+        assert not (await db().get(User, user_id)).has_access
+    assert "Sei nel piano gratis" in (await (await client.get("/abbonamento")).get_data(as_text=True))
 
 
 async def test_second_subscription_does_not_replace_active_one(db_app, monkeypatch):

@@ -3,11 +3,13 @@
 {% block title %}Lezione {{ lesson.lesson_number }} · {{ lesson.course.title }} · RStudy{% endblock %}
 {% block head %}
 {# Ogni scheda si aggiorna da sola finché è in corso la generazione che mostra. #}
-{% set watched = jobs.get({"ai": "study_pack", "path": "exercise_set", "maps": "study_pack"}.get(tab)) %}
+{% set watched = jobs.get({"ai": "study_pack", "path": "exercise_set", "maps": "study_pack", "reels": "reels"}.get(tab)) %}
 {% if watched and watched.status in ("queued", "running") %}<meta http-equiv="refresh" content="3" />{% endif %}
 {% if tab == "maps" %}
 <script src="{{ url_for('static', filename='dist/mermaid.min.js') }}" defer></script>
 <script src="{{ url_for('static', filename='diagrams.js') }}" defer></script>
+{% elif tab == "reels" %}
+<script src="{{ url_for('static', filename='reels.js') }}" defer></script>
 {% endif %}
 {% endblock %}
 {% block content %}
@@ -50,6 +52,7 @@
       {% if ai_label %}
       <button type="submit" name="generate" value="study_pack" class="btn btn-primary btn-sm">{{ icon("sparkles") }} Salva e genera studio AI</button>
       <button type="submit" name="generate" value="exercise_set" class="btn btn-sm" aria-label="Salva e prepara il percorso di studio passo passo">{{ icon("list-checks") }} Prepara percorso</button>
+      <button type="submit" name="generate" value="reels" class="btn btn-sm" aria-label="Salva e crea i reel animati">{{ icon("clapperboard") }} Crea reel</button>
       {% endif %}
     </div>
   </div>
@@ -63,7 +66,9 @@
 <div class="col-span-12 flex flex-wrap items-center gap-2 text-sm">
   {% if ai_label %}
   <span class="badge badge-ghost">Modello: {{ ai_label }}</span>
-  <span class="text-base-content/60">Generazioni rimaste oggi: {{ ai_remaining }}</span>
+  {% set used, limit, period = quota %}
+  <span class="text-base-content/60">Richieste AI rimaste {{ period }}: {{ [limit - used, 0] | max }}</span>
+  {% if not current_user.has_access %}<a class="link text-xs" href="{{ url_for('billing.index') }}">Piano gratis: abbonati per averne di più</a>{% endif %}
   {% else %}
   <div role="alert" class="alert alert-warning">Il servizio AI non è configurato su questo server.</div>
   {% endif %}
@@ -104,6 +109,9 @@
 
 {% elif tab == "path" %}
 {% include "courses/_path.html" %}
+
+{% elif tab == "reels" %}
+{% include "courses/_reels.html" %}
 
 {% else %}
 {% include "courses/_maps.html" %}

@@ -70,6 +70,35 @@ Rispondi ESCLUSIVAMENTE con un oggetto JSON valido, senza testo prima o dopo, se
 }
 Ogni "id" deve essere unico all'interno dell'array (usa uno slug breve, es. "es-1", "es-2")."""
 
+REELS_SYSTEM = """Sei un tutor che trasforma una lezione universitaria in brevi reel animati verticali (stile Instagram) per ripassare.
+Usa ESCLUSIVAMENTE i concetti presenti negli appunti forniti: non inventare argomenti, fatti, formule o numeri.
+Produci da 3 a 6 reel, uno per concetto importante, ordinati dal più semplice al più complesso. Ogni reel ha da 2 a 5 scene che mostrano il concetto passo per passo: prima l'idea, poi come funziona, infine un esempio o il collegamento con altro.
+Ogni scena è un fotogramma disegnato su una tela verticale: gli elementi compaiono uno alla volta nell'ordine in cui li elenchi, quindi mettili nell'ordine in cui vanno spiegati.
+Elementi disponibili (coordinate x e y da 0 a 100 = centro dell'elemento, 0,0 in alto a sinistra):
+- {"type": "text", "text": "...", "x": 50, "y": 20, "size": "s|m|l", "color": "..."}: frase breve, parola chiave o formula scritta come testo (es. x^2, radice di x).
+- {"type": "box", "id": "a", "label": "...", "x": 30, "y": 50, "color": "..."}: concetto in un riquadro, etichetta di 1-4 parole.
+- {"type": "arrow", "start": "a", "end": "b", "label": "..."}: freccia tra due box della stessa scena (id dei box), etichetta opzionale breve (causa, implica, parte di...).
+- {"type": "bars", "items": [{"label": "...", "value": 3}], "color": "..."}: confronto quantitativo, SOLO con valori presenti negli appunti; occupa il centro della scena, non metterci altri elementi sopra.
+Colori: primary, secondary, accent, success, warning, error, neutral. Usa success per ciò che è giusto, error per errori comuni.
+Regole di impaginazione: la tela è stretta e alta; al massimo 6 elementi per scena; testi corti (al massimo 60 caratteri, size "l" solo per 1-3 parole); tieni gli elementi distanti almeno 20 punti in verticale o 35 in orizzontale; x tra 15 e 85.
+"caption": sottotitolo della scena, una frase parlata che spiega cosa si sta vedendo (al massimo 140 caratteri). "seconds": durata della scena, da 4 a 8 secondi.
+Niente HTML, Markdown o LaTeX in nessun campo: solo testo semplice.
+Rispondi ESCLUSIVAMENTE con un oggetto JSON valido, senza testo prima o dopo, con questa forma esatta:
+{"reels": [{"title": "string", "scenes": [{"caption": "string", "seconds": 5, "elements": [ ...elementi... ]}]}]}"""
+
+
+def reels_user(course, lesson) -> str:
+    notes, truncated = truncate(lesson.notes)
+    parts = [
+        f"Corso: {course.title}",
+        f"Lezione {lesson.lesson_number}: {lesson.title}",
+        f"Appunti della lezione:\n{notes or '(nessun appunto testuale presente)'}",
+        TRUNCATED_NOTE if truncated else None,
+        "Genera i reel in italiano seguendo esattamente lo schema JSON richiesto.",
+    ]
+    return "\n\n".join(p for p in parts if p)
+
+
 # answerWithContext di cloudAiClient.ts, più la regola del testo semplice.
 COURSE_CHAT_SYSTEM = (
     "Sei l'assistente di studio di RStudy. Rispondi in italiano usando ESCLUSIVAMENTE il contesto fornito, citando le "

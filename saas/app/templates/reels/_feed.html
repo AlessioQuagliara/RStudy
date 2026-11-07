@@ -1,0 +1,23 @@
+{# Feed verticale di reel disegnati da static/reels.js. Le scene sono JSON dichiarativo generato dall'AI: nessun codice
+   del modello viene eseguito. `lessons`, se passato, è parallelo a `reels` e aggiunge il link alla lezione. #}
+{% macro reel_feed(reels, lessons=None) %}
+<div class="col-span-12 h-[80vh] snap-y snap-mandatory overflow-y-auto rounded-box" data-reel-feed>
+  {% for reel in reels %}
+  {% set lesson = lessons[loop.index0] if lessons else None %}
+  <article id="reel-{{ loop.index }}" class="flex h-full snap-start flex-col items-center justify-center gap-2 py-2" data-reel tabindex="0" aria-label="Reel {{ loop.index }} di {{ reels | length }}: {{ reel.title }}">
+    <canvas class="aspect-[9/16] h-[calc(100%-1.5rem)] max-w-full cursor-pointer rounded-box bg-base-200 shadow" aria-hidden="true"></canvas>
+    <script type="application/json">{{ reel | tojson }}</script>
+    {% if lesson %}
+    <a class="link link-hover text-base-content/60 text-xs" href="{{ url_for('courses.lesson', course_id=lesson.course_id, lesson_id=lesson.id, tab='reels') }}">{{ lesson.course.title }} · Lezione {{ lesson.lesson_number }}: {{ lesson.title }}</a>
+    {% endif %}
+    {# Il canvas non è leggibile dagli screen reader: stesso contenuto come testo. #}
+    <div class="sr-only">
+      <h2>{{ reel.title }}</h2>
+      {% for scene in reel.scenes %}
+      <p>{{ scene.caption }} {% for el in scene.elements %}{{ el.text or el.label or "" }} {% for b in el.get("items", []) %}{{ b.label }}: {{ b.value }}. {% endfor %}{% endfor %}</p>
+      {% endfor %}
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% endmacro %}

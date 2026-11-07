@@ -8,6 +8,7 @@ from sqlalchemy import func, select
 from ..db import db
 from ..flashcards import due_query
 from ..models import Course
+from ..reels import ready_reels
 from ..web import login_required
 
 bp = Blueprint("main", __name__)
@@ -37,6 +38,7 @@ async def dashboard():
         completed_lessons=sum(1 for lesson in lessons if lesson.status == "completed"),
         total_lessons=len(lessons),
         recent=courses[:5],
+        reel_count=len(await ready_reels()),
         due_today=await db().scalar(select(func.count()).select_from(due_query().order_by(None).subquery())),
     )
 

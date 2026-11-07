@@ -130,5 +130,5 @@ async def test_profile_update_and_export_after_trial(db_app, db_client):
         assert (user.university, user.faculty) == ("Università di Torino", "Chimica")
         user.trial_ends_at = utcnow() - timedelta(minutes=1)
         await db().commit()
-    assert (await db_client.get("/settings/")).headers["Location"] == "/abbonamento"
+    assert "Piano gratis: 5 richieste AI al mese" in (await (await db_client.get("/settings/")).get_data(as_text=True))
     assert (await db_client.get("/settings/backup.json")).status_code == 200

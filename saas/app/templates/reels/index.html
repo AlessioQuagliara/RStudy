@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "_ui.html" import topbar, empty_state, pagination with context %}
+{% block title %}Reel · RStudy{% endblock %}
+{% block content %}
+{{ topbar("Reel") }}
+{# Stessi filtri della pagina Flashcard; la ricerca guarda titolo e sottotitoli delle scene. #}
+<form method="get" class="col-span-12 flex flex-wrap gap-2">
+  <select name="course" class="select select-bordered select-sm w-auto" aria-label="Materia">
+    <option value="">Tutte le materie</option>
+    {% for c in courses %}<option value="{{ c.id }}" {{ 'selected' if c.id == course_id }}>{{ c.title }}</option>{% endfor %}
+  </select>
+  <input name="q" class="input input-bordered input-sm w-auto" placeholder="Cerca nei reel..." value="{{ q }}" aria-label="Cerca nei reel" />
+  <button type="submit" class="btn btn-sm">Filtra</button>
+</form>
+<div class="col-span-12">
+  {% if reels.total %}
+  <a class="btn btn-primary btn-sm" href="{{ url_for('reels.watch', course=course_id, q=q or None) }}">{{ icon("clapperboard") }} Guarda {{ "tutti i " ~ reels.total ~ " reel" if reels.total > 1 else "il reel" }}</a>
+  {% else %}
+  <button type="button" class="btn btn-primary btn-sm" disabled>{{ icon("clapperboard") }} Nessun reel da guardare</button>
+  {% endif %}
+</div>
+<div class="col-span-12">
+  {% if reels.items %}
+  <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+    {% for item in reels.items %}
+    {% set lesson = item.lesson %}
+    <a class="card bg-base-100 border-base-300 hover:border-primary border transition-colors" href="{{ url_for('reels.watch', course=course_id, q=q or None) }}#reel-{{ item.n }}">
+      <div class="card-body gap-2 p-4">
+        <p class="flex items-center gap-2 font-medium">{{ icon("clapperboard", "size-4 shrink-0 text-primary") }} {{ item.reel.title }}</p>
+        <p class="text-base-content/60 line-clamp-2 text-xs">{{ item.reel.scenes[0].caption }}</p>
+        <div class="mt-1 flex flex-wrap items-center gap-1">
+          <span class="badge badge-ghost badge-xs gap-1"><span class="{{ lesson.course.color_class }} size-2 rounded-full"></span>{{ lesson.course.title }}</span>
+          <span class="badge badge-outline badge-xs">Lezione {{ lesson.lesson_number }}: {{ lesson.title }}</span>
+          <span class="badge badge-outline badge-xs">{{ item.reel.scenes | length }} scene</span>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {{ pagination(reels) }}
+  {% elif q or course_id %}
+  {{ empty_state("search", "Nessun reel trovato", "Nessun reel corrisponde ai filtri scelti.") }}
+  {% else %}
+  {{ empty_state("clapperboard", "Nessun reel", "Apri una lezione con gli appunti e usa “Crea reel” per generare brevi animazioni sui suoi concetti.") }}
+  {% endif %}
+</div>
+{% endblock %}

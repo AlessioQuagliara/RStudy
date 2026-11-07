@@ -6,7 +6,7 @@ import uuid
 from datetime import date
 from pathlib import PurePath
 
-from quart import Blueprint, abort, current_app, flash, g, make_response, redirect, render_template, request, url_for
+from quart import Blueprint, abort, flash, g, make_response, redirect, render_template, request, url_for
 from sqlalchemy import func, select
 
 from .. import ai, rag
@@ -292,7 +292,7 @@ async def create_lesson(course_id):
     return redirect(url_for("courses.lesson", course_id=course.id, lesson_id=lesson.id))
 
 
-LESSON_TABS = {"notes": "Appunti", "ai": "Studio AI", "path": "Studia passo passo", "maps": "Schemi"}
+LESSON_TABS = {"notes": "Appunti", "ai": "Studio AI", "path": "Studia passo passo", "maps": "Schemi", "reels": "Reel"}
 # Mermaid scrive <style> e attributi style nell'SVG: solo la scheda Schemi li permette, gli script restano 'self'.
 MAPS_CSP = (
     "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; "
@@ -326,6 +326,7 @@ async def _render_lesson(lesson: Lesson, tab: str, status: int = 200):
     jobs = await ai.latest_jobs(lesson)
     path_job = await _latest_ready(lesson, "exercise_set")
     pack_job = await _latest_ready(lesson, "study_pack")
+    reels_job = await _latest_ready(lesson, "reels")
     topics = (path_job.result.get("topics") or []) if path_job else []
     topic = None
     if tab == "path" and request.args.get("topic", "").isdigit() and int(request.args["topic"]) < len(topics):
@@ -337,6 +338,7 @@ async def _render_lesson(lesson: Lesson, tab: str, status: int = 200):
         tabs=LESSON_TABS,
         jobs=jobs,
         ready_pack=pack_job,
+        reels=reels_job.result["reels"] if reels_job else None,
         path_job=path_job,
         topics=topics,
         topic=topic,
@@ -345,7 +347,7 @@ async def _render_lesson(lesson: Lesson, tab: str, status: int = 200):
         concept_map=mindmap(f"Lezione {lesson.lesson_number}: {lesson.title}", pack_job.result["study_outline"]) if pack_job else None,
         ai_active=any(j.status in ("queued", "running") for j in jobs.values()),
         ai_label=ai.provider_label(),
-        ai_remaining=max(current_app.config["AI_DAILY_LIMIT"] - await ai.used_today(g.user.id), 0),
+        quota=await ai.quota(g.user),
     ), status)
     if tab == "maps":
         response.headers["Content-Security-Policy"] = MAPS_CSP
@@ -354,7 +356,7 @@ async def _render_lesson(lesson: Lesson, tab: str, status: int = 200):
 
 async def _generate(lesson: Lesson, kind: str):
     """Accoda una generazione sugli appunti salvati e porta alla scheda dove comparirà il risultato."""
-    tab = "path" if kind == "exercise_set" else "ai"
+    tab = {"exercise_set": "path", "reels": "reels"}.get(kind, "ai")
     try:
         job = await ai.enqueue(g.user, lesson, kind)
     except ai.AiError as e:

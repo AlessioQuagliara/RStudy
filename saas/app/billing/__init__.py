@@ -1,4 +1,5 @@
-"""Abbonamento Paddle: prova di 15 giorni senza carta, poi piano mensile o annuale.
+"""Abbonamento Paddle: prova di 15 giorni senza carta, poi piano gratis (app completa, poche richieste AI al mese,
+vedi ai.quota) oppure piano mensile o annuale.
 
 Lo stato dell'abbonamento arriva solo dai webhook firmati: il ritorno dal checkout non sblocca nulla.
 """
@@ -17,6 +18,7 @@ from datetime import datetime
 from quart import Blueprint, abort, current_app, flash, g, redirect, render_template, request, url_for
 from sqlalchemy import select
 
+from ..ai import FREE_MONTHLY_LIMIT
 from ..db import db
 from ..models import User
 from ..web import login_required
@@ -35,19 +37,6 @@ CHECKOUT_CSP = (
     "frame-src https://buy.paddle.com https://sandbox-buy.paddle.com; connect-src 'self' https://*.paddle.com; "
     "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 )
-# Pagine raggiungibili anche a prova scaduta, esportazione compresa: i dati restano dell'utente.
-_OPEN_ENDPOINTS = {"static", "main.landing", "main.healthz", "settings.export"}
-
-
-@bp.before_app_request
-async def require_access():
-    if g.user is None or g.user.has_access:
-        return None
-    if request.blueprint in ("billing", "auth") or request.endpoint in _OPEN_ENDPOINTS:
-        return None
-    return redirect(url_for("billing.index"))
-
-
 @bp.get("/abbonamento")
 @login_required
 async def index():
@@ -56,6 +45,7 @@ async def index():
         await render_template(
             "billing/index.html",
             plans=PLANS,
+            free_limit=FREE_MONTHLY_LIMIT,
             prices={"monthly": cfg["PADDLE_PRICE_MONTHLY"], "yearly": cfg["PADDLE_PRICE_YEARLY"]},
             enabled=bool(cfg["PADDLE_ENVIRONMENT"]),
             checkout_done=request.args.get("checkout") == "ok",

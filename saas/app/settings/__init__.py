@@ -7,7 +7,7 @@ import json
 
 from quart import Blueprint, current_app, flash, g, redirect, render_template, request, url_for
 
-from ..ai import provider_label, used_today
+from ..ai import provider_label, quota
 from ..auth import SCHOOL_MAX, _clean
 from ..db import db
 from ..models import utcnow
@@ -23,9 +23,10 @@ MAX_BACKUP_BYTES = 20 * 1024 * 1024
 @bp.get("/")
 @login_required
 async def index():
-    limit = current_app.config["AI_DAILY_LIMIT"]
-    used = min(await used_today(g.user.id), limit)
-    return await render_template("settings/index.html", ai_used=used, ai_limit=limit, ai_label=provider_label())
+    used, limit, period = await quota(g.user)
+    return await render_template(
+        "settings/index.html", ai_used=min(used, limit), ai_limit=limit, ai_period=period, ai_label=provider_label()
+    )
 
 
 @bp.post("/profile")

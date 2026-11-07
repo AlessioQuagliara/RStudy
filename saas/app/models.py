@@ -42,6 +42,7 @@ class User(Base):
 
     @property
     def has_access(self) -> bool:
+        """Limiti AI pieni: abbonamento o prova in corso. Altrimenti piano gratis (ai.FREE_MONTHLY_LIMIT)."""
         return self.is_subscribed or utcnow() < self.trial_ends_at
 
     @property
@@ -143,7 +144,7 @@ class Flashcard(Base):
     course: Mapped[Course] = relationship(lazy="selectin")
 
 
-AI_JOB_KINDS = {"study_pack": "Studio AI", "exercise_set": "Esercizi"}
+AI_JOB_KINDS = {"study_pack": "Studio AI", "exercise_set": "Esercizi", "reels": "Reel"}
 
 
 class AiJob(Base):
@@ -166,6 +167,8 @@ class AiJob(Base):
     result: Mapped[dict | None] = mapped_column(JSONB)
     # Solo percorso di studio: {"studied": [indici argomenti], "last_result": {...}}. Un nuovo percorso riparte da zero.
     progress: Mapped[dict | None] = mapped_column(JSONB)
+    # Token consumati (somma delle chiamate, riparazioni comprese): {"calls", "prompt_tokens", "completion_tokens", ...}.
+    usage: Mapped[dict | None] = mapped_column(JSONB)
     # Solo messaggi sanificati per l'utente, mai l'errore grezzo del provider.
     error: Mapped[str | None] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
@@ -223,4 +226,5 @@ class CourseQuestion(Base):
     answer: Mapped[str] = mapped_column(Text)
     citations: Mapped[list] = mapped_column(JSONB, default=list)
     model: Mapped[str | None] = mapped_column(String(100))
+    usage: Mapped[dict | None] = mapped_column(JSONB)  # come AiJob.usage
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

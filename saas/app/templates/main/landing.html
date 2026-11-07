@@ -18,10 +18,10 @@
   ("03", "Ripassa", "Rispondi, verifica, ripeti le flashcard in scadenza: un passo alla volta."),
 ] %}
 {% set faq = [
-  ("Quanto costa?", "I primi 15 giorni sono gratis e non serve la carta. Poi 4,99 € al mese oppure 39,90 € all'anno. Disdici quando vuoi."),
+  ("Quanto costa?", "I primi 15 giorni sono completi e gratis, senza carta. Poi puoi restare gratis con 5 richieste AI al mese, oppure abbonarti a 4,99 € al mese o 39,90 € all'anno. Disdici quando vuoi."),
   ("Devo installare qualcosa?", "No. RStudy web funziona dal browser: basta registrarsi con email e password."),
   ("Dove finiscono i miei appunti?", "Corsi e appunti sono salvati sul server di RStudy. Per le generazioni AI il testo necessario viene inviato al provider AI solo per produrre il risultato."),
-  ("C'è un limite alle generazioni AI?", "Sì, un limite giornaliero equo per utente. Rigenerare con gli stessi appunti riusa il risultato già pronto e non consuma il limite."),
+  ("C'è un limite alle generazioni AI?", "Sì: 5 richieste al mese nel piano gratis, un limite giornaliero equo con l'abbonamento. Rigenerare con gli stessi appunti riusa il risultato già pronto e non consuma il limite."),
   ("E l'app desktop?", "Resta disponibile per macOS, Windows e Linux, con i dati salvati sul tuo computer. La versione web è un servizio separato, con un account a parte."),
 ] %}
 {% block body %}
@@ -108,11 +108,11 @@
   <section id="prezzo" class="scroll-mt-16 px-4 py-16 lg:py-24">
     <div class="mx-auto max-w-xl text-center">
       <span class="badge badge-outline">Prezzo</span>
-      <h2 class="mt-4 text-3xl font-bold sm:text-4xl">15 giorni gratis, poi scegli tu</h2>
-      <p class="text-base-content/70 mt-3">Nessuna carta per la prova. Disdici quando vuoi.</p>
+      <h2 class="mt-4 text-3xl font-bold sm:text-4xl">15 giorni completi gratis, poi scegli tu</h2>
+      <p class="text-base-content/70 mt-3">Nessuna carta per la prova. Dopo puoi restare gratis o abbonarti, e disdire quando vuoi.</p>
     </div>
-    <div class="mx-auto mt-10 grid max-w-3xl gap-5 sm:grid-cols-2">
-      {% for name, amount, per, note in [("Mensile", "4,99 €", "al mese", "Massima flessibilità"), ("Annuale", "39,90 €", "all'anno", "4 mesi gratis rispetto al mensile")] %}
+    <div class="mx-auto mt-10 grid max-w-4xl gap-5 sm:grid-cols-3">
+      {% for name, amount, per, note in [("Gratis", "0 €", "per sempre", "Corsi, appunti e flashcard senza limiti, 5 richieste AI al mese"), ("Mensile", "4,99 €", "al mese", "Richieste AI ogni giorno, massima flessibilità"), ("Annuale", "39,90 €", "all'anno", "4 mesi gratis rispetto al mensile")] %}
       <div class="card border-2 {{ 'border-primary/40' if loop.last else 'border-base-300' }}">
         <div class="card-body items-center text-center">
           <h3 class="text-lg font-semibold">{{ name }}</h3>
@@ -123,7 +123,7 @@
       </div>
       {% endfor %}
     </div>
-    <p class="text-base-content/50 mt-6 text-center text-xs">Pagamento sicuro gestito da Paddle. Tutte le funzionalità in entrambi i piani.</p>
+    <p class="text-base-content/50 mt-6 text-center text-xs">Pagamento sicuro gestito da Paddle. Tutte le funzionalità in tutti i piani: cambia solo il numero di richieste AI.</p>
   </section>
 
   <section id="faq" class="bg-base-200 scroll-mt-16 px-4 py-16 lg:py-24">

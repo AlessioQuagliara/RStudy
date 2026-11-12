@@ -1,0 +1,23 @@
+@import "tailwindcss";
+@source "../app/templates";
+@source "../app/static/*.js";
+
+/* Temi predefiniti di daisyUI, in attesa della verifica di licenza sul tema del desktop. Default scuro come il desktop. */
+@plugin "daisyui" {
+  themes: light, dark --default;
+}
+
+/* Il pulsante tema mostra il sole sul tema scuro e la luna su quello chiaro, come Topbar.tsx. */
+[data-theme="dark"] .theme-icon-light,
+[data-theme="light"] .theme-icon-dark {
+  display: none;
+}
+
+/* Pagine legali: testo lungo senza il plugin typography. */
+.legal h1 { @apply mb-6 text-3xl font-bold; }
+.legal h2 { @apply mt-8 mb-2 text-xl font-semibold; }
+.legal p, .legal li { @apply text-base-content/80 leading-relaxed; }
+.legal p { @apply mb-3; }
+.legal ul { @apply mb-3 list-disc space-y-1 pl-6; }
+.legal a { @apply link link-primary; }
+.legal table { @apply table table-sm mb-3; }

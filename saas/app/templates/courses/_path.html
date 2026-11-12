@@ -1,0 +1,152 @@
+{# Scheda "Studia passo passo": porting di StudyPathPanel.tsx. Progressi salvati sul job (ai_jobs.progress).
+   shortcut: testo semplice invece di Markdown e LaTeX, come il resto della versione web. #}
+{% set path_status = jobs.get("exercise_set") %}
+{% set studied = progress.get("studied", []) %}
+{% set last = progress.get("last_result") %}
+{% set path_url = url_for("courses.lesson", course_id=lesson.course_id, lesson_id=lesson.id, tab="path") %}
+
+{% if path_status and path_status.status != "ready" %}
+<div class="col-span-12">{{ job_status(path_status, "Percorso di studio") }}</div>
+{% endif %}
+
+{% if not path_job or not topics %}
+<div class="bg-base-200 rounded-box col-span-12 flex flex-col items-center gap-4 p-6 text-center sm:p-10">
+  {{ icon("sparkles", "text-primary size-10") }}
+  <h2 class="text-xl font-semibold">Studia questa lezione passo dopo passo</h2>
+  <p class="text-base-content/70 max-w-md">
+    L'AI divide la lezione in pochi argomenti, dal più semplice al più complesso: per ognuno una spiegazione chiara,
+    la regola da ricordare e un esempio svolto. Poi 8 esercizi per verificare cosa hai capito.
+  </p>
+  {% if path_job %}<p class="text-base-content/60 text-sm">Gli esercizi di questa lezione sono stati preparati con una versione precedente, senza argomenti da studiare.</p>{% endif %}
+  {% if ai_label and not (path_status and path_status.status in ("queued", "running")) %}
+  {{ generate_button("exercise_set", "Prepara il percorso di studio", "btn-primary btn-lg") }}
+  {% endif %}
+  {% if path_job %}<a class="link text-sm" href="{{ url_for('courses.exercises', course_id=lesson.course_id, lesson_id=lesson.id) }}">Apri comunque gli esercizi</a>{% endif %}
+</div>
+
+{% elif topic is not none %}
+{% set t = topics[topic] %}
+{% set last_topic = topic == topics | length - 1 %}
+<div class="col-span-12 mx-auto flex w-full max-w-3xl flex-col gap-4">
+  <div class="flex items-center gap-3">
+    <a class="btn btn-ghost btn-circle" href="{{ path_url }}" aria-label="Torna agli argomenti">{{ icon("arrow-left", "size-5") }}</a>
+    <progress class="progress progress-success h-3 flex-1" value="{{ topic + 1 }}" max="{{ topics | length }}" aria-label="Argomento {{ topic + 1 }} di {{ topics | length }}"></progress>
+    <span class="text-base-content/60 shrink-0 text-sm">{{ topic + 1 }}/{{ topics | length }}</span>
+  </div>
+
+  <section class="bg-base-200 rounded-box p-5 leading-relaxed sm:p-6">
+    <h2 class="mb-3 text-xl font-semibold sm:text-2xl">{{ t.title }}</h2>
+    <p class="whitespace-pre-wrap">{{ t.explanation }}</p>
+  </section>
+
+  <section class="border-warning bg-warning/15 rounded-box border-2 p-5">
+    <p class="mb-2 flex items-center gap-2 font-semibold">{{ icon("lightbulb", "size-5") }} Da ricordare</p>
+    <p class="text-lg whitespace-pre-wrap">{{ t.keyRule }}</p>
+  </section>
+
+  <section class="bg-info/10 rounded-box p-5">
+    <p class="mb-2 font-semibold">Esempio svolto</p>
+    <p class="whitespace-pre-wrap">{{ t.example.problem }}</p>
+    <ol class="mt-3 flex flex-col gap-2">
+      {% for step in t.example.steps %}
+      <li class="flex gap-3">
+        <span class="bg-info text-info-content flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold">{{ loop.index }}</span>
+        <p class="flex-1 whitespace-pre-wrap">{{ step }}</p>
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  {% if t.commonMistake %}
+  <section class="bg-error/10 rounded-box p-5">
+    <p class="mb-2 flex items-center gap-2 font-semibold">{{ icon("circle-x", "text-error size-5") }} Errore comune</p>
+    <p class="whitespace-pre-wrap">{{ t.commonMistake }}</p>
+  </section>
+  {% endif %}
+
+  {% if t.practice %}
+  <section class="bg-primary/10 rounded-box p-5">
+    <p class="mb-2 font-semibold">Esercizio</p>
+    <p class="whitespace-pre-wrap">{{ t.practice.question }}</p>
+    <details class="mt-3">
+      <summary class="btn btn-outline btn-sm">Mostra la soluzione</summary>
+      <p class="bg-base-200 rounded-box mt-3 p-4 whitespace-pre-wrap">{{ t.practice.solution }}</p>
+    </details>
+  </section>
+  {% endif %}
+
+  <div class="bg-base-100/80 sticky bottom-0 flex gap-3 py-3 backdrop-blur">
+    {% if topic > 0 %}
+    <a class="btn btn-lg flex-1" href="{{ url_for('courses.lesson', course_id=lesson.course_id, lesson_id=lesson.id, tab='path', topic=topic - 1) }}">Indietro</a>
+    {% else %}
+    <span class="btn btn-lg btn-disabled flex-1" aria-disabled="true">Indietro</span>
+    {% endif %}
+    <form method="post" action="{{ url_for('courses.topic_done', course_id=lesson.course_id, lesson_id=lesson.id, topic=topic) }}" class="flex flex-[2]">
+      {{ csrf() }}
+      <button type="submit" class="btn btn-primary btn-lg w-full">{{ "Ho capito: mettiti alla prova" if last_topic else "Ho capito, avanti" }}</button>
+    </form>
+  </div>
+</div>
+
+{% else %}
+{% set exercise_set = path_job.result %}
+{% set studied_count = studied | select("lt", topics | length) | list | length %}
+{% set percent = ((studied_count + (1 if last else 0)) / (topics | length + 1) * 100) | round | int %}
+{% set to_review = (last or {}).get("to_review", []) %}
+{% set ns = namespace(first=0) %}
+{% for i in range(topics | length) | reverse %}{% if i not in studied %}{% set ns.first = i %}{% endif %}{% endfor %}
+<div class="col-span-12 mx-auto flex w-full max-w-3xl flex-col gap-5">
+  <section class="bg-base-200 rounded-box flex flex-col gap-4 p-5 sm:p-6">
+    <div>
+      <h2 class="text-xl font-semibold sm:text-2xl">{{ exercise_set.title }}</h2>
+      <p class="text-base-content/60 text-sm">{{ topics | length }} argomenti · {{ exercise_set.exercises | length }} esercizi</p>
+    </div>
+    <div>
+      <div class="mb-1 flex items-center justify-between text-sm">
+        <span class="font-medium">I tuoi progressi</span>
+        <span class="font-semibold">{{ percent }}%</span>
+      </div>
+      <progress class="progress progress-success h-3 w-full" value="{{ percent }}" max="100" aria-label="Progressi: {{ percent }} per cento"></progress>
+      {% if last %}<p class="text-base-content/60 mt-2 text-sm">Ultimo test: {{ last.correct }} risposte corrette su {{ last.total }}</p>{% endif %}
+    </div>
+    <div class="grid gap-3 sm:grid-cols-2">
+      <a class="btn btn-primary btn-lg" href="{{ url_for('courses.lesson', course_id=lesson.course_id, lesson_id=lesson.id, tab='path', topic=ns.first) }}">{{ icon("book-open", "size-5") }} Studia</a>
+      <a class="btn btn-success btn-lg" href="{{ url_for('courses.exercises', course_id=lesson.course_id, lesson_id=lesson.id) }}">{{ icon("target", "size-5") }} Mettiti alla prova</a>
+    </div>
+  </section>
+
+  {% if path_outdated and ai_label and not (path_status and path_status.status in ("queued", "running")) %}
+  <div role="status" class="alert flex flex-wrap justify-between">
+    <span class="text-sm">Gli appunti sono cambiati dopo la preparazione di questo percorso.</span>
+    {{ generate_button("exercise_set", "Prepara di nuovo", "btn-sm") }}
+  </div>
+  {% endif %}
+
+  {% if exercise_set.missingInfo %}
+  <div role="alert" class="alert alert-warning items-start">
+    {{ icon("triangle-alert", "size-5 shrink-0") }}
+    <div class="text-sm">
+      <p class="font-semibold">Nella lezione mancano alcune informazioni</p>
+      <ul class="mt-1 list-disc pl-5">{% for info in exercise_set.missingInfo %}<li>{{ info }}</li>{% endfor %}</ul>
+    </div>
+  </div>
+  {% endif %}
+
+  <ol class="flex flex-col gap-3" aria-label="Argomenti della lezione">
+    {% for t in topics %}
+    {% set done = loop.index0 in studied %}
+    <li>
+      <a class="bg-base-200 hover:bg-base-300 rounded-box flex w-full items-center gap-4 p-4 transition-colors" href="{{ url_for('courses.lesson', course_id=lesson.course_id, lesson_id=lesson.id, tab='path', topic=loop.index0) }}">
+        <span class="flex size-11 shrink-0 items-center justify-center rounded-full text-lg font-semibold {{ 'bg-success text-success-content' if done else 'bg-base-300' }}" aria-hidden="true">
+          {% if done %}{{ icon("check", "size-5") }}{% else %}{{ loop.index }}{% endif %}
+        </span>
+        <span class="flex-1 font-medium">{{ t.title }}</span>
+        {% if loop.index0 in to_review %}<span class="badge badge-warning shrink-0">Da ripassare</span>{% endif %}
+        <span class="sr-only">{{ "(studiato)" if done else "(da studiare)" }}</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ol>
+
+</div>
+{% endif %}

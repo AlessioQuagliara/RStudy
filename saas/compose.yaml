@@ -1,0 +1,89 @@
+# Ambiente di SVILUPPO locale. La produzione usa compose.prod.yaml.
+# Nome di progetto esplicito: container, reti e volumi hanno il prefisso rstudy-saas e non collidono con altri progetti.
+name: rstudy-saas
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: rstudy
+      POSTGRES_DB: rstudy
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?imposta POSTGRES_PASSWORD in .env}
+    # Solo su localhost, porta non standard (5432 è spesso già occupata).
+    ports:
+      - "127.0.0.1:${RSTUDY_DB_PORT:-55432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rstudy -d rstudy"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      target: runtime
+    # In sviluppo applica le migrazioni a ogni avvio. In produzione sarà un passo esplicito.
+    command: ["sh", "-c", "alembic upgrade head && quart --app asgi run --reload --host 0.0.0.0 --port 8000"]
+    environment:
+      SECRET_KEY: ${SECRET_KEY:?imposta SECRET_KEY in .env}
+      DATABASE_URL: postgresql+psycopg://rstudy:${POSTGRES_PASSWORD}@db:5432/rstudy
+      SESSION_COOKIE_SECURE: "0"
+      AI_PROVIDER: ${AI_PROVIDER:-fake}
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_MODEL: ${AI_MODEL:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_DAILY_LIMIT: ${AI_DAILY_LIMIT:-35}
+      PADDLE_ENVIRONMENT: ${PADDLE_ENVIRONMENT:-}
+      PADDLE_CLIENT_TOKEN: ${PADDLE_CLIENT_TOKEN:-}
+      PADDLE_API_KEY: ${PADDLE_API_KEY:-}
+      PADDLE_WEBHOOK_SECRET: ${PADDLE_WEBHOOK_SECRET:-}
+      PADDLE_PRICE_MONTHLY: ${PADDLE_PRICE_MONTHLY:-}
+      PADDLE_PRICE_YEARLY: ${PADDLE_PRICE_YEARLY:-}
+    ports:
+      - "127.0.0.1:${RSTUDY_WEB_PORT:-5080}:8000"
+    volumes:
+      - ./app:/srv/app
+      - ./asgi.py:/srv/asgi.py
+      - ./alembic.ini:/srv/alembic.ini
+      - ./migrations:/srv/migrations
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Esegue le generazioni AI in coda. Stessa immagine e stesse variabili del web.
+  worker:
+    build:
+      context: .
+      target: runtime
+    command: ["quart", "--app", "asgi", "ai-worker"]
+    # Non è un server web: il controllo HTTP del Dockerfile fallirebbe sempre (come in compose.prod.yaml).
+    healthcheck:
+      disable: true
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      DATABASE_URL: postgresql+psycopg://rstudy:${POSTGRES_PASSWORD}@db:5432/rstudy
+      AI_PROVIDER: ${AI_PROVIDER:-fake}
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_MODEL: ${AI_MODEL:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_DAILY_LIMIT: ${AI_DAILY_LIMIT:-35}
+    volumes:
+      - ./app:/srv/app
+      - ./asgi.py:/srv/asgi.py
+    depends_on:
+      web:
+        condition: service_started
+
+  # Ricompila il CSS quando cambiano template o JS. Scrive in ./app/static/dist, montato anche in web.
+  assets:
+    image: node:22-alpine
+    working_dir: /src
+    command: ["sh", "-c", "npm ci --no-audit --no-fund && npm run build:icons && npm run build:js && npm run watch:css"]
+    volumes:
+      - .:/src
+      - /src/node_modules
+
+volumes:
+  pgdata:

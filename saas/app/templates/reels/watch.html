@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from "_ui.html" import topbar, empty_state %}
+{% from "reels/_feed.html" import reel_feed %}
+{% block title %}Guarda i reel · RStudy{% endblock %}
+{% block head %}<script src="{{ url_for('static', filename='reels.js') }}" defer></script>{% endblock %}
+{% block content %}
+{{ topbar("Guarda", "Reel", url_for("reels.index", course=course_id, q=q or None)) }}
+{% if items %}
+<p class="text-base-content/60 col-span-12 text-sm">Scorri per il reel successivo. Tocca a sinistra o a destra per la scena precedente o successiva, al centro per mettere in pausa.</p>
+{{ reel_feed(items | map(attribute="reel") | list, items | map(attribute="lesson") | list) }}
+{% else %}
+<div class="col-span-12">{{ empty_state("clapperboard", "Nessun reel", "Non ci sono reel con questi filtri.") }}</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "main/_legal.html" %}
+{% block title %}Termini di servizio · RStudy{% endblock %}
+{% block legal %}
+<h1>Termini di servizio</h1>
+<p>Questi termini regolano l'uso di RStudy, il servizio web su rstudy.dev fornito da {{ legal.owner }} (contatto: <a href="mailto:{{ legal.email }}">{{ legal.email }}</a>). Registrandoti li accetti.</p>
+
+<h2>1. Il servizio</h2>
+<p>RStudy permette di organizzare corsi, lezioni e appunti e di generarne con l'intelligenza artificiale riepiloghi, esercizi, flashcard, schemi e brevi animazioni. Il servizio può evolvere: possiamo aggiungere, modificare o togliere funzioni, cercando di non peggiorare quelle incluse nel piano che hai pagato.</p>
+
+<h2>2. Account</h2>
+<ul>
+  <li>Per usare RStudy devi avere almeno 16 anni e fornire un'email valida.</li>
+  <li>L'account è personale. Custodisci la password: sei responsabile di quello che avviene con le tue credenziali e devi avvisarci subito se sospetti un accesso non autorizzato.</li>
+</ul>
+
+<h2>3. Piani e prezzi</h2>
+<ul>
+  <li><strong>Prova</strong>: 15 giorni con tutte le funzioni, senza carta e senza rinnovo automatico.</li>
+  <li><strong>Piano gratis</strong>: dopo la prova resti con tutta l'app e 5 richieste AI al mese.</li>
+  <li><strong>Abbonamento</strong>: 4,99 € al mese o 39,90 € all'anno, IVA inclusa, con un limite giornaliero di richieste AI indicato nella pagina Abbonamento.</li>
+</ul>
+<p>Rigenerare dagli stessi appunti riusa il risultato già pronto e non consuma richieste. Eventuali cambi di prezzo ti saranno comunicati almeno 30 giorni prima del rinnovo e potrai disdire prima che si applichino.</p>
+
+<h2>4. Pagamenti, rinnovo e disdetta</h2>
+<p>L'abbonamento è venduto da <strong>Paddle.com Market Limited</strong>, nostro rivenditore autorizzato (Merchant of Record): Paddle incassa il pagamento, emette la fattura e gestisce i rimborsi secondo i propri <a href="https://www.paddle.com/legal/checkout-buyer-terms">termini per l'acquirente</a>. L'abbonamento si rinnova automaticamente alla fine di ogni periodo finché non lo disdici. Puoi disdire in ogni momento dalla pagina Abbonamento: l'accesso resta fino alla fine del periodo già pagato, poi torni al piano gratis senza perdere i tuoi dati.</p>
+
+<h2>5. Diritto di recesso</h2>
+<p>Se sei un consumatore nell'Unione europea puoi recedere entro 14 giorni dal primo acquisto senza indicarne il motivo, chiedendo il rimborso a Paddle o scrivendoci. Iniziando a usare l'abbonamento chiedi che il servizio parta subito: in caso di recesso, Paddle può trattenere la parte proporzionale al periodo già goduto, come prevede il Codice del consumo.</p>
+
+<h2>6. I tuoi contenuti</h2>
+<p>Appunti, materiali e contenuti che carichi restano tuoi. Ci concedi solo il permesso di conservarli, elaborarli e inviarli al fornitore AI nella misura necessaria a fornirti il servizio, come descritto nell'<a href="{{ url_for('main.privacy') }}">informativa sulla privacy</a>. Devi avere il diritto di caricare ciò che carichi: non caricare materiali protetti da diritto d'autore che non puoi usare, né dati personali di altri senza titolo. Puoi esportare i tuoi dati in qualsiasi momento con il backup JSON delle Impostazioni.</p>
+
+<h2>7. Contenuti generati dall'AI</h2>
+<p>I testi generati sono prodotti automaticamente a partire dai tuoi appunti e possono contenere errori, omissioni o semplificazioni. Sono un aiuto allo studio, non una fonte autorevole: verificali sui tuoi materiali. RStudy non garantisce il superamento di esami.</p>
+
+<h2>8. Uso corretto</h2>
+<p>Non puoi usare RStudy per attività illecite, per caricare contenuti offensivi o dannosi, per aggirare i limiti di utilizzo, per accedere ai dati di altri utenti o per sovraccaricare, analizzare in modo automatizzato o compromettere il servizio. In caso di violazioni gravi possiamo sospendere o chiudere l'account, avvisandoti quando possibile.</p>
+
+<h2>9. Disponibilità</h2>
+<p>Facciamo il possibile perché RStudy sia sempre disponibile e i dati siano al sicuro, ma possono esserci interruzioni per manutenzione o guasti. Ti consigliamo di esportare periodicamente un backup.</p>
+
+<h2>10. Responsabilità</h2>
+<p>Nei limiti consentiti dalla legge, non rispondiamo di danni indiretti o della perdita di opportunità derivanti dall'uso del servizio o dei contenuti generati. Restano salvi i diritti che la legge ti riconosce come consumatore e la responsabilità per dolo o colpa grave, che non viene limitata.</p>
+
+<h2>11. Chiusura dell'account</h2>
+<p>Puoi chiedere la chiusura dell'account in qualsiasi momento scrivendo a <a href="mailto:{{ legal.email }}">{{ legal.email }}</a>: cancelliamo account e contenuti come indicato nell'informativa sulla privacy. Un abbonamento attivo va disdetto prima, altrimenti continua a rinnovarsi presso Paddle.</p>
+
+<h2>12. Modifiche ai termini</h2>
+<p>Possiamo aggiornare questi termini. Le modifiche rilevanti ti saranno comunicate almeno 15 giorni prima che si applichino; se non le accetti puoi disdire e chiudere l'account.</p>
+
+<h2>13. Legge applicabile</h2>
+<p>Si applica la legge italiana. Per i consumatori è competente il foro del luogo di residenza o domicilio del consumatore. Puoi anche ricorrere alla <a href="https://ec.europa.eu/consumers/odr">piattaforma europea di risoluzione delle controversie online</a>.</p>
+{% endblock %}

@@ -1,0 +1,8 @@
+Quart==0.22.0
+Hypercorn==0.18.0
+SQLAlchemy[asyncio]==2.1.5
+psycopg[binary]==3.3.6
+alembic==1.20.0
+pydantic==2.14.1
+tzdata==2026.1
+pypdf==6.21.2

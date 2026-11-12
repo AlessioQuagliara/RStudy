@@ -1,0 +1,23 @@
+{% extends "main/_legal.html" %}
+{% block title %}Cookie · RStudy{% endblock %}
+{% block legal %}
+<h1>Cookie policy</h1>
+<p>RStudy usa solo cookie e archiviazione locale tecnici, necessari a far funzionare il servizio. Non usiamo cookie di profilazione, pubblicità o analisi di terze parti: per questo non ti chiediamo un consenso e non mostriamo un banner (art. 122 del Codice privacy e Linee guida del Garante del 10 giugno 2021).</p>
+
+<h2>Cosa salviamo nel tuo browser</h2>
+<table>
+  <thead><tr><th>Nome</th><th>Di chi</th><th>A cosa serve</th><th>Durata</th></tr></thead>
+  <tbody>
+    <tr><td><code>session</code></td><td>RStudy</td><td>Mantiene l'accesso e protegge i moduli (token CSRF). Firmato contro le manomissioni, non accessibile agli script della pagina.</td><td>Fino alla chiusura del browser o al logout</td></tr>
+    <tr><td><code>rstudy-theme</code> (archiviazione locale)</td><td>RStudy</td><td>Ricorda il tema chiaro o scuro che hai scelto.</td><td>Finché non la cancelli</td></tr>
+    <tr><td><code>__cf_bm</code> e simili</td><td>Cloudflare</td><td>Protezione da bot e traffico malevolo.</td><td>Fino a 30 minuti</td></tr>
+    <tr><td>Cookie del checkout</td><td>Paddle</td><td>Solo nella pagina Abbonamento e durante il pagamento: completare la transazione in modo sicuro e prevenire frodi.</td><td>Indicata da <a href="https://www.paddle.com/legal/cookie-policy">Paddle</a></td></tr>
+  </tbody>
+</table>
+
+<h2>Come gestirli</h2>
+<p>Puoi cancellare o bloccare i cookie dalle impostazioni del browser. Senza il cookie <code>session</code> non è possibile accedere all'account.</p>
+
+<h2>Contatti</h2>
+<p>Per domande scrivi a <a href="mailto:{{ legal.email }}">{{ legal.email }}</a>. Il trattamento dei dati è descritto nell'<a href="{{ url_for('main.privacy') }}">informativa sulla privacy</a>.</p>
+{% endblock %}

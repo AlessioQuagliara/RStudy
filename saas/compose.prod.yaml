@@ -1,0 +1,108 @@
+# PRODUZIONE su server condiviso: Cloudflare → Traefik condiviso (deploy/traefik) → Hypercorn (Quart), worker AI, Postgres.
+# Prima:        il Traefik di deploy/traefik attivo, con la rete esterna `proxy`.
+# Avvio:        docker compose -f compose.prod.yaml --env-file .env.prod up -d --build
+# Nessuna porta pubblicata: l'unico ingresso è Traefik sulla rete `proxy`.
+# Migrazioni:   passo esplicito, eseguito dal servizio one-shot `migrate` prima di web e worker.
+name: rstudy-saas-prod
+
+x-app-env: &app-env
+  SECRET_KEY: ${SECRET_KEY:?imposta SECRET_KEY}
+  DATABASE_URL: postgresql+psycopg://rstudy:${POSTGRES_PASSWORD:?imposta POSTGRES_PASSWORD}@db:5432/rstudy
+  AI_PROVIDER: ${AI_PROVIDER:-}
+  AI_BASE_URL: ${AI_BASE_URL:-}
+  AI_MODEL: ${AI_MODEL:-}
+  AI_API_KEY: ${AI_API_KEY:-}
+  AI_DAILY_LIMIT: ${AI_DAILY_LIMIT:-35}
+  PADDLE_ENVIRONMENT: ${PADDLE_ENVIRONMENT:-}
+  PADDLE_CLIENT_TOKEN: ${PADDLE_CLIENT_TOKEN:-}
+  PADDLE_API_KEY: ${PADDLE_API_KEY:-}
+  PADDLE_WEBHOOK_SECRET: ${PADDLE_WEBHOOK_SECRET:-}
+  PADDLE_PRICE_MONTHLY: ${PADDLE_PRICE_MONTHLY:-}
+  PADDLE_PRICE_YEARLY: ${PADDLE_PRICE_YEARLY:-}
+
+# Log ruotati: su un server condiviso i log di Docker non devono riempire il disco.
+x-logging: &logging
+  driver: json-file
+  options: {max-size: "10m", max-file: "5"}
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: rstudy
+      POSTGRES_DB: rstudy
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Nessuna porta pubblicata: raggiungibile solo dalla rete interna.
+    networks: [internal]
+    logging: *logging
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rstudy -d rstudy"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  migrate:
+    build: {context: ., target: runtime}
+    image: rstudy-saas:prod
+    command: ["alembic", "upgrade", "head"]
+    environment: *app-env
+    networks: [internal]
+    depends_on:
+      db: {condition: service_healthy}
+    restart: "no"
+
+  web:
+    build: {context: ., target: runtime}
+    image: rstudy-saas:prod
+    environment:
+      <<: *app-env
+      # Proxy fidato davanti all'app: Traefik (scheme e host). Gli X-Forwarded-* arrivano solo da lui (nessuna porta esposta).
+      PROXY_TRUSTED_HOPS: "1"
+      # IP reale del client: lo mette Cloudflare. Non falsificabile perché il router accetta solo IP Cloudflare.
+      CLIENT_IP_HEADER: CF-Connecting-IP
+    networks: [internal, proxy]
+    logging: *logging
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.rstudy.rule=Host(`${DOMAIN:?imposta DOMAIN}`) || Host(`www.${DOMAIN}`)
+      - traefik.http.routers.rstudy.entrypoints=websecure
+      - traefik.http.routers.rstudy.tls.certresolver=cloudflare
+      - traefik.http.routers.rstudy.tls.domains[0].main=${DOMAIN}
+      - traefik.http.routers.rstudy.tls.domains[0].sans=www.${DOMAIN}
+      - traefik.http.routers.rstudy.middlewares=cloudflare-only@file,rstudy-www,rstudy-hsts
+      # www → dominio principale, un solo indirizzo canonico.
+      - traefik.http.middlewares.rstudy-www.redirectregex.regex=^https://www\.(.+)
+      - traefik.http.middlewares.rstudy-www.redirectregex.replacement=https://$${1}
+      - traefik.http.middlewares.rstudy-www.redirectregex.permanent=true
+      - traefik.http.middlewares.rstudy-hsts.headers.stsSeconds=31536000
+      - traefik.http.middlewares.rstudy-hsts.headers.stsIncludeSubdomains=true
+      - traefik.http.services.rstudy.loadbalancer.server.port=8000
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: unless-stopped
+
+  worker:
+    build: {context: ., target: runtime}
+    image: rstudy-saas:prod
+    command: ["quart", "--app", "asgi", "ai-worker"]
+    environment: *app-env
+    networks: [internal]
+    logging: *logging
+    # Serve uscita verso il provider AI: la rete internal non è "internal: true" per questo.
+    healthcheck:
+      disable: true
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: unless-stopped
+
+networks:
+  # Rete del Traefik condiviso, creata una volta sul server: docker network create proxy
+  proxy:
+    external: true
+  internal:
+
+volumes:
+  pgdata:

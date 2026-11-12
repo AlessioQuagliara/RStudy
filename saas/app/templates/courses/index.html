@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% from "_ui.html" import topbar, empty_state, status_badge %}
+{% block title %}Corsi · RStudy{% endblock %}
+{% block content %}
+{{ topbar("Corsi") }}
+
+{# Stessa barra di CoursesListPage.tsx; i filtri sono parametri GET invece di stato React. #}
+<div class="col-span-12 flex flex-wrap items-center gap-2">
+  <form method="get" class="flex grow sm:max-w-xs" role="search">
+    {% if status != "all" %}<input type="hidden" name="status" value="{{ status }}" />{% endif %}
+    <label class="input input-bordered flex grow items-center gap-2">
+      {{ icon("search", "text-base-content/40 size-4") }}
+      <input type="search" name="q" class="grow" placeholder="Cerca corso..." aria-label="Cerca corso" value="{{ q }}" />
+    </label>
+  </form>
+  <div class="join">
+    {% for value, label in [("all", "Tutti"), ("active", "Attivi"), ("completed", "Completati"), ("archived", "Archiviati")] %}
+    <a class="btn btn-sm join-item {{ 'btn-active' if status == value }}" href="{{ url_for('courses.index', status=value, q=q or None) }}">{{ label }}</a>
+    {% endfor %}
+  </div>
+  <a href="{{ url_for('courses.new') }}" class="btn btn-primary btn-sm ml-auto">{{ icon("plus") }} Nuovo corso</a>
+</div>
+
+{% if not courses %}
+<div class="col-span-12">
+  {% call empty_state("graduation-cap", "Nessun corso trovato", "Crea il tuo primo corso per iniziare a organizzare lezioni e materiali." if not has_any else "Nessun corso corrisponde ai filtri selezionati.") %}
+  <a href="{{ url_for('courses.new') }}" class="btn btn-primary btn-sm">Nuovo corso</a>
+  {% endcall %}
+</div>
+{% else %}
+<div class="col-span-12 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+  {% for course in courses %}
+  {% set completed, total, pct = course.progress %}
+  <div class="card bg-base-200 shadow-xs">
+    <div class="card-body gap-3">
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="size-3 shrink-0 rounded-full {{ course.color_class }}" aria-hidden="true"></span>
+          <a href="{{ url_for('courses.detail', course_id=course.id) }}" class="link link-hover card-title text-base">{{ course.title }}</a>
+        </div>
+        {{ status_badge(course.status, statuses[course.status]) }}
+      </div>
+      <div class="text-base-content/60 flex flex-wrap gap-3 text-xs">
+        <span>{{ course.cfu }} CFU</span>
+        {% if course.exam_date %}<span class="flex items-center gap-1">{{ icon("calendar-clock", "size-3") }} {{ course.exam_date | date_it }}</span>{% endif %}
+      </div>
+      <div>
+        <div class="mb-1 flex justify-between text-xs"><span>Lezioni</span><span>{{ completed }}/{{ total or "—" }}</span></div>
+        <progress class="progress progress-primary w-full" value="{{ pct }}" max="100" aria-label="Progresso lezioni"></progress>
+      </div>
+      <div class="card-actions justify-end">
+        <a href="{{ url_for('courses.edit', course_id=course.id) }}" class="btn btn-ghost btn-xs" aria-label="Modifica corso {{ course.title }}">{{ icon("pencil", "size-3.5") }}</a>
+        <form method="post" action="{{ url_for('courses.delete', course_id=course.id) }}" data-confirm="Eliminare definitivamente &quot;{{ course.title }}&quot;? Verranno rimosse anche le lezioni collegate.">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button type="submit" class="btn btn-ghost btn-xs text-error" aria-label="Elimina corso {{ course.title }}">{{ icon("trash-2", "size-3.5") }}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

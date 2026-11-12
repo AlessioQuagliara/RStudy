@@ -1,0 +1,22 @@
+# Postgres usa e getta per i test di integrazione. Progetto separato da quello di sviluppo:
+# nessun volume, dati in memoria, niente in comune con rstudy-saas.
+# Avvio:  docker compose -f compose.test.yaml up -d
+# Stop:   docker compose -f compose.test.yaml down
+name: rstudy-saas-test
+
+services:
+  db-test:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: rstudy
+      POSTGRES_DB: rstudy_test
+      POSTGRES_PASSWORD: ${TEST_POSTGRES_PASSWORD:?imposta TEST_POSTGRES_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:${RSTUDY_TEST_DB_PORT:-55433}:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rstudy -d rstudy_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 15

@@ -1,0 +1,80 @@
+{# Componenti Jinja condivisi: Topbar, Card, EmptyState (portati dai componenti React del desktop). #}
+
+{% macro topbar(title, breadcrumb=None, breadcrumb_url=None) %}
+<header class="col-span-12 flex items-center gap-2">
+  <label for="app-drawer" class="btn btn-square btn-ghost drawer-button lg:hidden" aria-label="Apri menu">
+    {{ icon("menu", "size-5") }}
+  </label>
+  <div class="grow">
+    {% if breadcrumb %}
+    <div class="breadcrumbs text-sm">
+      <ul>
+        <li>{% if breadcrumb_url %}<a href="{{ breadcrumb_url }}">{{ breadcrumb }}</a>{% else %}{{ breadcrumb }}{% endif %}</li>
+        <li><h1 class="font-semibold">{{ title }}</h1></li>
+      </ul>
+    </div>
+    {% else %}
+    <h1 class="text-xl font-semibold">{{ title }}</h1>
+    {% endif %}
+  </div>
+  <button type="button" class="btn btn-circle btn-sm btn-ghost" aria-label="Cambia tema chiaro/scuro" data-theme-toggle>
+    <span class="theme-icon-dark">{{ icon("sun") }}</span>
+    <span class="theme-icon-light">{{ icon("moon") }}</span>
+  </button>
+</header>
+{% endmacro %}
+
+{% macro card(span=12, class="") %}
+{% set span_class = {4: "xl:col-span-4", 6: "xl:col-span-6", 7: "xl:col-span-7", 8: "xl:col-span-8", 12: "xl:col-span-12"}[span] %}
+<section class="card bg-base-200 col-span-12 shadow-xs {{ span_class }} {{ class }}">
+  <div class="card-body">{{ caller() }}</div>
+</section>
+{% endmacro %}
+
+{% macro empty_state(icon_name, title, description) %}
+<div class="flex flex-col items-center gap-3 py-12 text-center">
+  {{ icon(icon_name, "text-base-content/30 size-10") }}
+  <h3 class="font-semibold">{{ title }}</h3>
+  <p class="text-base-content/60 max-w-sm text-sm">{{ description }}</p>
+  {{ caller() if caller }}
+</div>
+{% endmacro %}
+
+{# StatusBadge del desktop (components/ui/Badge.tsx). #}
+{% macro status_badge(status, label) %}
+<span class="badge badge-sm {{ {'active': 'badge-info', 'completed': 'badge-success', 'archived': 'badge-ghost', 'draft': 'badge-warning', 'failed': 'badge-error'}.get(status, 'badge-ghost') }}">{{ label }}</span>
+{% endmacro %}
+
+{# Stat del desktop (components/ui/StatCard.tsx). #}
+{% macro stat(icon_name, title, value, desc=None, href=None) %}
+{% set body %}
+  <div class="stat-figure">{{ icon(icon_name, "size-5 opacity-40") }}</div>
+  <div class="stat-title">{{ title }}</div>
+  <div class="stat-value text-2xl">{{ value }}</div>
+  {% if desc %}<div class="stat-desc truncate">{{ desc }}</div>{% endif %}
+{% endset %}
+{% if href %}<a href="{{ href }}" class="stat bg-base-200 rounded-box hover:bg-base-300 shadow-xs transition-colors">{{ body }}</a>
+{% else %}<div class="stat bg-base-200 rounded-box shadow-xs">{{ body }}</div>{% endif %}
+{% endmacro %}
+
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />{% endmacro %}
+
+{# Paginazione di db.paginate: conserva filtri e scheda della pagina corrente, cambia solo ?page. Importare "with context". #}
+{% macro page_href(n) %}{{ url_for(request.endpoint, **dict(request.view_args, **dict(request.args.to_dict(), page=n))) }}{% endmacro %}
+
+{% macro pagination(page) %}
+{% if page.pages > 1 %}
+<nav class="mt-4 flex flex-wrap items-center justify-center gap-3" aria-label="Paginazione">
+  <div class="join">
+    {% if page.has_prev %}<a class="join-item btn btn-sm" href="{{ page_href(page.prev_num) }}" aria-label="Pagina precedente">«</a>{% endif %}
+    {% for n in page.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
+    {% if n is none %}<span class="join-item btn btn-sm btn-disabled">…</span>
+    {% elif n == page.page %}<span class="join-item btn btn-sm btn-active" aria-current="page">{{ n }}</span>
+    {% else %}<a class="join-item btn btn-sm" href="{{ page_href(n) }}">{{ n }}</a>{% endif %}
+    {% endfor %}
+    {% if page.has_next %}<a class="join-item btn btn-sm" href="{{ page_href(page.next_num) }}" aria-label="Pagina successiva">»</a>{% endif %}
+  </div>
+  <span class="text-base-content/60 text-xs">{{ page.first }}–{{ page.last }} di {{ page.total }}</span>
+</nav>
+{% endif %}
+{% endmacro %}

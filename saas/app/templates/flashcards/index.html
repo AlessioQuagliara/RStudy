@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "_ui.html" import topbar, empty_state, pagination with context %}
+{% from "flashcards/_list.html" import flashcard_grid with context %}
+{% block title %}Flashcard · RStudy{% endblock %}
+{% block content %}
+{{ topbar("Flashcard") }}
+<form method="get" class="col-span-12 flex flex-wrap gap-2">
+  <select name="course" class="select select-bordered select-sm w-auto" aria-label="Materia">
+    <option value="">Tutte le materie</option>
+    {% for c in courses %}<option value="{{ c.id }}" {{ 'selected' if c.id == course_id }}>{{ c.title }}</option>{% endfor %}
+  </select>
+  <select name="difficulty" class="select select-bordered select-sm w-auto" aria-label="Difficoltà">
+    <option value="all">Tutte le difficoltà</option>
+    {% for value, label in difficulties.items() %}<option value="{{ value }}" {{ 'selected' if difficulty == value }}>{{ label }}</option>{% endfor %}
+  </select>
+  <input name="tag" class="input input-bordered input-sm w-auto" placeholder="Filtra per tag..." value="{{ tag }}" aria-label="Filtra per tag" />
+  <button type="submit" class="btn btn-sm">Filtra</button>
+</form>
+<div class="col-span-12">
+  {% if due_count %}
+  <a class="btn btn-primary btn-sm" href="{{ url_for('flashcards.study', course=course_id) }}">{{ icon("layers") }} Studia ripassi di oggi ({{ due_count }})</a>
+  {% else %}
+  <button type="button" class="btn btn-primary btn-sm" disabled>{{ icon("layers") }} Nessun ripasso per oggi</button>
+  {% endif %}
+</div>
+<div class="col-span-12">
+  {% if cards.items %}
+  {{ flashcard_grid(cards.items, request.full_path) }}
+  {{ pagination(cards) }}
+  {% else %}
+  {{ empty_state("layers", "Nessuna flashcard", "Crea flashcard manualmente da un corso oppure genera uno studio AI da una lezione.") }}
+  {% endif %}
+</div>
+{% endblock %}

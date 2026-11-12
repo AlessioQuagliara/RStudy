@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "_ui.html" import topbar, card, csrf %}
+{% set is_edit = course.id is not none %}
+{% block title %}{{ "Modifica corso" if is_edit else "Nuovo corso" }} · RStudy{% endblock %}
+{% block content %}
+{{ topbar("Modifica corso" if is_edit else "Nuovo corso", "Corsi", url_for("courses.index")) }}
+{# Campi e limiti di CourseFormModal.tsx; qui è una pagina invece di una modale. #}
+{% call card(8) %}
+<form method="post" class="flex flex-col gap-3">
+  {{ csrf() }}
+  <label class="form-control">
+    <span class="label-text mb-1">Titolo *</span>
+    <input name="title" class="input input-bordered w-full" value="{{ course.title or '' }}" maxlength="200" required autofocus />
+  </label>
+  <div class="grid grid-cols-2 gap-3">
+    <label class="form-control">
+      <span class="label-text mb-1">Codice corso</span>
+      <input name="code" class="input input-bordered w-full" value="{{ course.code or '' }}" maxlength="50" />
+    </label>
+    <label class="form-control">
+      <span class="label-text mb-1">CFU</span>
+      <input name="cfu" type="number" min="0" max="60" class="input input-bordered w-full" value="{{ course.cfu if course.cfu is not none else 6 }}" />
+    </label>
+  </div>
+  <div class="grid grid-cols-2 gap-3">
+    <label class="form-control">
+      <span class="label-text mb-1">Data esame (opzionale)</span>
+      <input name="exam_date" type="date" class="input input-bordered w-full" value="{{ course.exam_date or '' }}" />
+    </label>
+    <label class="form-control">
+      <span class="label-text mb-1">Lezioni previste</span>
+      <input name="target_lessons" type="number" min="0" max="200" class="input input-bordered w-full" value="{{ course.target_lessons if course.target_lessons is not none else '' }}" />
+    </label>
+  </div>
+  <label class="form-control">
+    <span class="label-text mb-1">Introduzione</span>
+    <textarea name="introduction" class="textarea textarea-bordered w-full" rows="2" maxlength="5000">{{ course.introduction or '' }}</textarea>
+  </label>
+  <label class="form-control">
+    <span class="label-text mb-1">Obiettivi</span>
+    <textarea name="objectives" class="textarea textarea-bordered w-full" rows="2" maxlength="5000">{{ course.objectives or '' }}</textarea>
+  </label>
+  <div class="grid grid-cols-2 gap-3">
+    <label class="form-control">
+      <span class="label-text mb-1">Stato</span>
+      <select name="status" class="select select-bordered w-full">
+        {% for value, label in statuses.items() %}<option value="{{ value }}" {{ 'selected' if course.status == value }}>{{ label }}</option>{% endfor %}
+      </select>
+    </label>
+    <fieldset class="form-control">
+      <legend class="label-text mb-1">Colore</legend>
+      <div class="flex gap-2 pt-1">
+        {% for value, cls in colors.items() %}
+        <input type="radio" name="color" value="{{ value }}" class="radio radio-sm border-0 {{ cls }} checked:ring-2 checked:ring-offset-2 checked:ring-base-content" aria-label="Colore {{ value }}" {{ 'checked' if course.color == value }} />
+        {% endfor %}
+      </div>
+    </fieldset>
+  </div>
+  <div class="mt-2 flex justify-end gap-2">
+    <a href="{{ url_for('courses.detail', course_id=course.id) if is_edit else url_for('courses.index') }}" class="btn">Annulla</a>
+    <button type="submit" class="btn btn-primary">{{ "Salva" if is_edit else "Crea corso" }}</button>
+  </div>
+</form>
+{% endcall %}
+{% endblock %}

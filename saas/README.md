@@ -1,0 +1,152 @@
+# RStudy (in sviluppo)
+
+Versione web di RStudy: [Quart](https://quart.palletsprojects.com) (Flask async), SQLAlchemy async, PostgreSQL,
+Hypercorn, Docker Compose, Traefik in produzione.
+Ha sostituito l'app desktop Electron (rimossa dal repo; resta nella cronologia git): i dati stanno sul server
+e chi usava il desktop può importarne il backup JSON.
+
+## Stato
+
+Disponibile:
+- landing pubblica su `/`, con accesso e registrazione; l'app parte da `/dashboard`;
+- pagine legali pubbliche: `/privacy`, `/cookie` (solo cookie tecnici, quindi nessun banner), `/termini`;
+  titolare e contatto in `app/main/__init__.py::LEGAL`. Testi senza revisione legale;
+- piani: 15 giorni di prova completa senza carta dalla registrazione, poi piano gratis (tutta l'app, 5 richieste AI
+  al mese, `ai.FREE_MONTHLY_LIMIT`) o abbonamento Paddle a 4,99 €/mese o 39,90 €/anno (`AI_DAILY_LIMIT` al giorno);
+  stato dell'abbonamento aggiornato solo dai webhook firmati;
+- impostazioni: profilo (università, facoltà), utilizzo AI, tema, backup JSON nel formato del desktop
+  (import con upsert per id limitato ai dati dell'account; export disponibile anche a prova scaduta);
+- account (registrazione con università e facoltà, accesso, rate limit, CSRF, CSP senza script inline);
+- corsi con filtri e ricerca, lezioni con appunti, dashboard con le metriche del desktop;
+- generazione AI in background (`quart --app asgi ai-worker`): studio AI (riepilogo, punti chiave, schema,
+  diagramma, domande di autoverifica, flashcard) e percorso di studio, corretti dal server;
+- lezione divisa in schede: Appunti, Studio AI, "Studia passo passo" (argomenti con spiegazione, regola, esempio svolto
+  ed errore comune; "Ho capito" porta al successivo e dopo l'ultimo al test da 8 esercizi, con argomenti capiti e da
+  ripassare; progressi salvati sul server) e Schemi (schema di studio, mappa concettuale costruita dallo schema senza
+  chiamate AI, diagramma dei concetti; disegnati con Mermaid nel browser, codice copiabile);
+  stessi appunti = risultato riusato senza nuova chiamata; limite giornaliero per utente (`AI_DAILY_LIMIT`);
+- materiali del corso: upload di PDF, DOCX, TXT e Markdown (al massimo 20 MB per invio) con estrazione del testo;
+  come nel backup del desktop si conserva il testo estratto, non il file (`app/materials.py`);
+- "Chiedi al corso": domande sul testo di materiali e appunti, con le fonti citate sotto ogni risposta e la cronologia
+  salvata; i passaggi sono cercati con la ricerca full-text di Postgres in italiano (`app/rag.py`);
+  domande e generazioni condividono il limite giornaliero;
+- reel (scheda Reel della lezione): l'AI genera 3-6 brevi animazioni verticali, una per concetto, come JSON dichiarativo
+  (testi, riquadri, frecce, barre con coordinate in percentuale; `ai/schemas.py::ReelSet`); `static/reels.js` le disegna
+  su canvas con i colori del tema, una alla volta mentre sono visibili nel feed; testo equivalente per gli screen reader;
+- flashcard: lista paginata (30 per pagina) con filtri, editor, duplica, ripasso con gli stessi intervalli del desktop (1/3/7 giorni);
+- produzione con Traefik e certificati Let's Encrypt (`compose.prod.yaml`).
+
+Limiti provvisori, da superare in seguito:
+- colori predefiniti di daisyUI invece del tema del desktop, in attesa di una verifica di licenza;
+- appunti in un'area di testo semplice con salvataggio esplicito, invece dell'editor TipTap con autosave;
+- testo generato mostrato senza Markdown né LaTeX (il modello scrive le formule come testo);
+- niente esercizi di codice; il test del percorso è un unico form invece del quiz a passi;
+- provider AI `fake` (simulato, indicato come tale nell'interfaccia) di default in sviluppo.
+
+Funzioni del desktop non ancora portate: riassunto del corso, presentazioni, sessione studio in PDF, dettatura.
+
+## Come è fatto
+
+Un'app Quart (`app/__init__.py::create_app`) con un blueprint per area: `auth`, `main` (landing e dashboard),
+`courses` (corsi, lezioni, esercizi), `flashcards`, `billing` (Paddle), `settings` (profilo e backup).
+Template Jinja in `app/templates`, CSS, icone e Mermaid copiati/compilati da `npm run build` in `app/static/dist`.
+La CSP vieta script e stili inline; solo la scheda Schemi permette gli stili inline, che Mermaid scrive negli SVG.
+
+- `app/db.py`: SQLAlchemy async su psycopg. `db()` restituisce la sessione della richiesta, chiusa a fine richiesta.
+  Le relazioni usate nei template sono `lazy="selectin"`: in async un caricamento implicito non è permesso.
+- `app/web.py`: utente corrente (`g.user`), `@login_required`, token CSRF in sessione, paginazione.
+  Le chiavi di sessione sono quelle di Flask-Login: chi era collegato alla versione Flask resta collegato.
+- `app/ai/`: le pagine accodano soltanto; il processo `quart --app asgi ai-worker` chiama il provider.
+  Eccezione: "Chiedi al corso" (`app/rag.py`) chiama il provider nella richiesta, perché la risposta è testo breve.
+- Lavoro bloccante fuori dall'event loop: hash delle password (scrypt, al più 2 insieme) e chiamate HTTP
+  verso AI e Paddle girano in un thread (`asyncio.to_thread`).
+- Migrazioni Alembic in `migrations/versions`: `alembic upgrade head` (legge `DATABASE_URL`).
+
+## Avvio locale
+
+```bash
+cd saas
+cp .env.example .env      # poi compila SECRET_KEY, POSTGRES_PASSWORD, TEST_POSTGRES_PASSWORD
+docker compose up --build
+```
+
+L'app risponde su `http://127.0.0.1:5080` (porta configurabile con `RSTUDY_WEB_PORT`).
+Il servizio `assets` ricompila il CSS quando cambiano template o JavaScript,
+il servizio `worker` esegue le generazioni AI (provider simulato, salvo `AI_PROVIDER=openai` in `.env`).
+
+## Produzione
+
+Server condiviso con altre app: le porte 80/443 sono di un unico Traefik (`deploy/traefik`), a cui ogni app si aggancia
+con la rete Docker esterna `proxy`. RStudy non pubblica porte. Il dominio `rstudy.dev` è su Cloudflare.
+
+Catena: browser → Cloudflare (proxy arancione) → Traefik → Hypercorn. Traefik risponde per RStudy solo a IP Cloudflare
+(`cloudflare-only@file`), quindi l'IP del client si legge da `CF-Connecting-IP` (`CLIENT_IP_HEADER`) e lo schema/host
+dagli `X-Forwarded-*` di Traefik (`PROXY_TRUSTED_HOPS=1`).
+
+Cloudflare, una volta:
+1. DNS: record `A` (e `AAAA` se c'è IPv6) per `rstudy.dev` e `www` verso l'IP del server, proxy attivo.
+2. SSL/TLS: modalità **Full (strict)**; il certificato sul server è Let's Encrypt, ottenuto da Traefik con la challenge DNS.
+3. Token API (My Profile > API Tokens): permesso Zone > DNS > Edit, solo sulla zona `rstudy.dev`.
+
+Traefik condiviso, una volta per server (salta se ne gira già uno: riusalo con rete `proxy`, resolver `cloudflare` e
+`deploy/traefik/dynamic/cloudflare.yml`):
+
+```bash
+cd saas/deploy/traefik
+cp .env.example .env        # ACME_EMAIL e CF_DNS_API_TOKEN
+docker network create proxy
+docker compose up -d
+```
+
+RStudy:
+
+```bash
+cd saas
+cp .env.example .env.prod   # compila SECRET_KEY, POSTGRES_PASSWORD, AI_*, PADDLE_*; DOMAIN=rstudy.dev
+docker compose -f compose.prod.yaml --env-file .env.prod up -d --build
+```
+
+Il servizio `migrate` applica le migrazioni prima che partano `web` e `worker`.
+Postgres è solo sulla rete interna dello stack, invisibile alle altre app. Webhook Paddle: `https://rstudy.dev/paddle/webhook`.
+La lista degli IP Cloudflare (https://www.cloudflare.com/ips/) è in due punti di `deploy/traefik`: aggiornarla insieme.
+
+## Test
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
+npm ci && npm run build          # i test di layout leggono le icone compilate
+.venv/bin/pytest
+```
+
+Senza `TEST_DATABASE_URL` i test che usano PostgreSQL vengono saltati. Girano sul Postgres usa e getta
+di `compose.test.yaml`, che tiene i dati in memoria e non usa volumi:
+
+```bash
+docker compose -f compose.test.yaml up -d --wait
+TEST_DATABASE_URL=postgresql+psycopg://rstudy:<TEST_POSTGRES_PASSWORD>@127.0.0.1:55433/rstudy_test .venv/bin/pytest
+docker compose -f compose.test.yaml down
+```
+
+## Costo dell'AI
+
+Ogni generazione (`ai_jobs.usage`) e ogni domanda a "Chiedi al corso" (`course_questions.usage`) salva i token
+riportati dal provider, riparazioni e tentativi falliti compresi: `calls`, `prompt_tokens`, `completion_tokens`
+(con dentro `reasoning_tokens`) e `prompt_cache_hit_tokens`. Media per tipo e modello negli ultimi 30 giorni:
+
+```sql
+SELECT kind, model, count(*) AS n,
+       round(avg((usage->>'prompt_tokens')::int)) AS prompt,
+       round(avg((usage->>'completion_tokens')::int)) AS completion,
+       round(avg((usage->>'reasoning_tokens')::int)) AS reasoning,
+       round(avg((usage->>'calls')::int), 2) AS calls
+FROM (SELECT kind, model, usage, created_at FROM ai_jobs
+      UNION ALL SELECT 'course_chat', model, usage, created_at FROM course_questions) t
+WHERE usage IS NOT NULL AND created_at > now() - interval '30 days'
+GROUP BY kind, model ORDER BY kind, model;
+```
+
+In locale: `docker compose exec db psql -U rstudy -d rstudy`. Moltiplica per i prezzi per milione di token del provider.
+
+## Variabili
+
+Sono tutte descritte in [`.env.example`](.env.example). Nessuna ha un valore di riserva per i segreti.

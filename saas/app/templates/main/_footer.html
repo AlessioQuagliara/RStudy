@@ -1,0 +1,11 @@
+<footer class="border-base-300 border-t">
+  <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-8 text-sm">
+    <span class="text-base-content/70">RStudy — sviluppato da Alessio Quagliara</span>
+    <div class="text-base-content/70 flex gap-5">
+      <a href="{{ url_for('main.terms') }}" class="hover:text-primary">Termini</a>
+      <a href="{{ url_for('main.privacy') }}" class="hover:text-primary">Privacy</a>
+      <a href="{{ url_for('main.cookies') }}" class="hover:text-primary">Cookie</a>
+      <a href="mailto:{{ legal.email }}" class="hover:text-primary">Contatti</a>
+    </div>
+  </div>
+</footer>

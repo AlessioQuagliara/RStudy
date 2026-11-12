@@ -27,6 +27,7 @@
     <input type="password" name="password_confirm" class="input input-bordered w-full" autocomplete="new-password" required />
   </label>
   <button type="submit" class="btn btn-primary">{{ icon("user-plus") }} Inizia la prova gratuita</button>
+  <p class="text-base-content/60 text-xs">Registrandoti accetti i <a href="{{ url_for('main.terms') }}" class="link">Termini di servizio</a> e confermi di aver letto l'<a href="{{ url_for('main.privacy') }}" class="link">informativa sulla privacy</a>.</p>
   <p class="text-base-content/60 text-xs">15 giorni completi gratis, senza carta. Poi piano gratis con 5 richieste AI al mese, oppure 4,99 € al mese o 39,90 € all'anno.</p>
 </form>
 <p class="text-base-content/60 mt-2 text-sm">Hai già un account? <a class="link link-primary" href="{{ url_for('auth.login') }}">Accedi</a></p>

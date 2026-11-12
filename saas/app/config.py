@@ -64,6 +64,9 @@ def load_config() -> dict:
         # Numero di proxy fidati davanti all'app per gli header X-Forwarded-For/Proto/Host.
         # 0 = nessuna fiducia negli header inoltrati. Va impostato al deploy dopo aver verificato la catena reale.
         "PROXY_TRUSTED_HOPS": _int("PROXY_TRUSTED_HOPS", 0),
+        # Header con l'IP reale del client messo da un proxy esterno (Cloudflare: CF-Connecting-IP). Vuoto = ignorato.
+        # Va impostato solo se l'app è raggiungibile esclusivamente attraverso quel proxy, altrimenti è falsificabile.
+        "CLIENT_IP_HEADER": os.environ.get("CLIENT_IP_HEADER", "").strip(),
         **_ai_config(),
         **_billing_config(),
     }

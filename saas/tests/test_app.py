@@ -66,3 +66,27 @@ async def test_proxy_headers_ignored_unless_configured(app, monkeypatch):
     monkeypatch.setenv("PROXY_TRUSTED_HOPS", "1")
     proxied = create_app({"TESTING": True})
     assert isinstance(proxied.asgi_app, ProxyFixMiddleware)
+
+
+async def test_client_ip_header_used_when_configured(app, monkeypatch):
+    monkeypatch.setenv("PROXY_TRUSTED_HOPS", "1")
+    monkeypatch.setenv("CLIENT_IP_HEADER", "CF-Connecting-IP")
+    app = create_app({"TESTING": True})
+
+    @app.get("/_ip")
+    async def _ip():
+        from quart import request
+
+        return request.remote_addr
+
+    client = app.test_client()
+    response = await client.get("/_ip", headers={"CF-Connecting-IP": "7.7.7.7", "X-Forwarded-For": "6.6.6.6"})
+    assert await response.get_data(as_text=True) == "7.7.7.7"
+
+
+@pytest.mark.parametrize("path", ["/privacy", "/cookie", "/termini"])
+async def test_legal_pages_are_public_and_linked(client, path):
+    response = await client.get(path)
+    assert response.status_code == 200
+    assert "quagliara.alessio@gmail.com" in await response.get_data(as_text=True)
+    assert f'href="{path}"' in await (await client.get("/")).get_data(as_text=True)

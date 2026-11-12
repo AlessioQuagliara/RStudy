@@ -1,4 +1,4 @@
-"""Prompt portati da studyforge/electron/ai/prompts.ts (PROMPT_VERSION 1.2.0, percorso di studio di bde8ab5), senza esercizi di codice.
+"""Prompt portati dall'app desktop (prompts.ts, nella cronologia git; PROMPT_VERSION 1.2.0, percorso di studio di bde8ab5), senza esercizi di codice.
 
 Il web mostra solo testo semplice: niente Markdown né LaTeX nei campi, a parte il diagramma Mermaid.
 """

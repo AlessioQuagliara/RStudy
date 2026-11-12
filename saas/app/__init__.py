@@ -41,12 +41,28 @@ def date_it(value) -> str:
     return f"{value.day:02d} {_MONTHS_IT[value.month - 1]} {value.year}" if value else ""
 
 
+def _client_ip_from_header(asgi_app, header: str):
+    name = header.lower().encode()
+
+    async def middleware(scope, receive, send):
+        if scope["type"] in ("http", "websocket"):
+            value = next((v for k, v in scope["headers"] if k == name), b"").decode("latin1").strip()
+            if value:
+                scope = {**scope, "client": (value, 0)}
+        await asgi_app(scope, receive, send)
+
+    return middleware
+
+
 def create_app(overrides: dict | None = None) -> Quart:
     app = Quart(__name__)
     app.config.update(load_config())
     if overrides:
         app.config.update(overrides)
 
+    # Interno al ProxyFix: l'IP dall'header vince su quello ricavato da X-Forwarded-For.
+    if header := app.config["CLIENT_IP_HEADER"]:
+        app.asgi_app = _client_ip_from_header(app.asgi_app, header)
     if hops := app.config["PROXY_TRUSTED_HOPS"]:
         app.asgi_app = ProxyFixMiddleware(app.asgi_app, mode="legacy", trusted_hops=hops)
 

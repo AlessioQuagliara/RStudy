@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{# Porting di web/src/components/{Header,HomeContent,Footer}.tsx, con i testi adattati alla versione web. #}
 {% block title %}RStudy — Study fast, study more{% endblock %}
 {% block head %}
 <meta name="description" content="RStudy trasforma i tuoi appunti universitari in esercizi, flashcard e riepiloghi generati dall'AI, per studiare in modo attivo. Direttamente dal browser." />
@@ -22,7 +21,7 @@
   ("Devo installare qualcosa?", "No. RStudy web funziona dal browser: basta registrarsi con email e password."),
   ("Dove finiscono i miei appunti?", "Corsi e appunti sono salvati sul server di RStudy. Per le generazioni AI il testo necessario viene inviato al provider AI solo per produrre il risultato."),
   ("C'è un limite alle generazioni AI?", "Sì: 5 richieste al mese nel piano gratis, un limite giornaliero equo con l'abbonamento. Rigenerare con gli stessi appunti riusa il risultato già pronto e non consuma il limite."),
-  ("E l'app desktop?", "Resta disponibile per macOS, Windows e Linux, con i dati salvati sul tuo computer. La versione web è un servizio separato, con un account a parte."),
+  ("Usavo l'app desktop: posso portare i miei dati?", "Sì. Esporta il backup JSON dalle Impostazioni dell'app desktop e importalo dalle Impostazioni di RStudy web."),
 ] %}
 {% block body %}
 <header class="bg-base-100/80 border-base-300 sticky top-0 z-20 border-b backdrop-blur-sm">
@@ -146,13 +145,5 @@
   </section>
 </main>
 
-<footer class="border-base-300 border-t">
-  <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-8 text-sm">
-    <span class="text-base-content/70">RStudy — sviluppato da Alessio Quagliara</span>
-    <div class="text-base-content/70 flex gap-5">
-      <a href="https://github.com/AlessioQuagliara/RStudy" class="hover:text-primary">Repository</a>
-      <a href="https://github.com/AlessioQuagliara/RStudy/issues" class="hover:text-primary">Issue</a>
-    </div>
-  </div>
-</footer>
+{% include "main/_footer.html" %}
 {% endblock %}

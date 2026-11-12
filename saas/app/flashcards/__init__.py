@@ -15,7 +15,7 @@ from ..web import login_required, paginate
 bp = Blueprint("flashcards", __name__, url_prefix="/flashcards")
 
 DIFFICULTIES = {"easy": "Facile", "medium": "Media", "hard": "Difficile"}
-# Stessi intervalli di SRS_INTERVAL_DAYS (studyforge/electron/db/repositories.ts).
+# Stessi intervalli dell'app desktop (SRS_INTERVAL_DAYS), così i ripassi importati da un suo backup restano coerenti.
 SRS_INTERVAL_DAYS = {"easy": 7, "medium": 3, "hard": 1}
 
 

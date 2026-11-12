@@ -98,7 +98,7 @@ def _choice(form, name: str, choices, default: str) -> str:
 
 
 def _apply_course_form(course: Course, form) -> None:
-    # Stessi limiti di createCourseInputSchema (studyforge/electron/shared/schemas.ts).
+    # Stessi limiti dell'app desktop (createCourseInputSchema): i backup importati li rispettano già.
     course.title = _text(form, "title", 200, required=True, label="Il titolo")
     course.code = _text(form, "code", 50, label="Il codice")
     course.cfu = _int(form, "cfu", 0, 60, "CFU", default=0)

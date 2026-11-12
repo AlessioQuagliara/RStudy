@@ -12,3 +12,12 @@
 [data-theme="light"] .theme-icon-dark {
   display: none;
 }
+
+/* Pagine legali: testo lungo senza il plugin typography. */
+.legal h1 { @apply mb-6 text-3xl font-bold; }
+.legal h2 { @apply mt-8 mb-2 text-xl font-semibold; }
+.legal p, .legal li { @apply text-base-content/80 leading-relaxed; }
+.legal p { @apply mb-3; }
+.legal ul { @apply mb-3 list-disc space-y-1 pl-6; }
+.legal a { @apply link link-primary; }
+.legal table { @apply table table-sm mb-3; }

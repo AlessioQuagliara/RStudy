@@ -1,4 +1,4 @@
-// Tema chiaro/scuro su data-theme di <html>, come studyforge/src/lib/uiStore.ts (default: dark).
+// Tema chiaro/scuro su data-theme di <html> (default: dark).
 (function () {
   var KEY = "rstudy-theme";
   var root = document.documentElement;

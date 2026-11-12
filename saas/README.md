@@ -1,15 +1,16 @@
-# RStudy web (in sviluppo)
+# RStudy (in sviluppo)
 
 Versione web di RStudy: [Quart](https://quart.palletsprojects.com) (Flask async), SQLAlchemy async, PostgreSQL,
 Hypercorn, Docker Compose, Traefik in produzione.
-L'app desktop resta in `../studyforge/`.
-
-A differenza del desktop, questa versione conserva i dati sul server.
+Ha sostituito l'app desktop Electron (rimossa dal repo; resta nella cronologia git): i dati stanno sul server
+e chi usava il desktop può importarne il backup JSON.
 
 ## Stato
 
 Disponibile:
-- landing pubblica su `/` (porting di `../web/`), con accesso e registrazione; l'app parte da `/dashboard`;
+- landing pubblica su `/`, con accesso e registrazione; l'app parte da `/dashboard`;
+- pagine legali pubbliche: `/privacy`, `/cookie` (solo cookie tecnici, quindi nessun banner), `/termini`;
+  titolare e contatto in `app/main/__init__.py::LEGAL`. Testi senza revisione legale;
 - piani: 15 giorni di prova completa senza carta dalla registrazione, poi piano gratis (tutta l'app, 5 richieste AI
   al mese, `ai.FREE_MONTHLY_LIMIT`) o abbonamento Paddle a 4,99 €/mese o 39,90 €/anno (`AI_DAILY_LIMIT` al giorno);
   stato dell'abbonamento aggiornato solo dai webhook firmati;
@@ -42,7 +43,7 @@ Limiti provvisori, da superare in seguito:
 - niente esercizi di codice; il test del percorso è un unico form invece del quiz a passi;
 - provider AI `fake` (simulato, indicato come tale nell'interfaccia) di default in sviluppo.
 
-Non ancora migrato dal desktop: riassunto del corso, presentazioni, sessione studio in PDF, dettatura.
+Funzioni del desktop non ancora portate: riassunto del corso, presentazioni, sessione studio in PDF, dettatura.
 
 ## Come è fatto
 
@@ -75,16 +76,39 @@ il servizio `worker` esegue le generazioni AI (provider simulato, salvo `AI_PROV
 
 ## Produzione
 
-Su un server con Docker e le porte 80/443 libere, con il DNS di `DOMAIN` che punta al server:
+Server condiviso con altre app: le porte 80/443 sono di un unico Traefik (`deploy/traefik`), a cui ogni app si aggancia
+con la rete Docker esterna `proxy`. RStudy non pubblica porte. Il dominio `rstudy.dev` è su Cloudflare.
+
+Catena: browser → Cloudflare (proxy arancione) → Traefik → Hypercorn. Traefik risponde per RStudy solo a IP Cloudflare
+(`cloudflare-only@file`), quindi l'IP del client si legge da `CF-Connecting-IP` (`CLIENT_IP_HEADER`) e lo schema/host
+dagli `X-Forwarded-*` di Traefik (`PROXY_TRUSTED_HOPS=1`).
+
+Cloudflare, una volta:
+1. DNS: record `A` (e `AAAA` se c'è IPv6) per `rstudy.dev` e `www` verso l'IP del server, proxy attivo.
+2. SSL/TLS: modalità **Full (strict)**; il certificato sul server è Let's Encrypt, ottenuto da Traefik con la challenge DNS.
+3. Token API (My Profile > API Tokens): permesso Zone > DNS > Edit, solo sulla zona `rstudy.dev`.
+
+Traefik condiviso, una volta per server (salta se ne gira già uno: riusalo con rete `proxy`, resolver `cloudflare` e
+`deploy/traefik/dynamic/cloudflare.yml`):
+
+```bash
+cd saas/deploy/traefik
+cp .env.example .env        # ACME_EMAIL e CF_DNS_API_TOKEN
+docker network create proxy
+docker compose up -d
+```
+
+RStudy:
 
 ```bash
 cd saas
-cp .env.example .env.prod   # compila SECRET_KEY, POSTGRES_PASSWORD, AI_*; aggiungi DOMAIN e ACME_EMAIL
+cp .env.example .env.prod   # compila SECRET_KEY, POSTGRES_PASSWORD, AI_*, PADDLE_*; DOMAIN=rstudy.dev
 docker compose -f compose.prod.yaml --env-file .env.prod up -d --build
 ```
 
 Il servizio `migrate` applica le migrazioni prima che partano `web` e `worker`.
-Postgres non è esposto; l'app riceve traffico solo da Traefik, che è l'unico proxy fidato (`PROXY_TRUSTED_HOPS=1`).
+Postgres è solo sulla rete interna dello stack, invisibile alle altre app. Webhook Paddle: `https://rstudy.dev/paddle/webhook`.
+La lista degli IP Cloudflare (https://www.cloudflare.com/ips/) è in due punti di `deploy/traefik`: aggiornarla insieme.
 
 ## Test
 

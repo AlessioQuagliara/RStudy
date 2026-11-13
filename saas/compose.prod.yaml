@@ -7,7 +7,7 @@ name: rstudy-saas-prod
 
 x-app-env: &app-env
   SECRET_KEY: ${SECRET_KEY:?imposta SECRET_KEY}
-  DATABASE_URL: postgresql+psycopg://rstudy:${POSTGRES_PASSWORD:?imposta POSTGRES_PASSWORD}@db:5432/rstudy
+  DATABASE_URL: postgresql+psycopg://rstudy:${POSTGRES_PASSWORD:?imposta POSTGRES_PASSWORD}@rstudy-db:5432/rstudy
   AI_PROVIDER: ${AI_PROVIDER:-}
   AI_BASE_URL: ${AI_BASE_URL:-}
   AI_MODEL: ${AI_MODEL:-}
@@ -35,7 +35,10 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     # Nessuna porta pubblicata: raggiungibile solo dalla rete interna.
-    networks: [internal]
+    # Alias univoco: web sta anche sulla rete del proxy, dove altri stack possono avere un servizio "db".
+    networks:
+      internal:
+        aliases: [rstudy-db]
     logging: *logging
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U rstudy -d rstudy"]

@@ -23,17 +23,13 @@ PER_PAGE = 30
 
 
 def _identifier() -> str:
-    """Impronta di IP e browser, calcolata come la session_protection "strong" di Flask-Login.
+    """Impronta del browser (User-Agent) a cui è legata la sessione.
 
-    Stesso calcolo e stesse chiavi di sessione (`_user_id`, `_id`): gli accessi fatti con la versione Flask restano validi.
+    L'IP non entra nel calcolo: dietro Cloudflare lo stesso browser alterna IPv4 e IPv6 (e su mobile cambia rete),
+    e legarlo all'IP faceva uscire gli utenti a metà navigazione. Il cookie è già firmato, HttpOnly, Secure e Lax.
     """
-    address = request.headers.get("X-Forwarded-For", request.remote_addr)
-    if address is not None:
-        address = address.encode("utf-8").split(b",")[0].strip()
-    user_agent = request.headers.get("User-Agent")
-    if user_agent is not None:
-        user_agent = user_agent.encode("utf-8")
-    return hashlib.sha512(f"{address}|{user_agent}".encode("utf8")).hexdigest()
+    user_agent = request.headers.get("User-Agent", "")
+    return hashlib.sha512(f"session|{user_agent}".encode("utf8")).hexdigest()
 
 
 def login_user(user: User) -> None:
@@ -54,7 +50,8 @@ async def load_user() -> None:
     if not user_id:
         return
     if session.get("_id") != _identifier():
-        session.clear()  # cookie usato da un altro IP o browser
+        current_app.logger.info("sessione scartata: impronta del browser diversa")
+        session.clear()  # cookie usato da un altro browser
         return
     try:
         g.user = await db().get(User, uuid.UUID(user_id))

@@ -63,6 +63,19 @@ async def test_login_and_logout(db_client):
     assert (await db_client.get("/")).status_code == 200  # landing pubblica
 
 
+async def test_session_survives_ip_change_but_not_browser_change(db_client):
+    # Dietro Cloudflare lo stesso browser alterna IPv4 e IPv6: la sessione non deve cadere.
+    await register(db_client)
+    ipv4 = {"X-Forwarded-For": "203.0.113.7"}
+    ipv6 = {"X-Forwarded-For": "2001:db8::7"}
+    assert (await db_client.get("/dashboard", headers=ipv4)).status_code == 200
+    assert (await db_client.get("/dashboard", headers=ipv6)).status_code == 200
+    # Cookie riusato da un altro browser: sessione scartata.
+    other = {"User-Agent": "Altro-Browser/1.0"}
+    assert (await db_client.get("/dashboard", headers=other)).status_code == 302
+    assert (await db_client.get("/dashboard")).status_code == 302
+
+
 async def test_login_replaces_existing_session(db_client):
     await register(db_client)
     await db_client.post("/logout")

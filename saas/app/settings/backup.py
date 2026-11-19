@@ -9,10 +9,10 @@ import uuid
 from datetime import date, datetime
 from typing import Literal
 
-from pydantic import AwareDatetime, BaseModel, Field, ValidationError, field_validator
+from pydantic import AwareDatetime, BaseModel, Field, ValidationError, field_validator, model_validator
 from sqlalchemy import select
 
-from ..ai import source_hash
+from ..ai import KINDS, source_hash
 from ..rag import index_lesson_notes, index_material
 from ..db import db
 from ..materials import TEXT_MAX
@@ -97,6 +97,39 @@ class LessonAiOutputIn(_Row):
     model: str = Field(max_length=100)
 
 
+class LastResult(BaseModel):
+    correct: int = Field(ge=0)
+    total: int = Field(ge=0)
+    to_review: list[int]
+
+
+class QuizAnswer(BaseModel):
+    answer: str = Field(max_length=2000)
+    correct: bool
+
+
+class PathProgress(BaseModel):
+    studied: list[int] = []
+    last_result: LastResult | None = None
+    answers: dict[str, QuizAnswer] = {}  # test in corso
+
+
+class WebAiJobIn(_Row):
+    """Generazioni che il desktop non ha (percorso di studio con i progressi, reel): solo nei backup della versione web."""
+
+    lessonId: uuid.UUID
+    kind: Literal["exercise_set", "reels"]
+    result: dict
+    progress: PathProgress | None = None
+    model: str = Field("", max_length=100)
+
+    @model_validator(mode="after")
+    def _check_result(self):
+        # Stesso schema del worker: i template leggono il risultato senza altri controlli.
+        self.result = KINDS[self.kind][1].model_validate(self.result).model_dump()
+        return self
+
+
 class BackupIn(BaseModel):
     version: Literal[1]
     courses: list[CourseIn] = Field(max_length=MAX_ITEMS)
@@ -106,6 +139,7 @@ class BackupIn(BaseModel):
     materials: list[MaterialIn] = Field(default=[], max_length=MAX_ITEMS)
     # Non ancora nella versione web: contati per dirlo all'utente, non importati.
     courseAiOutputs: list[dict] = Field(default=[], max_length=MAX_ITEMS)
+    webAiJobs: list[WebAiJobIn] = Field(default=[], max_length=MAX_ITEMS)
 
 
 async def _existing(model, ids: list[uuid.UUID], owned) -> dict:
@@ -131,10 +165,10 @@ async def import_backup(user, raw: bytes) -> dict[str, int]:
     lesson_ids = owned_lesson_ids | {x.id for x in data.lessons}
     cards = await _existing(Flashcard, [f.id for f in data.flashcards], lambda r: r.course_id in owned_course_ids)
     materials = await _existing(Material, [m.id for m in data.materials], lambda r: r.course_id in owned_course_ids)
-    jobs = await _existing(AiJob, [a.id for a in data.lessonAiOutputs], lambda r: r.user_id == user.id)
+    jobs = await _existing(AiJob, [a.id for a in [*data.lessonAiOutputs, *data.webAiJobs]], lambda r: r.user_id == user.id)
     if any(x.courseId not in course_ids for x in data.lessons) or any(
         f.courseId not in course_ids or (f.lessonId and f.lessonId not in lesson_ids) for f in data.flashcards
-    ) or any(a.lessonId not in lesson_ids for a in data.lessonAiOutputs) or any(
+    ) or any(a.lessonId not in lesson_ids for a in [*data.lessonAiOutputs, *data.webAiJobs]) or any(
         m.courseId not in course_ids or (m.lessonId and m.lessonId not in lesson_ids) for m in data.materials
     ):
         raise BackupError("Il file fa riferimento a corsi o lezioni che non contiene: import annullato.")
@@ -208,12 +242,21 @@ async def import_backup(user, raw: bytes) -> dict[str, int]:
         job.created_at, job.updated_at = a.createdAt, a.updatedAt
         db().add(job)
 
+    for w in data.webAiJobs:
+        lesson = lesson_by_id.get(w.lessonId) or await db().get(Lesson, w.lessonId)
+        job = jobs.get(w.id) or AiJob(id=w.id, user_id=user.id)
+        job.lesson_id, job.kind, job.status, job.model = w.lessonId, w.kind, "ready", w.model
+        job.source_hash, job.result = source_hash(lesson, w.kind), w.result
+        job.progress = w.progress.model_dump(exclude_none=True) if w.progress else None
+        job.created_at, job.updated_at = w.createdAt, w.updatedAt
+        db().add(job)
+
     await db().commit()
     return {
         "courses": len(data.courses),
         "lessons": len(data.lessons),
         "flashcards": len(data.flashcards),
-        "studies": len(data.lessonAiOutputs),
+        "studies": len(data.lessonAiOutputs) + len(data.webAiJobs),
         "materials": len(data.materials),
         "skipped_course_summaries": len(data.courseAiOutputs),
     }
@@ -238,11 +281,12 @@ async def export_backup(user) -> dict:
     cards = (await db().scalars(select(Flashcard).where(Flashcard.course_id.in_(course_ids)).order_by(Flashcard.created_at))).all()
     materials = (await db().scalars(select(Material).where(Material.course_id.in_(course_ids)).order_by(Material.created_at))).all()
     # Ultimo studio AI pronto per lezione, come lesson_ai_outputs del desktop (uno per lezione).
-    packs = {}
+    latest = {}
     for job in await db().scalars(
-        select(AiJob).where(AiJob.user_id == user.id, AiJob.kind == "study_pack", AiJob.status == "ready").order_by(AiJob.created_at)
+        select(AiJob).where(AiJob.user_id == user.id, AiJob.status == "ready").order_by(AiJob.created_at)
     ):
-        packs[job.lesson_id] = job
+        latest[job.lesson_id, job.kind] = job
+    packs = {lesson_id: job for (lesson_id, kind), job in latest.items() if kind == "study_pack"}
     return {
         "version": 1,
         "exportedAt": _iso(utcnow()),
@@ -283,4 +327,10 @@ async def export_backup(user) -> dict:
             for job in packs.values()
         ],
         "courseAiOutputs": [],
+        # Fuori dal formato del desktop, che li ignora: percorso di studio (con i progressi) e reel.
+        "webAiJobs": [
+            {"id": str(job.id), "lessonId": str(job.lesson_id), "kind": kind, "result": job.result,
+             "progress": job.progress, "model": job.model or "", "createdAt": _iso(job.created_at), "updatedAt": _iso(job.updated_at)}
+            for (_, kind), job in latest.items() if kind != "study_pack"
+        ],
     }

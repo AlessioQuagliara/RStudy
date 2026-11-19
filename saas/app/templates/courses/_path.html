@@ -15,7 +15,7 @@
   <h2 class="text-xl font-semibold">Studia questa lezione passo dopo passo</h2>
   <p class="text-base-content/70 max-w-md">
     L'AI divide la lezione in pochi argomenti, dal più semplice al più complesso: per ognuno una spiegazione chiara,
-    la regola da ricordare e un esempio svolto. Poi 8 esercizi per verificare cosa hai capito.
+    la regola da ricordare e un esempio svolto. Poi un test a crocette, una domanda alla volta, per verificare cosa hai capito.
   </p>
   {% if path_job %}<p class="text-base-content/60 text-sm">Gli esercizi di questa lezione sono stati preparati con una versione precedente, senza argomenti da studiare.</p>{% endif %}
   {% if ai_label and not (path_status and path_status.status in ("queued", "running")) %}
@@ -99,7 +99,7 @@
   <section class="bg-base-200 rounded-box flex flex-col gap-4 p-5 sm:p-6">
     <div>
       <h2 class="text-xl font-semibold sm:text-2xl">{{ exercise_set.title }}</h2>
-      <p class="text-base-content/60 text-sm">{{ topics | length }} argomenti · {{ exercise_set.exercises | length }} esercizi</p>
+      <p class="text-base-content/60 text-sm">{{ topics | length }} argomenti · {{ exercise_set.exercises | selectattr('type', 'equalto', 'multiple_choice') | list | length }} domande</p>
     </div>
     <div>
       <div class="mb-1 flex items-center justify-between text-sm">
@@ -117,7 +117,7 @@
 
   {% if path_outdated and ai_label and not (path_status and path_status.status in ("queued", "running")) %}
   <div role="status" class="alert flex flex-wrap justify-between">
-    <span class="text-sm">Gli appunti sono cambiati dopo la preparazione di questo percorso.</span>
+    <span class="text-sm">Gli appunti sono cambiati, o il percorso è di una versione precedente: preparalo di nuovo per il test aggiornato.</span>
     {{ generate_button("exercise_set", "Prepara di nuovo", "btn-sm") }}
   </div>
   {% endif %}

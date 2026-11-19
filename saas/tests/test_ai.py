@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy import func, select
 
 from app import ai
-from app.ai.schemas import ExerciseSet, is_open_answer_correct
+from app.ai.schemas import ExerciseSet
 from app.db import db
 from app.models import AiJob, Flashcard, User, utcnow
 
@@ -83,8 +83,10 @@ async def test_exercises_are_graded_on_server(ai_app):
 
     url = f"/courses/{course_id}/lessons/{lesson_id}/exercises"
     assert "Domanda simulata 1?" in (await (await client.get(url)).get_data(as_text=True))
-    html = await (await client.post(url, form={"answer-es-1": "Giusta", "answer-es-2": "Sbagliata A", "answer-es-3": "  PROVA "})).get_data(as_text=True)
-    assert "Risposte corrette: 2 su 3" in html
+    for qid, answer in (("es-1", "Giusta"), ("es-2", "Sbagliata A"), ("es-3", "Giusta")):
+        response = await client.post(url, form={"question": qid, "answer": answer})
+        assert response.headers["Location"].endswith(f"checked={qid}")
+    assert "Risposte corrette: 2 su 3" in (await (await client.get(url)).get_data(as_text=True))
 
 
 async def test_daily_limit_and_empty_notes(ai_app):
@@ -109,20 +111,24 @@ async def test_ai_disabled_hides_buttons(db_client):
 
 
 async def test_invalid_model_output_is_repaired_once(ai_app, monkeypatch):
-    good = ai._fake_chat(ai.prompts.EXERCISE_SET_SYSTEM, "")
+    good = ai._fake_chat(ai.prompts.QUIZ_SYSTEM, "")
     bad = json.loads(good)
-    bad["exercises"][0]["correctAnswer"] = "Non tra le opzioni"
+    bad["questions"][0]["correctAnswer"] = "Non tra le opzioni"
     calls = []
 
     def fake(system, user, usage=None):
         calls.append(user)
-        return "```json\n" + json.dumps(bad) + "\n```" if len(calls) == 1 else good
+        if system != ai.prompts.QUIZ_SYSTEM:
+            return ai._fake_chat(system, user)
+        return "```json\n" + json.dumps(bad) + "\n```" if len(calls) == 2 else good
 
     monkeypatch.setattr(ai, "chat", fake)
     async with ai_app.app_context():
         result = ai.generate("exercise_set", "prompt")
-    assert isinstance(result, ExerciseSet) and len(calls) == 2
-    assert "correctAnswer deve essere una delle opzioni" in calls[1]
+    # Spiegazioni, test non valido, test riparato: la seconda chiamata riceve anche gli argomenti del percorso.
+    assert isinstance(result, ExerciseSet) and len(calls) == 3 and len(result.exercises) == 3
+    assert "0. Argomento simulato 1: Regola simulata." in calls[1]
+    assert "correctAnswer deve essere una delle opzioni" in calls[2]
 
 
 async def test_provider_failure_is_stored_as_safe_message(ai_app, monkeypatch):
@@ -157,11 +163,6 @@ async def test_exercises_of_other_users_are_hidden(ai_app):
     await register(client, email="b@example.com")
     assert (await client.get(f"/courses/{course_id}/lessons/{lesson_id}/exercises")).status_code == 404
     assert (await _generate(client, course_id, lesson_id, "study_pack")).status_code == 404
-
-
-async def test_open_answer_matching():
-    assert is_open_answer_correct("  Il  Limite ", ["il limite"])
-    assert not is_open_answer_correct("   ", ["", " "])
 
 
 async def test_openai_provider_requires_credentials(monkeypatch):

@@ -10,7 +10,6 @@ from quart import Blueprint, abort, flash, g, make_response, redirect, render_te
 from sqlalchemy import func, select
 
 from .. import ai, rag
-from ..ai.schemas import is_open_answer_correct
 from ..db import db
 from ..materials import MIME_BY_EXT, extract_text
 from ..models import (
@@ -430,11 +429,11 @@ async def topic_done(course_id, lesson_id, topic):
     return redirect(url_for("courses.exercises", course_id=course_id, lesson_id=lesson_id))
 
 
-def topic_results(exercise_set: dict, graded: dict) -> tuple[list[int], list[int]]:
+def topic_results(topic_count: int, questions: list[dict], answers: dict) -> tuple[list[int], list[int]]:
     """(capiti, da ripassare) come DuolingoQuiz.tsx: capito se tutte le sue domande sono corrette."""
     understood, to_review = [], []
-    for i in range(len(exercise_set.get("topics") or [])):
-        results = [graded[e["id"]]["correct"] for e in exercise_set["exercises"] if e.get("topicIndex") == i]
+    for i in range(topic_count):
+        results = [answers[q["id"]]["correct"] for q in questions if q.get("topicIndex") == i]
         if results:
             (understood if all(results) else to_review).append(i)
     return understood, to_review
@@ -443,30 +442,46 @@ def topic_results(exercise_set: dict, graded: dict) -> tuple[list[int], list[int
 @bp.route("/<uuid:course_id>/lessons/<uuid:lesson_id>/exercises", methods=["GET", "POST"])
 @login_required
 async def exercises(course_id, lesson_id):
-    """Il test del percorso di studio ("Mettiti alla prova")."""
+    """Il test del percorso ("Mettiti alla prova"): una domanda alla volta, risposte salvate sul job per riprendere dopo."""
     lesson = await get_lesson(course_id, lesson_id)
     job = await _latest_ready(lesson, "exercise_set")
     if job is None:
         return redirect(url_for("courses.lesson", course_id=course_id, lesson_id=lesson_id, tab="path"))
-    exercise_set = job.result
-    graded = understood = to_review = None
+    url = url_for("courses.exercises", course_id=course_id, lesson_id=lesson_id)
+    # Solo crocette: le domande aperte dei percorsi salvati prima restano fuori dal test.
+    questions = [q for q in job.result["exercises"] if q["type"] == "multiple_choice"]
+    topic_count = len(job.result.get("topics") or [])
+    progress = job.progress or {}
+    answers = progress.get("answers", {})
+    current = next((q for q in questions if q["id"] not in answers), None)
     if request.method == "POST":
         form = await request.form
-        graded = {}
-        for ex in exercise_set["exercises"]:
-            answer = form.get(f"answer-{ex['id']}", "")
-            if ex["type"] == "multiple_choice":
-                correct = answer == ex["correctAnswer"]
-            else:
-                correct = is_open_answer_correct(answer, ex["acceptedAnswers"])
-            graded[ex["id"]] = {"answer": answer, "correct": correct}
-        understood, to_review = topic_results(exercise_set, graded)
-        right = sum(g["correct"] for g in graded.values())
-        job.progress = {**(job.progress or {}), "last_result": {"correct": right, "total": len(graded), "to_review": to_review}}
+        if form.get("restart"):
+            job.progress = {**progress, "answers": {}}
+            await db().commit()
+            return redirect(url)
+        # Un doppio invio non risponde alla domanda successiva.
+        if current is None or form.get("question") != current["id"]:
+            return redirect(url)
+        answer = form.get("answer", "")
+        answers = {**answers, current["id"]: {"answer": answer, "correct": answer == current["correctAnswer"]}}
+        # Nuovo dizionario, non modifica sul posto: SQLAlchemy salva una colonna JSONB solo se viene riassegnata.
+        progress = {**progress, "answers": answers}
+        if len(answers) == len(questions):
+            _, to_review = topic_results(topic_count, questions, answers)
+            right = sum(a["correct"] for a in answers.values())
+            progress["last_result"] = {"correct": right, "total": len(questions), "to_review": to_review}
+        job.progress = progress
         await db().commit()
+        return redirect(url_for("courses.exercises", course_id=course_id, lesson_id=lesson_id, checked=current["id"]))
+    # Dopo una risposta: la stessa domanda con la correzione, poi "Avanti".
+    checked = next((q for q in questions if q["id"] == request.args.get("checked") and q["id"] in answers), None)
+    understood = to_review = None
+    if current is None and checked is None:
+        understood, to_review = topic_results(topic_count, questions, answers)
     return await render_template(
-        "courses/exercises.html", lesson=lesson, exercise_set=exercise_set, graded=graded, job=job,
-        understood=understood, to_review=to_review,
+        "courses/exercises.html", lesson=lesson, exercise_set=job.result, job=job, questions=questions, answers=answers,
+        current=current, checked=checked, understood=understood, to_review=to_review,
     )
 
 

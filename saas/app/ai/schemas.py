@@ -67,6 +67,8 @@ class MultipleChoice(_PathFields):
 
 
 class OpenAnswer(_PathFields):
+    """Solo nei percorsi salvati prima del test a crocette: si leggono (backup) ma il test li salta."""
+
     type: Literal["open_answer"]
     id: NonEmpty
     question: NonEmpty
@@ -104,24 +106,29 @@ class ExerciseSet(BaseModel):
     topics: list[StudyTopic] = Field([], max_length=8)
     # Informazioni che mancano nella lezione, segnalate dal modello invece di inventarle.
     missingInfo: list[NonEmpty] = []
-    # shortcut: niente coding_challenge (serve un editor di codice), da aggiungere con Monaco o simili.
-    exercises: list[Annotated[MultipleChoice | OpenAnswer, Field(discriminator="type")]] = Field(min_length=3, max_length=8)
+    # Domande del test: dalla v3 arrivano da una seconda chiamata (Quiz), il modello delle spiegazioni non le scrive.
+    exercises: list[Annotated[MultipleChoice | OpenAnswer, Field(discriminator="type")]] = Field([], max_length=20)
 
     @model_validator(mode="after")
     def _unique_ids(self):
-        if len({e.id for e in self.exercises}) != len(self.exercises):
-            raise ValueError("Ogni id di esercizio deve essere unico")
+        _check_unique_ids(self.exercises)
         return self
 
 
-def normalize_answer(text: str) -> str:
-    return " ".join(text.strip().lower().split())
+class Quiz(BaseModel):
+    """Test del percorso di studio: solo crocette, una domanda alla volta."""
+
+    questions: list[MultipleChoice] = Field(min_length=3, max_length=20)
+
+    @model_validator(mode="after")
+    def _unique_ids(self):
+        _check_unique_ids(self.questions)
+        return self
 
 
-def is_open_answer_correct(user_text: str, accepted: list[str]) -> bool:
-    """Come isOpenAnswerCorrect del desktop: uguaglianza dopo normalizzazione, mai vera per una risposta vuota."""
-    normalized = normalize_answer(user_text)
-    return bool(normalized) and any(normalized == normalize_answer(a) for a in accepted)
+def _check_unique_ids(items) -> None:
+    if len({e.id for e in items}) != len(items):
+        raise ValueError("Ogni id di esercizio deve essere unico")
 
 
 # ---------- reel ----------

@@ -21,7 +21,7 @@ from sqlalchemy.exc import IntegrityError
 from ..db import db
 from ..models import AiJob, CourseQuestion, Flashcard, Lesson, utcnow
 from . import prompts
-from .schemas import ExerciseSet, ReelSet, StudyPack
+from .schemas import ExerciseSet, Quiz, ReelSet, StudyPack
 
 log = logging.getLogger(__name__)
 
@@ -32,7 +32,8 @@ REQUEST_TIMEOUT_S = 300
 # 12.000 come il desktop troncava il percorso di studio (finish_reason=length, verificato con deepseek-v4-pro):
 # si pagano solo i token usati, quindi il minimo alto non costa nulla quando la risposta è breve.
 MIN_MAX_TOKENS = 32_000
-STALE_AFTER = timedelta(minutes=15)
+# Oltre il caso peggiore di un job: il percorso fa 2 chiamate, ognuna con una riparazione, da REQUEST_TIMEOUT_S l'una.
+STALE_AFTER = timedelta(minutes=25)
 
 KINDS: dict[str, tuple[str, type[BaseModel], callable]] = {
     "study_pack": (prompts.STUDY_PACK_SYSTEM, StudyPack, prompts.study_pack_user),
@@ -46,8 +47,8 @@ class AiError(Exception):
 
 
 # Versione dello schema nell'hash, come il desktop: un risultato di una versione precedente non viene riusato
-# (esercizi senza percorso di studio, studi AI senza diagramma).
-SCHEMA_VERSIONS = {"study_pack": 2, "exercise_set": 2, "reels": 1}
+# (esercizi senza percorso di studio, test con domande aperte, studi AI senza diagramma).
+SCHEMA_VERSIONS = {"study_pack": 2, "exercise_set": 3, "reels": 1}
 
 
 def source_hash(lesson: Lesson, kind: str = "study_pack") -> str:
@@ -185,6 +186,13 @@ def _fake_chat(system: str, user: str) -> str:
                 "self_check_questions": [{"question": "Domanda di autoverifica?", "answer": "Risposta."}],
             }
         )
+    if system == prompts.QUIZ_SYSTEM:
+        return json.dumps({"questions": [
+            {"type": "multiple_choice", "id": f"es-{i}", "stage": "concetto", "topicIndex": min(i - 1, 1), "question": f"Domanda simulata {i}?",
+             "options": ["Giusta", "Sbagliata A", "Sbagliata B", "Sbagliata C"], "correctAnswer": "Giusta",
+             "explanation": "La risposta giusta è sempre la prima nel provider simulato.", "difficulty": i}
+            for i in (1, 2, 3)
+        ]})
     return json.dumps(
         {
             "title": "[Simulato] Percorso di prova",
@@ -194,15 +202,6 @@ def _fake_chat(system: str, user: str) -> str:
                  "example": {"problem": "Esempio simulato.", "steps": ["Primo passaggio.", "Risultato."]}}
                 for i in (0, 1)
             ],
-            "exercises": [
-                {"type": "multiple_choice", "id": f"es-{i}", "stage": "concetto", "topicIndex": i - 1, "question": f"Domanda simulata {i}?",
-                 "options": ["Giusta", "Sbagliata A", "Sbagliata B", "Sbagliata C"], "correctAnswer": "Giusta",
-                 "explanation": "La risposta giusta è sempre la prima nel provider simulato.", "difficulty": i}
-                for i in (1, 2)
-            ]
-            + [{"type": "open_answer", "id": "es-3", "stage": "collegamento", "topicIndex": 1,
-                "question": "Scrivi la parola: prova", "acceptedAnswers": ["prova"],
-                "explanation": "Risposta attesa: prova.", "difficulty": 3}],
         }
     )
 
@@ -233,13 +232,21 @@ def parse_model_json(raw: str, schema: type[BaseModel]) -> BaseModel:
 
 
 def generate(kind: str, user: str, usage: dict | None = None) -> BaseModel:
-    """Un tentativo più una riparazione mostrando al modello l'errore di validazione, come il desktop."""
     system, schema, _ = KINDS[kind]
+    result = _generate(system, schema, user, usage)
+    if kind == "exercise_set":
+        # Seconda chiamata solo per il test: un prompt si concentra sulle spiegazioni, l'altro sulle domande.
+        result.exercises = _generate(prompts.QUIZ_SYSTEM, Quiz, prompts.quiz_user(user, result), usage).questions
+    return result
+
+
+def _generate(system: str, schema: type[BaseModel], user: str, usage: dict | None) -> BaseModel:
+    """Un tentativo più una riparazione mostrando al modello l'errore di validazione, come il desktop."""
     raw = chat(system, user, usage=usage)
     try:
         return parse_model_json(raw, schema)
     except ValidationError as e:
-        log.info("%s: risposta non valida, ritento con riparazione", kind)
+        log.info("%s: risposta non valida, ritento con riparazione", schema.__name__)
         raw = chat(system, user + "\n\n" + prompts.repair(raw, str(e)[:2000]), usage=usage)
     try:
         return parse_model_json(raw, schema)

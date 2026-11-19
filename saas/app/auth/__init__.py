@@ -21,10 +21,11 @@ SCHOOL_MAX = 200
 # Suggerimenti solo per i valori scelti da almeno 3 utenti: un testo libero inserito da una persona sola resta privato.
 SUGGESTION_MIN_USERS = 3
 WINDOW = timedelta(minutes=15)
-# Limiti per finestra di 15 minuti.
+# Limiti per finestra di 15 minuti. Quelli per IP sono alti: gli studenti sul Wi-Fi dell'università escono
+# tutti dallo stesso IP. La protezione contro chi indovina le password è il limite per email.
 LOGIN_FAILURES_PER_EMAIL = 5
-LOGIN_FAILURES_PER_IP = 20
-REGISTRATIONS_PER_IP = 5
+LOGIN_FAILURES_PER_IP = 100
+REGISTRATIONS_PER_IP = 30
 LOGIN_ERROR = "Email o password non corretti."
 RATE_LIMITED = "Troppi tentativi. Riprova tra qualche minuto."
 
@@ -108,7 +109,6 @@ async def register():
     if await _count_recent(ip_key) >= REGISTRATIONS_PER_IP:
         await flash(RATE_LIMITED, "error")
         return await _render_register(429, **form)
-    await _record(ip_key)
 
     error = _validate_credentials(email, password)
     if not error and not (form["university"] and form["faculty"]):
@@ -133,6 +133,8 @@ async def register():
     )
     db().add(user)
     await db().commit()
+    # Solo le registrazioni riuscite: un form sbagliato non consuma il limite di tutta l'aula.
+    await _record(ip_key)
     login_user(user)
     return redirect(url_for("main.dashboard"))
 

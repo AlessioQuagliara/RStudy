@@ -99,9 +99,14 @@ async def test_login_rate_limit_per_email(db_app, db_client):
     assert stored and all("example.com" not in k for k in stored)
 
 
-async def test_registration_rate_limit_per_ip(db_client):
+async def test_registration_rate_limit_per_ip(db_client, monkeypatch):
+    monkeypatch.setattr("app.auth.REGISTRATIONS_PER_IP", 2)
+    # I form sbagliati non contano: stessa rete, molti errori, nessun blocco.
     for i in range(5):
-        await register(db_client, email=f"u{i}@example.com", password="corta")
+        assert (await register(db_client, email=f"x{i}@example.com", password="corta")).status_code == 400
+    for i in range(2):
+        assert (await register(db_client, email=f"u{i}@example.com")).status_code == 302
+        await db_client.post("/logout")
     assert (await register(db_client, email="u9@example.com")).status_code == 429
 
 

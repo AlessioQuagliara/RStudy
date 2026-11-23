@@ -57,6 +57,10 @@ async def load_user() -> None:
         g.user = await db().get(User, uuid.UUID(user_id))
     except ValueError:
         session.clear()
+        return
+    if g.user and g.user.banned_at:
+        session.clear()  # sospeso dal pannello admin: esce subito, anche a metà sessione
+        g.user = None
 
 
 def login_required(view):
@@ -64,6 +68,20 @@ def login_required(view):
     async def wrapper(*args, **kwargs):
         if g.user is None:
             return redirect(url_for("auth.login"))
+        return await view(*args, **kwargs)
+
+    return wrapper
+
+
+def is_admin(user: User | None) -> bool:
+    return bool(user) and user.email in current_app.config["ADMIN_EMAILS"]
+
+
+def admin_required(view):
+    @functools.wraps(view)
+    async def wrapper(*args, **kwargs):
+        if not is_admin(g.user):
+            abort(404)  # 404 e non 403: il pannello non si rivela a chi non è admin
         return await view(*args, **kwargs)
 
     return wrapper

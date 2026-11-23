@@ -11,7 +11,7 @@ from quart import Quart, abort, g, request
 
 from .config import load_config
 from .db import close_db, init_db
-from .web import check_csrf, csrf_token, load_user
+from .web import check_csrf, csrf_token, is_admin, load_user
 
 ICONS_DIR = Path(__file__).parent / "static" / "dist" / "icons"
 MAX_REQUEST_BYTES = 1 * 1024 * 1024
@@ -88,7 +88,7 @@ def create_app(overrides: dict | None = None) -> Quart:
     app.before_request(load_user)
     app.before_request(check_csrf)
 
-    app.jinja_env.globals.update(icon=icon, csrf_token=csrf_token)
+    app.jinja_env.globals.update(icon=icon, csrf_token=csrf_token, is_admin=is_admin)
     app.jinja_env.filters["date_it"] = date_it
 
     @app.context_processor
@@ -102,15 +102,17 @@ def create_app(overrides: dict | None = None) -> Quart:
         response.headers.setdefault("Referrer-Policy", "same-origin")
         return response
 
+    from .admin import bp as admin_bp
     from .auth import bp as auth_bp
     from .billing import bp as billing_bp
     from .courses import bp as courses_bp
     from .flashcards import bp as flashcards_bp
+    from .free_courses import bp as free_courses_bp
     from .main import bp as main_bp
     from .reels import bp as reels_bp
     from .settings import bp as settings_bp
 
-    for bp in (auth_bp, billing_bp, courses_bp, flashcards_bp, main_bp, reels_bp, settings_bp):
+    for bp in (admin_bp, auth_bp, billing_bp, courses_bp, flashcards_bp, free_courses_bp, main_bp, reels_bp, settings_bp):
         app.register_blueprint(bp)
 
     @app.cli.command("ai-worker")

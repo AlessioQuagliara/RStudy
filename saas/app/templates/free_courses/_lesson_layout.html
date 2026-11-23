@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_ui.html" import topbar, card, csrf %}
+{% block title %}{{ lesson.title }} · {{ course.title }}{% endblock %}
+{% block content %}
+{{ topbar("Lezione " ~ (idx + 1) ~ "/" ~ (course.lessons | length), course.title, url_for('free_courses.course', slug=slug)) }}
+<div class="col-span-12 flex flex-col gap-3">
+  <progress class="progress progress-success w-full" value="{{ pct }}" max="100" aria-label="Completamento del corso {{ pct }}%"></progress>
+  <h2 class="flex flex-wrap items-center gap-3 text-2xl font-bold">{{ lesson.title }}
+    {% if passed %}<span class="badge badge-success">{{ icon("circle-check", "size-3") }} completata</span>{% endif %}</h2>
+  <div role="tablist" class="tabs tabs-border">
+    <a role="tab" href="{{ url_for('free_courses.lesson', slug=slug, idx=idx) }}" class="tab gap-2 {{ 'tab-active' if tab == 'lesson' }}">{{ icon("book-open") }} Lezione</a>
+    <a role="tab" href="{{ url_for('free_courses.quiz', slug=slug, idx=idx) }}" class="tab gap-2 {{ 'tab-active' if tab == 'quiz' }}">{{ icon("list-checks") }} Verifica</a>
+  </div>
+</div>
+
+{% block tab %}{% endblock %}
+
+<nav class="col-span-12 flex justify-between gap-2">
+  {% if idx > 0 %}<a class="btn btn-ghost" href="{{ url_for('free_courses.lesson', slug=slug, idx=idx - 1) }}">{{ icon("arrow-left") }} Precedente</a>{% else %}<span></span>{% endif %}
+  {% if idx + 1 < course.lessons | length and passed %}
+    <a class="btn btn-outline" href="{{ url_for('free_courses.lesson', slug=slug, idx=idx + 1) }}">Lezione successiva {{ icon("arrow-right") }}</a>
+  {% elif idx + 1 < course.lessons | length %}
+    <span class="btn btn-disabled" aria-disabled="true">{{ icon("lock") }} Supera la verifica per continuare</span>
+  {% else %}
+    <a class="btn btn-outline" href="{{ url_for('free_courses.course', slug=slug) }}">Torna al corso {{ icon("arrow-right") }}</a>
+  {% endif %}
+</nav>
+{% endblock %}

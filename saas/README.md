@@ -18,6 +18,9 @@ Disponibile:
   (import con upsert per id limitato ai dati dell'account; export disponibile anche a prova scaduta);
 - account (registrazione con università e facoltà, accesso, rate limit, CSRF, CSP senza script inline);
 - corsi con filtri e ricerca, lezioni con appunti, dashboard con le metriche del desktop;
+- corsi gratuiti della piattaforma (`/free-courses`, `app/free_courses/data/*.json` copiati da studio-programmazione):
+  10 percorsi di programmazione, lezione → verifica a crocette → sblocco della successiva, progressi per utente;
+- pannello admin (`/admin`, solo email in `ADMIN_EMAILS`): utenti e abbonamenti, sospensione, proroga della prova;
 - generazione AI in background (`quart --app asgi ai-worker`): studio AI (riepilogo, punti chiave, schema,
   diagramma, domande di autoverifica, flashcard) e percorso di studio, corretti dal server;
 - lezione divisa in schede: Appunti, Studio AI, "Studia passo passo" (argomenti con spiegazione, regola, esempio svolto

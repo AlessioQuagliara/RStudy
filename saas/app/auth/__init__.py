@@ -161,6 +161,9 @@ async def login():
         await _record(email_key, ip_key)
         await flash(LOGIN_ERROR, "error")
         return await render_template("auth/login.html", email=email), 401
+    if user.banned_at:
+        await flash("Questo account è sospeso.", "error")
+        return await render_template("auth/login.html", email=email), 403
 
     login_user(user)
     return redirect(url_for("main.dashboard"))

@@ -1,0 +1,45 @@
+{% extends "free_courses/_lesson_layout.html" %}
+{% block tab %}
+{% call card() %}
+  {% if results %}
+    {% set score = results | selectattr('ok') | list | length %}
+    {% if score == results | length %}
+    <div role="alert" class="alert alert-success text-sm">
+      <span>Perfetto, {{ score }}/{{ results | length }}! Lezione completata.{% if idx + 1 < course.lessons | length %} La lezione {{ idx + 2 }} è sbloccata.{% endif %}</span>
+      {% if idx + 1 < course.lessons | length %}<a class="btn btn-sm" href="{{ url_for('free_courses.lesson', slug=slug, idx=idx + 1) }}">Vai alla lezione {{ idx + 2 }} {{ icon("arrow-right") }}</a>{% endif %}
+    </div>
+    {% else %}
+    <div role="alert" class="alert alert-warning text-sm">
+      <span>{{ score }}/{{ results | length }}. Nessun problema: leggi le spiegazioni qui sotto, ripassa la <a class="link" href="{{ url_for('free_courses.lesson', slug=slug, idx=idx) }}">lezione</a> e riprova.</span>
+    </div>
+    {% endif %}
+  {% else %}
+    <p class="text-base-content/70 text-sm">Rispondi a tutte le domande. Dopo la correzione vedrai la spiegazione di ognuna.</p>
+  {% endif %}
+
+  <form method="post" class="mt-2 flex flex-col gap-4">
+    {{ csrf() }}
+    {% for q in lesson.quiz %}
+    {% set qi = loop.index0 %}
+    {% set r = results[qi] if results else none %}
+    <fieldset class="fieldset rounded-box border p-4 {{ ('border-success bg-success/10' if r.ok else 'border-error bg-error/10') if r else 'border-base-300' }}">
+      <legend class="fieldset-legend float-left w-full text-base"><span>{{ qi + 1 }}. {{ q.q | md_inline }}</span></legend>
+      {% for opt in q.options %}
+      <label class="label text-base-content cursor-pointer items-start gap-3 py-1 text-sm whitespace-normal">
+        <input type="radio" class="radio radio-primary radio-sm mt-0.5" name="q{{ qi }}" value="{{ loop.index0 }}" required {{ 'checked' if r and r.chosen == loop.index0 }} />
+        <span>{{ opt | md_inline }}</span>
+      </label>
+      {% endfor %}
+      {% if r %}
+      <p class="mt-2 flex items-start gap-2 text-sm">
+        {% if r.ok %}<span class="text-success" aria-label="Giusto">{{ icon("circle-check", "size-5") }}</span>
+        {% else %}<span class="text-error" aria-label="Sbagliato">{{ icon("circle-x", "size-5") }}</span>{% endif %}
+        <span>{{ q.why | md_inline }}</span>
+      </p>
+      {% endif %}
+    </fieldset>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary self-start">{{ 'Riprova' if results else 'Correggi' }}</button>
+  </form>
+{% endcall %}
+{% endblock %}

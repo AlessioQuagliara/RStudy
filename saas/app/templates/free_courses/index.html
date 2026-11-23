@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_ui.html" import topbar %}
+{% block title %}Corsi gratuiti · RStudy{% endblock %}
+{% block content %}
+{{ topbar("Corsi gratuiti") }}
+<p class="text-base-content/60 col-span-12 text-sm">Percorsi di programmazione offerti da RStudy, inclusi in ogni piano. Una lezione alla volta: leggi, fai la verifica, e se rispondi giusto a tutto si sblocca la successiva.</p>
+{% for c in cards %}
+<a href="{{ url_for('free_courses.course', slug=c.slug) }}" class="card bg-base-200 hover:bg-base-300 col-span-12 shadow-xs transition-colors md:col-span-6 xl:col-span-4">
+  <div class="card-body gap-2">
+    <span class="badge badge-sm badge-ghost">{{ c.course.area }}</span>
+    <h2 class="card-title text-base">{{ c.course.title }}</h2>
+    <p class="text-base-content/60 line-clamp-3 text-sm">{{ c.course.summary }}</p>
+    <progress class="progress progress-success w-full" value="{{ c.pct }}" max="100" aria-label="Completamento {{ c.pct }}%"></progress>
+    <p class="text-base-content/60 text-xs">{{ c.done }}/{{ c.course.lessons | length }} lezioni completate</p>
+  </div>
+</a>
+{% endfor %}
+{% endblock %}

@@ -67,6 +67,8 @@ def load_config() -> dict:
         # Header con l'IP reale del client messo da un proxy esterno (Cloudflare: CF-Connecting-IP). Vuoto = ignorato.
         # Va impostato solo se l'app è raggiungibile esclusivamente attraverso quel proxy, altrimenti è falsificabile.
         "CLIENT_IP_HEADER": os.environ.get("CLIENT_IP_HEADER", "").strip(),
+        # Email (separate da virgola) che vedono il pannello /admin. Vuoto = pannello chiuso a tutti.
+        "ADMIN_EMAILS": {e.strip().lower() for e in os.environ.get("ADMIN_EMAILS", "").split(",") if e.strip()},
         **_ai_config(),
         **_billing_config(),
     }

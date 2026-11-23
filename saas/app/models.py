@@ -34,6 +34,9 @@ class User(Base):
     subscription_cancel_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # occurred_at dell'ultimo evento applicato: Paddle non garantisce l'ordine di consegna.
     subscription_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Impostati dal pannello admin: un utente sospeso non può accedere (web.load_user, auth.login).
+    banned_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    ban_reason: Mapped[str | None] = mapped_column(String(200))
 
     @property
     def is_subscribed(self) -> bool:
@@ -228,3 +231,16 @@ class CourseQuestion(Base):
     model: Mapped[str | None] = mapped_column(String(100))
     usage: Mapped[dict | None] = mapped_column(JSONB)  # come AiJob.usage
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class FreeCourseProgress(Base):
+    """Verifiche dei corsi gratuiti (app/free_courses): una riga per utente e lezione, chiave "<slug>/<indice>"."""
+
+    __tablename__ = "free_course_progress"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    lesson_key: Mapped[str] = mapped_column(String(80), primary_key=True)
+    best_score: Mapped[int]
+    total: Mapped[int]
+    passed: Mapped[bool]
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_ui.html" import topbar, card %}
+{% block title %}{{ course.title }} · RStudy{% endblock %}
+{% block content %}
+{{ topbar(course.title, "Corsi gratuiti", url_for('free_courses.index')) }}
+{% call card() %}
+  <p class="text-base-content/80 text-sm">{{ course.summary }}</p>
+  <progress class="progress progress-success w-full" value="{{ pct }}" max="100" aria-label="Completamento {{ pct }}%"></progress>
+  <p class="text-base-content/60 text-xs">{{ flags | select | list | length }}/{{ flags | length }} lezioni completate</p>
+  {% if blocked %}
+  <div role="alert" class="alert alert-info text-sm">{{ icon("lock") }} La lezione {{ blocked }} è ancora chiusa: si sblocca superando la verifica della lezione {{ blocked - 1 }}.</div>
+  {% endif %}
+  <ul class="list">
+    {% for les in course.lessons %}
+    {% set i = loop.index0 %}
+    {% set open = i == 0 or flags[i - 1] %}
+    <li class="list-row items-center {{ 'opacity-50' if not open }}">
+      <span class="text-xl font-thin tabular-nums opacity-40">{{ '%02d' % loop.index }}</span>
+      {% if open %}<a class="list-col-grow link link-hover font-medium" href="{{ url_for('free_courses.lesson', slug=slug, idx=i) }}">{{ les.title }}</a>
+      {% else %}<span class="list-col-grow font-medium">{{ les.title }}</span>{% endif %}
+      {% if flags[i] %}<span class="badge badge-sm badge-success">{{ icon("circle-check", "size-3") }} completata</span>
+      {% elif open %}<a class="btn btn-primary btn-sm" href="{{ url_for('free_courses.lesson', slug=slug, idx=i) }}">Inizia</a>
+      {% else %}<span class="badge badge-sm badge-ghost">{{ icon("lock", "size-3") }} bloccata</span>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+{% endcall %}
+{% endblock %}

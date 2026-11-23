@@ -35,13 +35,16 @@
             <span>RStudy</span>
           </div>
           <ul class="menu w-full grow">
-            {% for endpoint, label, icon_name in [("main.dashboard", "Dashboard", "layout-dashboard"), ("courses.index", "Corsi", "graduation-cap"), ("flashcards.index", "Flashcard", "layers"), ("reels.index", "Reel", "clapperboard"), ("billing.index", "Abbonamento", "credit-card"), ("settings.index", "Impostazioni", "settings")] %}
+            {% for endpoint, label, icon_name in [("main.dashboard", "Dashboard", "layout-dashboard"), ("courses.index", "Corsi", "graduation-cap"), ("free_courses.index", "Corsi gratuiti", "book-open"), ("flashcards.index", "Flashcard", "layers"), ("reels.index", "Reel", "clapperboard"), ("billing.index", "Abbonamento", "credit-card"), ("settings.index", "Impostazioni", "settings")] %}
             <li>
               <a href="{{ url_for(endpoint) }}" class="{{ 'menu-active' if request.blueprint == endpoint.split('.')[0] }}">
                 {{ icon(icon_name) }} {{ label }}
               </a>
             </li>
             {% endfor %}
+            {% if is_admin(current_user) %}
+            <li><a href="{{ url_for('admin.index') }}" class="{{ 'menu-active' if request.blueprint == 'admin' }}">{{ icon("shield") }} Admin</a></li>
+            {% endif %}
           </ul>
           {% if not current_user.is_subscribed and current_user.has_access %}
           <a href="{{ url_for('billing.index') }}" class="badge badge-warning badge-outline mx-3">
